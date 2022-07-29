@@ -1,0 +1,5 @@
+# Pycharm files
+.idea/
+
+# Data directory
+var/
