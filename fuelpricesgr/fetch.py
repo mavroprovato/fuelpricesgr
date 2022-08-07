@@ -119,6 +119,22 @@ def fetch_data():
                         shutil.copyfileobj(r.raw, f)
 
 
+def parse_files():
+    """Parse the files and extract fuel prices
+    """
+    for data_file in pathlib.Path(DATA_PATH).rglob('*.pdf'):
+        logger.info("Parsing PDF file %s", data_file.name)
+        try:
+            reader = PyPDF2.PdfReader(data_file)
+            lines = 0
+            for page in reader.pages:
+                for line in page.extract_text().splitlines():
+                    lines += 1
+            logger.info("Parsed %d lines", lines)
+        except PyPDF2.errors.PdfReadError:
+            logger.error("Error parsing PDF file %s", data_file.name, exc_info=True)
+
+
 if __name__ == '__main__':
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-    fetch_data()
+    parse_files()
