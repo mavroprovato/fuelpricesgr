@@ -110,7 +110,7 @@ def fetch_data():
                 file_link = link['href'].replace(' ', '')
                 file_link = re.sub(r'\(\d\)', '', file_link)
                 file_link = re.sub(r'-\?+', '', file_link)
-                file_path = DATA_PATH / str(fuel_data) / file_link[file_link.rfind('/') + 1:]
+                file_path = DATA_PATH / fuel_data.name / file_link[file_link.rfind('/') + 1:]
                 if not file_path.exists():
                     file_path.parent.mkdir(parents=True, exist_ok=True)
                     file_url = f"{BASE_URL}/{file_link}"
