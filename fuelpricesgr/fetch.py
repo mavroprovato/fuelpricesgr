@@ -8,6 +8,8 @@ import shutil
 import sys
 
 import bs4
+import PyPDF2
+import PyPDF2.errors
 import requests
 
 # The base URL
@@ -34,6 +36,69 @@ class FuelData(enum.Enum):
         self.page = page
 
 
+class Prefecture(enum.Enum):
+    """Enumeration for greek prefectures
+    """
+    ATTICA = "ΑΤΤΙΚΗΣ",
+    AETOLIA_ACARNANIA = "ΑΙΤΩΛΙΑΣ ΚΑΙ ΑΚΑΡΝΑΝΙΑΣ",
+    ARGOLIS = "ΑΡΓΟΛΙΔΟΣ",
+    ARKADIAS = "ΑΡΚΑΔΙΑΣ",
+    ARTA = "ΑΡΤΗΣ",
+    ACHAEA = "ΑΧΑΪΑΣ",
+    BOEOTIA = "ΒΟΙΩΤΙΑΣ",
+    GREVENA = "ΓΡΕΒΕΝΩΝ",
+    DRAMA = "ΔΡΑΜΑΣ",
+    DODECANESE = "ΔΩΔΕΚΑΝΗΣΟΥ",
+    EVROS = "ΕΒΡΟΥ",
+    EUBOEA = "ΕΥΒΟΙΑΣ",
+    EVRYTANIA = "ΕΥΡΥΤΑΝΙΑΣ",
+    ZAKYNTHOS = "ΖΑΚΥΝΘΟΥ",
+    ELIS = "ΗΛΕΙΑΣ",
+    IMATHIA = "ΗΜΑΘΙΑΣ",
+    HERAKLION = "ΗΡΑΚΛΕΙΟΥ",
+    THESPROTIA = "ΘΕΣΠΡΩΤΙΑΣ",
+    THESSALONIKI = "ΘΕΣΣΑΛΟΝΙΚΗΣ",
+    IOANNINA = "ΙΩΑΝΝΙΝΩΝ",
+    KAVALA = "ΚΑΒΑΛΑΣ",
+    KARDITSA = "ΚΑΡΔΙΤΣΗΣ",
+    KASTORIA = "ΚΑΣΤΟΡΙΑΣ",
+    KERKYRA = "ΚΕΡΚΥΡΑΣ",
+    CEPHALONIA = "ΚΕΦΑΛΛΗΝΙΑΣ",
+    KILKIS = "ΚΙΛΚΙΣ",
+    KOZANI = "ΚΟΖΑΝΗΣ",
+    CORINTHIA = "ΚΟΡΙΝΘΙΑΣ",
+    CYCLADES = "ΚΥΚΛΑΔΩΝ",
+    LACONIA = "ΛΑΚΩΝΙΑΣ",
+    LARISSA = "ΛΑΡΙΣΗΣ",
+    LASITHI = "ΛΑΣΙΘΙΟΥ",
+    LESBOS = "ΛΕΣΒΟΥ",
+    LEFKADA = "ΛΕΥΚΑΔΟΣ",
+    MAGNESIA = "ΜΑΓΝΗΣΙΑΣ",
+    MESSENIA = "ΜΕΣΣΗΝΙΑΣ",
+    XANTHI = "ΞΑΝΘΗΣ",
+    PELLA = "ΠΕΛΛΗΣ",
+    PIERIA = "ΠΙΕΡΙΑΣ",
+    PREVEZA = "ΠΡΕΒΕΖΗΣ",
+    RETHYMNO = "ΡΕΘΥΜΝΗΣ",
+    RHODOPE = "ΡΟΔΟΠΗΣ",
+    SAMOS = "ΣΑΜΟΥ",
+    SERRES = "ΣΕΡΡΩΝ",
+    TRIKALA = "ΤΡΙΚΑΛΩΝ",
+    PHTHIOTIS = "ΦΘΙΩΤΙΔΟΣ",
+    FLORINA = "ΦΛΩΡΙΝΗΣ",
+    PHOCIS = "ΦΩΚΙΔΟΣ",
+    CHALKIDIKI = "ΧΑΛΚΙΔΙΚΗΣ",
+    CHANIA = "ΧΑΝΙΩΝ",
+    CHIOS = "ΧΙΟΥ",
+
+    def __init__(self, display_name: str):
+        """Creates the enum.
+
+        :param display_name: The name of the prefecture in Greek.
+        """
+        self.display_name = display_name
+
+
 def fetch_data():
     """Fetch data from the site.
     """
@@ -45,13 +110,12 @@ def fetch_data():
                 file_link = link['href'].replace(' ', '')
                 file_link = re.sub(r'\(\d\)', '', file_link)
                 file_link = re.sub(r'-\?+', '', file_link)
-                file_path = DATA_PATH / str(fuel_data) / link['href']
+                file_path = DATA_PATH / str(fuel_data) / file_link[file_link.rfind('/') + 1:]
                 if not file_path.exists():
                     file_path.parent.mkdir(parents=True, exist_ok=True)
                     file_url = f"{BASE_URL}/{file_link}"
                     logger.info(f"Downloading file %s", file_url)
                     with requests.get(file_url, stream=True) as r, file_path.open('wb') as f:
-                        r.raise_for_status()
                         shutil.copyfileobj(r.raw, f)
 
 
