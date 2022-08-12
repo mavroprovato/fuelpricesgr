@@ -15,7 +15,7 @@ import requests
 # The base URL
 BASE_URL = 'http://www.fuelprices.gr'
 # The base path where the files will be stored
-DATA_PATH = pathlib.Path('../var')
+DATA_PATH = pathlib.Path(__file__).parent.parent / 'var'
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -137,4 +137,4 @@ def parse_files():
 
 if __name__ == '__main__':
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-    parse_files()
+    fetch_data()
