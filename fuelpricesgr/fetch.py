@@ -1,5 +1,8 @@
 """Module used to fetch data
 """
+import csv
+import datetime
+import decimal
 import enum
 import logging
 import pathlib
@@ -34,6 +37,15 @@ class FuelData(enum.Enum):
         :param page: The page path, relative to the base URL, from which we will fetch the data.
         """
         self.page = page
+
+
+class FuelType(enum.Enum):
+    UNLEADED_95 = 'Αμόλυβδη 95'
+    UNLEADED_100 = 'Αμόλυβδη 100'
+    SUPER = 'Super'
+    DIESEL = 'Diesel'
+    DIESEL_HEATING = 'Diesel'
+    GAS = 'Υγραέριο'
 
 
 class Prefecture(enum.Enum):
@@ -122,19 +134,53 @@ def fetch_data():
 def parse_files():
     """Parse the files and extract fuel prices
     """
+    data = []
     for data_file in pathlib.Path(DATA_PATH).rglob('*.pdf'):
-        logger.info("Parsing PDF file %s", data_file.name)
+        logger.info("Processing PDF file %s", data_file.name)
+        fuel_data = FuelData[data_file.parent.name]
+        # TODO: remove this
+        if fuel_data != FuelData.DAILY_COUNTRY:
+            continue
+        result = re.search(r'(\d{2})_(\d{2})_(\d{4})', data_file.stem)
+        if not result:
+            logger.warning("Could not find date in file name")
+            continue
+        date = datetime.date(day=int(result[1]), month=int(result[2]), year=int(result[3]))
         try:
             reader = PyPDF2.PdfReader(data_file)
-            lines = 0
-            for page in reader.pages:
-                for line in page.extract_text().splitlines():
-                    lines += 1
-            logger.info("Parsed %d lines", lines)
+            text = ''.join(page.extract_text() for page in reader.pages)
+            for line in text.splitlines():
+                fuel_type = None
+                if line.startswith('Αμόλυβδη 95 οκτ.'):
+                    fuel_type = FuelType.UNLEADED_95
+                elif line.startswith('Αμόλυβδη 100 οκτ.'):
+                    fuel_type = FuelType.UNLEADED_100
+                elif line.startswith('Super'):
+                    fuel_type = FuelType.SUPER
+                elif line.startswith('Diesel Κίνησης'):
+                    fuel_type = FuelType.DIESEL
+                elif line.startswith('Diesel Θέρμανσης Κατ΄οίκον'):
+                    fuel_type = FuelType.DIESEL_HEATING
+                elif line.startswith('Υγραέριο κίνησης (Autogas)'):
+                    fuel_type = FuelType.GAS
+                if fuel_type:
+                    try:
+                        number_of_stations, price = line.strip().split()[-2:]
+                        price = decimal.Decimal(price.replace(',', '.'))
+                        number_of_stations = int(number_of_stations.replace('.', ''))
+                        data.append((date, fuel_type, number_of_stations, price))
+                    except (ValueError, decimal.DecimalException):
+                        continue
         except PyPDF2.errors.PdfReadError:
             logger.error("Error parsing PDF file %s", data_file.name, exc_info=True)
+
+        with (DATA_PATH / 'data.csv').open('wt') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            csv_writer.writerow(('date', 'fuel_type', 'number_of_stations', 'price'))
+            for date, fuel_type, number_of_stations, price in data:
+                csv_writer.writerow((date.isoformat(), fuel_type.name, number_of_stations, price))
 
 
 if __name__ == '__main__':
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-    fetch_data()
+    parse_files()
