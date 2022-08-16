@@ -66,7 +66,7 @@ def parse_files():
             data += file_data
 
     with (pathlib.Path(DATA_PATH) / 'data.json').open('wt') as f:
-        f.write(json.dumps(data, default=str))
+        f.write(json.dumps(data, indent=4, default=str))
 
     logger.info("Data parsed")
 
@@ -92,6 +92,7 @@ def extract_data(
 
     data = []
     for line in text.splitlines():
+        line = ' '.join(line.strip().split())
         fuel_type = None
         if line.startswith('Αμόλυβδη 95 οκτ.'):
             fuel_type = enums.FuelType.UNLEADED_95
@@ -99,11 +100,11 @@ def extract_data(
             fuel_type = enums.FuelType.UNLEADED_100
         elif line.startswith('Super'):
             fuel_type = enums.FuelType.SUPER
-        elif line.startswith('Diesel Κίνησης'):
+        elif line.startswith('Diesel Κί'):
             fuel_type = enums.FuelType.DIESEL
         elif line.startswith('Diesel Θέρμανσης Κατ΄οίκον'):
             fuel_type = enums.FuelType.DIESEL_HEATING
-        elif line.startswith('Υγραέριο κίνησης (Autogas)'):
+        elif line.startswith('Υγραέριο κίνησης (A'):
             fuel_type = enums.FuelType.GAS
         if fuel_type:
             try:
