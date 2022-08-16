@@ -2,7 +2,7 @@
 name = "fuelpricesgr"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Kostas Kokkoros <mavroprovato@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
