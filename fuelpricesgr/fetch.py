@@ -3,7 +3,6 @@
 import csv
 import datetime
 import decimal
-import enum
 import logging
 import pathlib
 import re
@@ -15,6 +14,8 @@ import PyPDF2
 import PyPDF2.errors
 import requests
 
+from fuelpricesgr import enums
+
 # The base URL
 BASE_URL = 'http://www.fuelprices.gr'
 # The base path where the files will be stored
@@ -24,97 +25,10 @@ DATA_PATH = pathlib.Path(__file__).parent.parent / 'var'
 logger = logging.getLogger(__name__)
 
 
-class FuelData(enum.Enum):
-    """Enumeration for the different types of fuel data.
-    """
-    WEEKLY = 'deltia.view',
-    DAILY_COUNTRY = 'deltia_d.view',
-    DAILY_PREFECTURE = 'deltia_dn.view',
-
-    def __init__(self, page: str):
-        """Creates the enum.
-
-        :param page: The page path, relative to the base URL, from which we will fetch the data.
-        """
-        self.page = page
-
-
-class FuelType(enum.Enum):
-    UNLEADED_95 = 'Αμόλυβδη 95'
-    UNLEADED_100 = 'Αμόλυβδη 100'
-    SUPER = 'Super'
-    DIESEL = 'Diesel'
-    DIESEL_HEATING = 'Diesel'
-    GAS = 'Υγραέριο'
-
-
-class Prefecture(enum.Enum):
-    """Enumeration for greek prefectures
-    """
-    ATTICA = "ΑΤΤΙΚΗΣ",
-    AETOLIA_ACARNANIA = "ΑΙΤΩΛΙΑΣ ΚΑΙ ΑΚΑΡΝΑΝΙΑΣ",
-    ARGOLIS = "ΑΡΓΟΛΙΔΟΣ",
-    ARKADIAS = "ΑΡΚΑΔΙΑΣ",
-    ARTA = "ΑΡΤΗΣ",
-    ACHAEA = "ΑΧΑΪΑΣ",
-    BOEOTIA = "ΒΟΙΩΤΙΑΣ",
-    GREVENA = "ΓΡΕΒΕΝΩΝ",
-    DRAMA = "ΔΡΑΜΑΣ",
-    DODECANESE = "ΔΩΔΕΚΑΝΗΣΟΥ",
-    EVROS = "ΕΒΡΟΥ",
-    EUBOEA = "ΕΥΒΟΙΑΣ",
-    EVRYTANIA = "ΕΥΡΥΤΑΝΙΑΣ",
-    ZAKYNTHOS = "ΖΑΚΥΝΘΟΥ",
-    ELIS = "ΗΛΕΙΑΣ",
-    IMATHIA = "ΗΜΑΘΙΑΣ",
-    HERAKLION = "ΗΡΑΚΛΕΙΟΥ",
-    THESPROTIA = "ΘΕΣΠΡΩΤΙΑΣ",
-    THESSALONIKI = "ΘΕΣΣΑΛΟΝΙΚΗΣ",
-    IOANNINA = "ΙΩΑΝΝΙΝΩΝ",
-    KAVALA = "ΚΑΒΑΛΑΣ",
-    KARDITSA = "ΚΑΡΔΙΤΣΗΣ",
-    KASTORIA = "ΚΑΣΤΟΡΙΑΣ",
-    KERKYRA = "ΚΕΡΚΥΡΑΣ",
-    CEPHALONIA = "ΚΕΦΑΛΛΗΝΙΑΣ",
-    KILKIS = "ΚΙΛΚΙΣ",
-    KOZANI = "ΚΟΖΑΝΗΣ",
-    CORINTHIA = "ΚΟΡΙΝΘΙΑΣ",
-    CYCLADES = "ΚΥΚΛΑΔΩΝ",
-    LACONIA = "ΛΑΚΩΝΙΑΣ",
-    LARISSA = "ΛΑΡΙΣΗΣ",
-    LASITHI = "ΛΑΣΙΘΙΟΥ",
-    LESBOS = "ΛΕΣΒΟΥ",
-    LEFKADA = "ΛΕΥΚΑΔΟΣ",
-    MAGNESIA = "ΜΑΓΝΗΣΙΑΣ",
-    MESSENIA = "ΜΕΣΣΗΝΙΑΣ",
-    XANTHI = "ΞΑΝΘΗΣ",
-    PELLA = "ΠΕΛΛΗΣ",
-    PIERIA = "ΠΙΕΡΙΑΣ",
-    PREVEZA = "ΠΡΕΒΕΖΗΣ",
-    RETHYMNO = "ΡΕΘΥΜΝΗΣ",
-    RHODOPE = "ΡΟΔΟΠΗΣ",
-    SAMOS = "ΣΑΜΟΥ",
-    SERRES = "ΣΕΡΡΩΝ",
-    TRIKALA = "ΤΡΙΚΑΛΩΝ",
-    PHTHIOTIS = "ΦΘΙΩΤΙΔΟΣ",
-    FLORINA = "ΦΛΩΡΙΝΗΣ",
-    PHOCIS = "ΦΩΚΙΔΟΣ",
-    CHALKIDIKI = "ΧΑΛΚΙΔΙΚΗΣ",
-    CHANIA = "ΧΑΝΙΩΝ",
-    CHIOS = "ΧΙΟΥ",
-
-    def __init__(self, display_name: str):
-        """Creates the enum.
-
-        :param display_name: The name of the prefecture in Greek.
-        """
-        self.display_name = display_name
-
-
 def fetch_data():
     """Fetch data from the site.
     """
-    for fuel_data in FuelData:
+    for fuel_data in enums.FuelData:
         response = requests.get(f"{BASE_URL}/{fuel_data.page}")
         soup = bs4.BeautifulSoup(response.text, 'html.parser')
         for link in soup.find_all('a'):
@@ -137,9 +51,9 @@ def parse_files():
     data = []
     for data_file in pathlib.Path(DATA_PATH).rglob('*.pdf'):
         logger.info("Processing PDF file %s", data_file.name)
-        fuel_data = FuelData[data_file.parent.name]
+        fuel_data = enums.FuelData[data_file.parent.name]
         # TODO: remove this
-        if fuel_data != FuelData.DAILY_COUNTRY:
+        if fuel_data != enums.FuelData.DAILY_COUNTRY:
             continue
         result = re.search(r'(\d{2})_(\d{2})_(\d{4})', data_file.stem)
         if not result:
@@ -152,17 +66,17 @@ def parse_files():
             for line in text.splitlines():
                 fuel_type = None
                 if line.startswith('Αμόλυβδη 95 οκτ.'):
-                    fuel_type = FuelType.UNLEADED_95
+                    fuel_type = enums.FuelType.UNLEADED_95
                 elif line.startswith('Αμόλυβδη 100 οκτ.'):
-                    fuel_type = FuelType.UNLEADED_100
+                    fuel_type = enums.FuelType.UNLEADED_100
                 elif line.startswith('Super'):
-                    fuel_type = FuelType.SUPER
+                    fuel_type = enums.FuelType.SUPER
                 elif line.startswith('Diesel Κίνησης'):
-                    fuel_type = FuelType.DIESEL
+                    fuel_type = enums.FuelType.DIESEL
                 elif line.startswith('Diesel Θέρμανσης Κατ΄οίκον'):
-                    fuel_type = FuelType.DIESEL_HEATING
+                    fuel_type = enums.FuelType.DIESEL_HEATING
                 elif line.startswith('Υγραέριο κίνησης (Autogas)'):
-                    fuel_type = FuelType.GAS
+                    fuel_type = enums.FuelType.GAS
                 if fuel_type:
                     try:
                         number_of_stations, price = line.strip().split()[-2:]
