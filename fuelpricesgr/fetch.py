@@ -95,8 +95,15 @@ def parse_files():
                 csv_writer.writerow((date.isoformat(), fuel_type.name, number_of_stations, price))
 
 
-if __name__ == '__main__':
+def main():
+    """Entry point of the script.
+    """
     logging.basicConfig(
         stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s %(message)s'
     )
     fetch_data()
+    parse_files()
+
+
+if __name__ == '__main__':
+    main()
