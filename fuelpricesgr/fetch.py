@@ -2,6 +2,7 @@
 """
 import datetime
 import decimal
+import json
 import logging
 import pathlib
 import re
@@ -63,6 +64,9 @@ def parse_files():
         file_data = extract_data(fuel_data=fuel_data, date=date, data_file=data_file)
         if file_data:
             data += file_data
+
+    with (pathlib.Path(DATA_PATH) / 'data.json').open('wt') as f:
+        f.write(json.dumps(data, default=str))
 
     logger.info("Data parsed")
 
@@ -134,7 +138,7 @@ def main():
     """Entry point of the script.
     """
     logging.basicConfig(
-        stream=sys.stdout, level=logging.WARNING, format='%(asctime)s %(name)s %(levelname)s %(message)s'
+        stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s %(message)s'
     )
     fetch_data()
     parse_files()
