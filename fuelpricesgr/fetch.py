@@ -96,5 +96,7 @@ def parse_files():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-    parse_files()
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s %(message)s'
+    )
+    fetch_data()
