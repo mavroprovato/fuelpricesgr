@@ -15,12 +15,10 @@ import PyPDF2
 import PyPDF2.errors
 import requests
 
-from fuelpricesgr import enums
+from fuelpricesgr import enums, settings
 
 # The base URL
 BASE_URL = 'http://www.fuelprices.gr'
-# The base path where the files will be stored
-DATA_PATH = pathlib.Path(__file__).parent.parent / 'var'
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -38,7 +36,7 @@ def fetch_data():
                 file_link = link['href'].replace(' ', '')
                 file_link = re.sub(r'\(\d\)', '', file_link)
                 file_link = re.sub(r'-\?+', '', file_link)
-                file_path = DATA_PATH / fuel_data.name / file_link[file_link.rfind('/') + 1:]
+                file_path = settings.DATA_PATH / fuel_data.name / file_link[file_link.rfind('/') + 1:]
                 if not file_path.exists():
                     file_path.parent.mkdir(parents=True, exist_ok=True)
                     file_url = f"{BASE_URL}/{file_link}"
@@ -53,7 +51,7 @@ def parse_files():
     """
     logger.info("Parsing data")
     data = []
-    for data_file in pathlib.Path(DATA_PATH).rglob('*.pdf'):
+    for data_file in pathlib.Path(settings.DATA_PATH).rglob('*.pdf'):
         logger.info("Processing PDF file %s", data_file.name)
         fuel_data = enums.FuelData[data_file.parent.name]
         result = re.search(r'(\d{2})_(\d{2})_(\d{4})', data_file.stem)
@@ -65,7 +63,7 @@ def parse_files():
         if file_data:
             data += file_data
 
-    with (pathlib.Path(DATA_PATH) / 'data.json').open('wt') as f:
+    with (pathlib.Path(settings.DATA_PATH) / 'data.json').open('wt') as f:
         f.write(json.dumps(data, indent=4, default=str))
 
     logger.info("Data parsed")
