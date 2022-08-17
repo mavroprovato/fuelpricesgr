@@ -93,30 +93,32 @@ def extract_data(
     data = []
     for line in text.splitlines():
         line = ' '.join(line.strip().split())
-        fuel_type = None
-        if line.startswith('Αμόλυβδη 95 οκτ.'):
-            fuel_type = enums.FuelType.UNLEADED_95
-        elif line.startswith('Αμόλυβδη 100 οκτ.'):
-            fuel_type = enums.FuelType.UNLEADED_100
-        elif line.startswith('Super'):
-            fuel_type = enums.FuelType.SUPER
-        elif line.startswith('Diesel Κί'):
-            fuel_type = enums.FuelType.DIESEL
-        elif line.startswith('Diesel Θέρμανσης Κατ΄οίκον'):
-            fuel_type = enums.FuelType.DIESEL_HEATING
-        elif line.startswith('Υγραέριο κίνησης (A'):
-            fuel_type = enums.FuelType.GAS
-        if fuel_type:
-            try:
-                number_of_stations, price = line.strip().split()[-2:]
-                price = decimal.Decimal(price.replace(',', '.'))
-                number_of_stations = int(number_of_stations.replace('.', ''))
 
-                data.append({
-                    'date': date, 'fuel_type': fuel_type, 'number_of_stations': number_of_stations, 'price': price
-                })
-            except (ValueError, decimal.DecimalException):
-                continue
+        if match := re.search(r'^Αμόλ[υσ]βδ[ηθ] 95 οκ[τη]\.', line):
+            fuel_type = enums.FuelType.UNLEADED_95
+        elif match := re.search(r'^Αμόλ[υσ]βδ[ηθ] 100 οκ ?[τη]\.', line):
+            fuel_type = enums.FuelType.UNLEADED_100
+        elif match := re.search(r'^Super', line):
+            fuel_type = enums.FuelType.SUPER
+        elif match := re.search(r'^Diesel Κί ?ν[ηθ][σζς][ηθ] ?[ςσ]', line):
+            fuel_type = enums.FuelType.DIESEL
+        elif match := re.search(r'^Diesel Θ[έζ]ρμαν[σς][ηθ][ςσ] Κατ΄οίκον', line):
+            fuel_type = enums.FuelType.DIESEL_HEATING
+        elif match := re.search(r'^Υγρα[έζ]ριο κί ?ν[ηθ] ?[σζ] ?[ηθ]ς \(A ?ut ?o ?g ?a ?s ?\)', line):
+            fuel_type = enums.FuelType.GAS
+        else:
+            continue
+
+        line = line[match.span(0)[1] + 1:]
+        try:
+            number_of_stations, price = line.strip().split()[-2:]
+            price = decimal.Decimal(price.replace(',', '.'))
+            number_of_stations = int(number_of_stations.replace('.', ''))
+            data.append({
+                'date': date, 'fuel_type': fuel_type, 'number_of_stations': number_of_stations, 'price': price
+            })
+        except (ValueError, decimal.DecimalException):
+            continue
 
     return data
 
@@ -139,7 +141,7 @@ def main():
     """Entry point of the script.
     """
     logging.basicConfig(
-        stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s %(message)s'
+        stream=sys.stdout, level=logging.WARNING, format='%(asctime)s %(name)s %(levelname)s %(message)s'
     )
     fetch_data()
     parse_files()
