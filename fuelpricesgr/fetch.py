@@ -96,29 +96,46 @@ def extract_data(
 
         if match := re.search(r'^Αμόλ[υσ]βδ[ηθ] 95 οκ[τη]\.', line):
             fuel_type = enums.FuelType.UNLEADED_95
-        elif match := re.search(r'^Αμόλ[υσ]βδ[ηθ] 100 οκ ?[τη]\.', line):
+        elif match := re.search(r'^Αμόλ[υσ]βδ[ηθ] 100 ο ?κ ?[τη]\.', line):
             fuel_type = enums.FuelType.UNLEADED_100
         elif match := re.search(r'^Super', line):
             fuel_type = enums.FuelType.SUPER
         elif match := re.search(r'^Diesel Κί ?ν[ηθ][σζς][ηθ] ?[ςσ]', line):
             fuel_type = enums.FuelType.DIESEL
-        elif match := re.search(r'^Diesel Θ[έζ]ρμαν[σς][ηθ][ςσ] Κατ΄οίκον', line):
+        elif match := re.search(r'^Diesel Θ[έζ]ρμαν[ζσς][ηθ][ςσ] Κα[τη]΄οίκον', line):
             fuel_type = enums.FuelType.DIESEL_HEATING
-        elif match := re.search(r'^Υγρα[έζ]ριο κί ?ν[ηθ] ?[σζ] ?[ηθ]ς \(A ?ut ?o ?g ?a ?s ?\)', line):
+        elif match := re.search(r'^Υγρα[έζ]ριο κί ?ν[ηθ] ?[σςζ] ?[ηθ][ςσ]', line):
             fuel_type = enums.FuelType.GAS
         else:
             continue
 
         line = line[match.span(0)[1] + 1:]
+        parts = line.strip().split()
+        if len(parts) == 2:
+            number_of_stations_str = parts[0]
+            price_str = parts[1]
+        elif len(parts) == 3:
+            if parts[1].find(','):
+                number_of_stations_str = parts[0]
+                price_str = parts[1] + parts[2]
+            elif parts[1].find('.'):
+                number_of_stations_str = parts[0] + parts[1]
+                price_str = parts[2]
+            else:
+                logger.error("Could not get prices for file %s and fuel type %s", data_file, fuel_type)
+                continue
+        else:
+            logger.error("No price data for file %s and fuel type %s", data_file, fuel_type)
+            continue
+
         try:
-            number_of_stations, price = line.strip().split()[-2:]
-            price = decimal.Decimal(price.replace(',', '.'))
-            number_of_stations = int(number_of_stations.replace('.', ''))
+            number_of_stations = int(number_of_stations_str.replace('.', ''))
+            price = decimal.Decimal(price_str.replace(',', '.'))
             data.append({
                 'date': date, 'fuel_type': fuel_type, 'number_of_stations': number_of_stations, 'price': price
             })
         except (ValueError, decimal.DecimalException):
-            continue
+            logger.error("Could not parse prices for file %s and fuel type %s", data_file, fuel_type)
 
     return data
 
