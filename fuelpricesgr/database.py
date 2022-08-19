@@ -5,6 +5,7 @@ import datetime
 import decimal
 import logging
 import sqlite3
+import typing
 
 from . import enums, settings
 
@@ -72,19 +73,26 @@ class Database:
                 'date': date, 'fuel_type': fuel_type.name, 'number_of_stations': number_of_stations, 'price': str(price)
             })
 
-    def daily_country_data(self, start_date: datetime.date | None = None, end_date: datetime.date | None = None):
+    def daily_country_data(
+            self, start_date: datetime.date | None = None, end_date: datetime.date | None = None) -> typing.List[dict]:
+        """Returns the daily country data. The data are sorted by date descending.
+
+        :param start_date: The start date.
+        :param end_date: The end date.
+        :return: The daily country data.
+        """
         with contextlib.closing(self.conn.cursor()) as cursor:
             sql = "SELECT date, fuel_type, number_of_stations, price FROM daily_country"
             params = {}
             if start_date or end_date:
                 sql += " WHERE"
             if start_date:
-                sql += " start_date = :start_date"
+                sql += " date >= :start_date"
                 params['start_date'] = start_date
             if end_date:
                 if start_date:
                     sql += " AND"
-                sql += " end_date = :end_date"
+                sql += " date <= :end_date"
                 params['end_date'] = end_date
             sql += " ORDER BY date DESC"
             cursor.execute(sql, params)
