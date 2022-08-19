@@ -2,12 +2,13 @@
 """
 import datetime
 import itertools
+import typing
 
-from fastapi import FastAPI
+import fastapi
 
 from fuelpricesgr import database
 
-app = FastAPI()
+app = fastapi.FastAPI()
 
 
 @app.get("/")
@@ -18,9 +19,14 @@ async def index() -> dict:
 
 
 @app.get("/data/dailyCountry")
-async def daily_country_data(start_date: datetime.date | None = None, end_date: datetime.date | None = None) -> list:
+async def daily_country_data(
+        start_date: datetime.date | None = datetime.date.min, end_date: datetime.date | None = datetime.date.today()
+) -> typing.List[dict]:
     """Returns daily country averages.
     """
+    if start_date > end_date:
+        raise fastapi.HTTPException(status_code=400, detail="Start date must be before end date")
+
     with database.Database() as db:
         return [
             {
