@@ -15,7 +15,7 @@ import PyPDF2
 import PyPDF2.errors
 import requests
 
-from fuelpricesgr import enums, settings
+from fuelpricesgr import database, enums, settings
 
 # The base URL
 BASE_URL = 'http://www.fuelprices.gr'
@@ -50,27 +50,28 @@ def parse_files():
     """Parse the files and extract fuel prices
     """
     logger.info("Parsing data")
-    data = []
-    for data_file in pathlib.Path(settings.DATA_PATH).rglob('*.pdf'):
-        logger.info("Processing PDF file %s", data_file.name)
-        fuel_data = enums.FuelData[data_file.parent.name]
-        result = re.search(r'(\d{2})_(\d{2})_(\d{4})', data_file.stem)
-        if not result:
-            logger.warning("Could not find date in file name")
-            continue
-        date = datetime.date(day=int(result[1]), month=int(result[2]), year=int(result[3]))
-        file_data = extract_data(fuel_data=fuel_data, date=date, data_file=data_file)
-        if file_data:
-            data += file_data
-
-    with (pathlib.Path(settings.DATA_PATH) / 'data.json').open('wt') as f:
-        f.write(json.dumps(data, indent=4, default=str))
+    with database.Database() as db:
+        for data_file in pathlib.Path(settings.DATA_PATH).rglob('*.pdf'):
+            logger.info("Processing PDF file %s", data_file.name)
+            fuel_data = enums.FuelData[data_file.parent.name]
+            result = re.search(r'(\d{2})_(\d{2})_(\d{4})', data_file.stem)
+            if not result:
+                logger.warning("Could not find date in file name")
+                continue
+            date = datetime.date(day=int(result[1]), month=int(result[2]), year=int(result[3]))
+            file_data = extract_data(fuel_data=fuel_data, date=date, data_file=data_file)
+            for row in file_data:
+                db.insert_daily_country_data(
+                    date=date, fuel_type=row['fuel_type'], number_of_stations=row['number_of_stations'],
+                    price=row['price']
+                )
+            db.save()
 
     logger.info("Data parsed")
 
 
 def extract_data(
-        fuel_data: enums.FuelData, date: datetime.date, data_file: pathlib.Path) -> typing.Optional[typing.List[dict]]:
+        fuel_data: enums.FuelData, date: datetime.date, data_file: pathlib.Path) -> typing.List[dict]:
     """Extract fuel data from a PDF file.
 
     :param fuel_data: The type of fuel data.
@@ -81,12 +82,12 @@ def extract_data(
     logger.info("Parsing file %s", data_file)
     if fuel_data != enums.FuelData.DAILY_COUNTRY:
         logger.warning("Parsing files of type %s not implemented yet", fuel_data)
-        return None
+        return []
 
     text = pdf_to_text(data_file)
     if not text:
         logger.warning("Cannot extract text from PDF file %s", data_file)
-        return None
+        return []
 
     data = []
     for line in text.splitlines():
@@ -156,7 +157,7 @@ def main():
     """Entry point of the script.
     """
     logging.basicConfig(
-        stream=sys.stdout, level=logging.WARNING, format='%(asctime)s %(name)s %(levelname)s %(message)s'
+        stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s %(message)s'
     )
     fetch_data()
     parse_files()
