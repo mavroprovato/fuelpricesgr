@@ -72,5 +72,27 @@ class Database:
                 'date': date, 'fuel_type': fuel_type.name, 'number_of_stations': number_of_stations, 'price': str(price)
             })
 
+    def daily_country_data(self, start_date: datetime.date | None = None, end_date: datetime.date | None = None):
+        with contextlib.closing(self.conn.cursor()) as cursor:
+            sql = "SELECT date, fuel_type, number_of_stations, price FROM daily_country"
+            params = {}
+            if start_date or end_date:
+                sql += " WHERE"
+            if start_date:
+                sql += " start_date = :start_date"
+                params['start_date'] = start_date
+            if end_date:
+                if start_date:
+                    sql += " AND"
+                sql += " end_date = :end_date"
+                params['end_date'] = end_date
+            sql += " ORDER BY date DESC"
+            cursor.execute(sql, params)
+            column_names = [col[0] for col in cursor.description]
+
+            return [dict(zip(column_names, row)) for row in cursor.fetchall()]
+
     def save(self):
+        """Save pending changes to the database.
+        """
         self.conn.commit()
