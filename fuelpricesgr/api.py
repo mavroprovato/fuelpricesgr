@@ -27,7 +27,7 @@ async def daily_country_data(
     if start_date > end_date:
         raise fastapi.HTTPException(status_code=400, detail="Start date must be before end date")
 
-    with database.Database() as db:
+    with database.Database(read_only=True) as db:
         return [
             {
                 'date': date,

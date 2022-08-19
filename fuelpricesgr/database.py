@@ -18,13 +18,15 @@ class Database:
     """
     DB_FILE = settings.DATA_PATH / 'db.sqlite'
 
-    def __init__(self):
+    def __init__(self, read_only=True):
         """Create the database connection.
+
+        :param read_only: True if the connection should be read only.
         """
         if not self.DB_FILE.exists():
             logger.info("Database does not exist, creating")
             self._create_db()
-        self.conn = None
+        self.conn = sqlite3.connect(self.DB_FILE.as_uri() + "?mode=ro" if read_only else "")
 
     def _create_db(self):
         """Create the database.
@@ -47,8 +49,6 @@ class Database:
         self.conn.close()
 
     def __enter__(self):
-        self.conn = sqlite3.connect(self.DB_FILE)
-
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
