@@ -26,7 +26,7 @@ class Database:
         if not self.DB_FILE.exists():
             logger.info("Database does not exist, creating")
             self._create_db()
-        self.conn = sqlite3.connect(self.DB_FILE.as_uri() + "?mode=ro" if read_only else "")
+        self.conn = sqlite3.connect(f"{self.DB_FILE.as_uri()}{'?mode=ro' if read_only else ''}")
 
     def _create_db(self):
         """Create the database.

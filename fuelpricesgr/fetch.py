@@ -49,7 +49,7 @@ def parse_files():
     """Parse the files and extract fuel prices
     """
     logger.info("Parsing data")
-    with database.Database() as db:
+    with database.Database(read_only=False) as db:
         for data_file in pathlib.Path(settings.DATA_PATH).rglob('*.pdf'):
             logger.info("Processing PDF file %s", data_file.name)
             fuel_data = enums.FuelData[data_file.parent.name]
