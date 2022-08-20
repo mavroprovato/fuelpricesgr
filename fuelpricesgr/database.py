@@ -18,7 +18,7 @@ class Database:
     """
     DB_FILE = settings.DATA_PATH / 'db.sqlite'
 
-    def __init__(self, read_only=True):
+    def __init__(self, read_only=False):
         """Create the database connection.
 
         :param read_only: True if the connection should be read only.
