@@ -69,7 +69,7 @@ def extract_data(fuel_data_type: enums.FuelDataType, date: datetime.date, data: 
             fuel_type = enums.FuelType.DIESEL
         elif match := re.search(r'^Diesel Θ[έζ]ρμαν[ζσς][ηθ][ςσ] Κα[τη]΄οίκον', line):
             fuel_type = enums.FuelType.DIESEL_HEATING
-        elif match := re.search(r'^Υγρα[έζ]ριο κί ?ν[ηθ] ?[σςζ] ?[ηθ][ςσ]', line):
+        elif match := re.search(r'^Υγρα[έζ]ριο κί ?ν[ηθ] ?[σςζ] ?[ηθ][ςσ] \(A ?ut ?o ?g ?a ?s ?\)', line):
             fuel_type = enums.FuelType.GAS
         else:
             continue
@@ -90,19 +90,27 @@ def extract_data(fuel_data_type: enums.FuelDataType, date: datetime.date, data: 
                 logger.error("Could not get prices for fuel data type %s, %s and fuel type %s", fuel_data_type, date,
                              fuel_type)
                 continue
+        elif len(parts) == 4:
+            number_of_stations_str = parts[0] + parts[1]
+            price_str = parts[2] + parts[3]
         else:
             logger.error("No price data for fuel data type %s, %s and fuel type %s", fuel_data_type, date, fuel_type)
             continue
 
         try:
-            number_of_stations = int(number_of_stations_str.replace('.', ''))
-            price = decimal.Decimal(price_str.replace(',', '.'))
-            data.append({
-                'fuel_type': fuel_type, 'number_of_stations': number_of_stations, 'price': price
-            })
+            number_of_stations = None
+            if number_of_stations_str != '-':
+                number_of_stations = int(number_of_stations_str.replace('.', ''))
+            price = None
+            if price_str not in ('-', '#ΔΙΑΙΡ./0!'):
+                price = decimal.Decimal(price_str.replace(',', '.'))
+            if number_of_stations or price:
+                data.append({
+                    'fuel_type': fuel_type, 'number_of_stations': number_of_stations, 'price': price
+                })
         except (ValueError, decimal.DecimalException):
             logger.error("Could not parse prices for fuel data type %s, %s and fuel type %s", fuel_data_type, date,
-                         fuel_type)
+                         fuel_type, exc_info=True)
 
     return data
 
