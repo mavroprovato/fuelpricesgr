@@ -10,6 +10,9 @@ from fuelpricesgr import database
 
 app = fastapi.FastAPI()
 
+# The maximum number of days to return from the API
+MAX_DAYS = 100
+
 
 @app.get("/")
 async def index() -> dict:
@@ -20,12 +23,22 @@ async def index() -> dict:
 
 @app.get("/data/dailyCountry")
 async def daily_country_data(
-        start_date: datetime.date | None = datetime.date.min, end_date: datetime.date | None = datetime.date.today()
-) -> typing.List[dict]:
+        start_date: datetime.date | None = None, end_date: datetime.date | None = None) -> typing.List[dict]:
     """Returns daily country averages.
     """
-    if start_date > end_date:
+    # Make sure that we don't get more days than MAX_DAYS
+    if start_date is None and end_date is None:
+        end_date = datetime.date.today()
+        start_date = end_date - datetime.timedelta(days=MAX_DAYS)
+    elif start_date is None:
+        start_date = end_date - datetime.timedelta(days=MAX_DAYS)
+    elif end_date is None:
+        end_date = start_date + datetime.timedelta(days=MAX_DAYS)
+    elif start_date > end_date:
         raise fastapi.HTTPException(status_code=400, detail="Start date must be before end date")
+    else:
+        days = (end_date - start_date).days
+        start_date = end_date - datetime.timedelta(days=min(days, MAX_DAYS))
 
     with database.Database(read_only=True) as db:
         return [
