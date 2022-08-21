@@ -89,7 +89,7 @@ class Database:
 
     def daily_country_data(
             self, start_date: datetime.date | None = None, end_date: datetime.date | None = None) -> typing.List[dict]:
-        """Returns the daily country data. The data are sorted by date descending.
+        """Returns the daily country data. The data are sorted by date.
 
         :param start_date: The start date.
         :param end_date: The end date.
@@ -108,7 +108,7 @@ class Database:
                     sql += " AND"
                 sql += " date <= :end_date"
                 params['end_date'] = end_date
-            sql += " ORDER BY date DESC"
+            sql += " ORDER BY date"
             cursor.execute(sql, params)
             column_names = [col[0] for col in cursor.description]
 

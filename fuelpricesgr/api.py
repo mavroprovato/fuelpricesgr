@@ -5,13 +5,19 @@ import itertools
 import typing
 
 import fastapi
+import fastapi.middleware.cors
 
 from fuelpricesgr import database
 
 app = fastapi.FastAPI()
+app.add_middleware(
+    fastapi.middleware.cors.CORSMiddleware,
+    allow_origins=["http://127.0.0.1:8080", "http://localhost:8080"],
+)
+
 
 # The maximum number of days to return from the API
-MAX_DAYS = 100
+MAX_DAYS = 365
 
 
 @app.get("/")
