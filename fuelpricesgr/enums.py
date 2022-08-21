@@ -3,7 +3,7 @@
 import enum
 
 
-class FuelData(enum.Enum):
+class FuelDataType(enum.Enum):
     """Enumeration for the different types of fuel data.
     """
     WEEKLY = 'deltia.view',

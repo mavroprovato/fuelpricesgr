@@ -2,12 +2,12 @@
 """
 import datetime
 import decimal
+import io
 import logging
-import pathlib
 import re
-import shutil
 import sys
 import typing
+import urllib.parse
 
 import bs4
 import PyPDF2
@@ -23,69 +23,36 @@ BASE_URL = 'http://www.fuelprices.gr'
 logger = logging.getLogger(__name__)
 
 
-def fetch_data():
-    """Fetch data from the site.
+def pdf_to_text(pdf_file: bytes) -> typing.Optional[str]:
+    """Extract text from a PDF file.
+
+    :param pdf_file: The PRF file.
+    :return: The text, or None if the file cannot be parsed.
     """
-    logger.info("Fetching missing data from the site")
-    for fuel_data in enums.FuelData:
-        response = requests.get(f"{BASE_URL}/{fuel_data.page}")
-        soup = bs4.BeautifulSoup(response.text, 'html.parser')
-        for link in soup.find_all('a'):
-            if link.has_attr('href') and link['href'].startswith('./files'):
-                file_link = link['href'].replace(' ', '')
-                file_link = re.sub(r'\(\d\)', '', file_link)
-                file_link = re.sub(r'-\?+', '', file_link)
-                file_path = settings.DATA_PATH / fuel_data.name / file_link[file_link.rfind('/') + 1:]
-                if not file_path.exists():
-                    file_path.parent.mkdir(parents=True, exist_ok=True)
-                    file_url = f"{BASE_URL}/{file_link}"
-                    logger.info(f"Downloading file %s", file_url)
-                    with requests.get(file_url, stream=True) as r, file_path.open('wb') as f:
-                        shutil.copyfileobj(r.raw, f)
-    logger.info("Missing data fetched")
+    try:
+        reader = PyPDF2.PdfReader(io.BytesIO(pdf_file))
+
+        return ''.join(page.extract_text() for page in reader.pages)
+    except PyPDF2.errors.PdfReadError:
+        logger.error("Error parsing PDF data", exc_info=True)
 
 
-def parse_files():
-    """Parse the files and extract fuel prices
-    """
-    logger.info("Parsing data")
-    with database.Database(read_only=False) as db:
-        for data_file in pathlib.Path(settings.DATA_PATH).rglob('*.pdf'):
-            logger.info("Processing PDF file %s", data_file.name)
-            fuel_data = enums.FuelData[data_file.parent.name]
-            result = re.search(r'(\d{2})_(\d{2})_(\d{4})', data_file.stem)
-            if not result:
-                logger.warning("Could not find date in file name")
-                continue
-            date = datetime.date(day=int(result[1]), month=int(result[2]), year=int(result[3]))
-            file_data = extract_data(fuel_data=fuel_data, date=date, data_file=data_file)
-            for row in file_data:
-                db.insert_daily_country_data(
-                    date=date, fuel_type=row['fuel_type'], number_of_stations=row['number_of_stations'],
-                    price=row['price']
-                )
-            db.save()
-
-    logger.info("Data parsed")
-
-
-def extract_data(
-        fuel_data: enums.FuelData, date: datetime.date, data_file: pathlib.Path) -> typing.List[dict]:
+def extract_data(fuel_data_type: enums.FuelDataType, date: datetime.date, data: bytes) -> typing.List[dict]:
     """Extract fuel data from a PDF file.
 
-    :param fuel_data: The type of fuel data.
+    :param fuel_data_type: The type of fuel data.
     :param date: The date of the file.
-    :param data_file: The file.
+    :param data: The PDF file data.
     :return: The extracted data.
     """
-    logger.info("Parsing file %s", data_file)
-    if fuel_data != enums.FuelData.DAILY_COUNTRY:
-        logger.warning("Parsing files of type %s not implemented yet", fuel_data)
+    logger.info("Processing data for fuel data type %s and date %s", fuel_data_type, date)
+    if fuel_data_type != enums.FuelDataType.DAILY_COUNTRY:
+        logger.warning("Parsing files of type %s not implemented yet", fuel_data_type)
         return []
 
-    text = pdf_to_text(data_file)
+    text = pdf_to_text(data)
     if not text:
-        logger.warning("Cannot extract text from PDF file %s", data_file)
+        logger.warning("Cannot extract text for fuel data type %s and date %s", fuel_data_type, date)
         return []
 
     data = []
@@ -120,36 +87,70 @@ def extract_data(
                 number_of_stations_str = parts[0] + parts[1]
                 price_str = parts[2]
             else:
-                logger.error("Could not get prices for file %s and fuel type %s", data_file, fuel_type)
+                logger.error("Could not get prices for fuel data type %s, %s and fuel type %s", fuel_data_type, date,
+                             fuel_type)
                 continue
         else:
-            logger.error("No price data for file %s and fuel type %s", data_file, fuel_type)
+            logger.error("No price data for fuel data type %s, %s and fuel type %s", fuel_data_type, date, fuel_type)
             continue
 
         try:
             number_of_stations = int(number_of_stations_str.replace('.', ''))
             price = decimal.Decimal(price_str.replace(',', '.'))
             data.append({
-                'date': date, 'fuel_type': fuel_type, 'number_of_stations': number_of_stations, 'price': price
+                'fuel_type': fuel_type, 'number_of_stations': number_of_stations, 'price': price
             })
         except (ValueError, decimal.DecimalException):
-            logger.error("Could not parse prices for file %s and fuel type %s", data_file, fuel_type)
+            logger.error("Could not parse prices for fuel data type %s, %s and fuel type %s", fuel_data_type, date,
+                         fuel_type)
 
     return data
 
 
-def pdf_to_text(pdf_file: pathlib.Path) -> typing.Optional[str]:
-    """Extract text from a PDF file.
+def process_link(file_link: str, fuel_data_type: enums.FuelDataType, use_file_cache: bool = True):
+    """Process a file link. This function downloads the PDF file if needed, extracts the data from it, and inserts the
+    data to the database.
 
-    :param pdf_file: The PRF file.
-    :return: The text, or None if the file cannot be parsed.
+    :param file_link: The file link.
+    :param fuel_data_type: The fuel data type.
+    :param use_file_cache: True if we are to save the data file to the local storage
+    :return:
     """
+    file_name = file_link[file_link.rfind('/') + 1:]
+    result = re.search(r'(\d{2})_(\d{2})_(\d{4})', file_name)
+    if not result:
+        logger.warning("Could not find date in file name")
+        return
+    date = datetime.date(day=int(result[1]), month=int(result[2]), year=int(result[3]))
     try:
-        reader = PyPDF2.PdfReader(pdf_file)
+        if use_file_cache:
+            file_path = settings.DATA_PATH / fuel_data_type.name / file_name
+            if file_path.exists():
+                logger.info("Loading from local cache")
+                with file_path.open('rb') as f:
+                    file_data = f.read()
+            else:
+                logger.info("Fetching file")
+                response = requests.get(file_link, stream=True)
+                response.raise_for_status()
+                file_path.parent.mkdir(parents=True, exist_ok=True)
+                file_data = response.raw.read()
+                with file_path.open('wb') as f:
+                    f.write(file_data)
+        else:
+            logger.info("Fetching file")
+            response = requests.get(file_link, stream=True)
+            response.raise_for_status()
+            file_data = response.raw.read()
+    except requests.HTTPError:
+        logger.error("Could not fetch link %s", file_link, exc_info=True)
+        return
 
-        return ''.join(page.extract_text() for page in reader.pages)
-    except PyPDF2.errors.PdfReadError:
-        logger.error("Error parsing PDF file %s", pdf_file.name, exc_info=True)
+    data = extract_data(fuel_data_type=fuel_data_type, date=date, data=file_data)
+    with database.Database(read_only=False) as db:
+        for row in data:
+            db.insert_fuel_data(fuel_data_type=fuel_data_type, date=date, data=row)
+        db.save()
 
 
 def main():
@@ -158,8 +159,19 @@ def main():
     logging.basicConfig(
         stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s %(message)s'
     )
-    fetch_data()
-    parse_files()
+    logger.info("Fetching missing data from the site")
+    for fuel_data_type in enums.FuelDataType:
+        page_url = urllib.parse.urljoin(BASE_URL, fuel_data_type.page)
+        logger.info("Processing page %s", page_url)
+        response = requests.get(f"{BASE_URL}/{fuel_data_type.page}")
+        soup = bs4.BeautifulSoup(response.text, 'html.parser')
+        for link in soup.find_all('a'):
+            if link.has_attr('href') and link['href'].startswith('./files'):
+                file_link = link['href'].replace(' ', '')
+                file_link = re.sub(r'\(\d\)', '', file_link)
+                file_link = re.sub(r'-\?+', '', file_link)
+                file_link = urllib.parse.urljoin(BASE_URL, file_link)
+                process_link(file_link=file_link, fuel_data_type=fuel_data_type)
 
 
 if __name__ == '__main__':

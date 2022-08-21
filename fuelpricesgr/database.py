@@ -54,6 +54,20 @@ class Database:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
+    def insert_fuel_data(self, fuel_data_type: enums.FuelDataType, date: datetime.date, data: dict):
+        """Insert fuel data to the database.
+
+        :param fuel_data_type: The fuel data type.
+        :param date: The date for the data.
+        :param data: The data as a dictionary.
+        """
+        match fuel_data_type:
+            case enums.FuelDataType.DAILY_COUNTRY:
+                self.insert_daily_country_data(
+                    date=date, fuel_type=data['fuel_type'], number_of_stations=data['number_of_stations'],
+                    price=data['price']
+                )
+
     def insert_daily_country_data(
             self, date: datetime.date, fuel_type: enums.FuelType, number_of_stations: int = None,
             price: decimal.Decimal = None):
