@@ -1,7 +1,6 @@
 """Module used to fetch data
 """
 import datetime
-import decimal
 import io
 import logging
 import re
@@ -14,7 +13,7 @@ import PyPDF2
 import PyPDF2.errors
 import requests
 
-from fuelpricesgr import database, enums, settings
+from fuelpricesgr import database, enums, extract, settings
 
 # The base URL
 BASE_URL = 'http://www.fuelprices.gr'
@@ -46,8 +45,9 @@ def extract_data(fuel_data_type: enums.FuelDataType, date: datetime.date, data: 
     :return: The extracted data.
     """
     logger.info("Processing data for fuel data type %s and date %s", fuel_data_type, date)
-    if fuel_data_type != enums.FuelDataType.DAILY_COUNTRY:
-        logger.warning("Parsing files of type %s not implemented yet", fuel_data_type)
+    extractor = extract.get_extractor(fuel_data_type=fuel_data_type)
+    if extractor is None:
+        logger.warning("Extractor for type %s has not been implemented", fuel_data_type)
         return []
 
     text = pdf_to_text(data)
@@ -55,64 +55,7 @@ def extract_data(fuel_data_type: enums.FuelDataType, date: datetime.date, data: 
         logger.warning("Cannot extract text for fuel data type %s and date %s", fuel_data_type, date)
         return []
 
-    data = []
-    for line in text.splitlines():
-        line = ' '.join(line.strip().split())
-
-        if match := re.search(r'^Αμόλ[υσ]βδ[ηθ] 95 οκ[τη]\.', line):
-            fuel_type = enums.FuelType.UNLEADED_95
-        elif match := re.search(r'^Αμόλ[υσ]βδ[ηθ] 100 ο ?κ ?[τη]\.', line):
-            fuel_type = enums.FuelType.UNLEADED_100
-        elif match := re.search(r'^Super', line):
-            fuel_type = enums.FuelType.SUPER
-        elif match := re.search(r'^Diesel Κί ?ν[ηθ][σζς][ηθ] ?[ςσ]', line):
-            fuel_type = enums.FuelType.DIESEL
-        elif match := re.search(r'^Diesel Θ[έζ]ρμαν[ζσς][ηθ][ςσ] Κα[τη]΄οίκον', line):
-            fuel_type = enums.FuelType.DIESEL_HEATING
-        elif match := re.search(r'^Υγρα[έζ]ριο κί ?ν[ηθ] ?[σςζ] ?[ηθ][ςσ] \(A ?ut ?o ?g ?a ?s ?\)', line):
-            fuel_type = enums.FuelType.GAS
-        else:
-            continue
-
-        line = line[match.span(0)[1] + 1:]
-        parts = line.strip().split()
-        if len(parts) == 2:
-            number_of_stations_str = parts[0]
-            price_str = parts[1]
-        elif len(parts) == 3:
-            if parts[1].find(','):
-                number_of_stations_str = parts[0]
-                price_str = parts[1] + parts[2]
-            elif parts[1].find('.'):
-                number_of_stations_str = parts[0] + parts[1]
-                price_str = parts[2]
-            else:
-                logger.error("Could not get prices for fuel data type %s, %s and fuel type %s", fuel_data_type, date,
-                             fuel_type)
-                continue
-        elif len(parts) == 4:
-            number_of_stations_str = parts[0] + parts[1]
-            price_str = parts[2] + parts[3]
-        else:
-            logger.error("No price data for fuel data type %s, %s and fuel type %s", fuel_data_type, date, fuel_type)
-            continue
-
-        try:
-            number_of_stations = None
-            if number_of_stations_str != '-':
-                number_of_stations = int(number_of_stations_str.replace('.', ''))
-            price = None
-            if price_str not in ('-', '#ΔΙΑΙΡ./0!'):
-                price = decimal.Decimal(price_str.replace(',', '.'))
-            if number_of_stations or price:
-                data.append({
-                    'fuel_type': fuel_type, 'number_of_stations': number_of_stations, 'price': price
-                })
-        except (ValueError, decimal.DecimalException):
-            logger.error("Could not parse prices for fuel data type %s, %s and fuel type %s", fuel_data_type, date,
-                         fuel_type, exc_info=True)
-
-    return data
+    return extractor(text)
 
 
 def process_link(file_link: str, fuel_data_type: enums.FuelDataType, use_file_cache: bool = True):
