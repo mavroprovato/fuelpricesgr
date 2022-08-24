@@ -54,7 +54,7 @@ def extract_daily_country_data(text: str) -> typing.List[dict]:
             number_of_stations_str = parts[0]
             price_str = parts[1]
         elif len(parts) == 3:
-Im            if parts[1].find(',') != -1:
+            if parts[1].find(',') != -1:
                 number_of_stations_str = parts[0]
                 price_str = parts[1] + parts[2]
             elif parts[0].find('.') != -1:
