@@ -128,5 +128,12 @@ def extract_daily_prefecture_data(text: str) -> typing.List[dict]:
         return []
 
     data = []
+    results = re.findall(r'ΝΟ ?Μ ?Ο ?[Σ\u03a2] ? (\D+) ([0-9,\- ]+)', text)
+    if len(results) < len(enums.Prefecture):
+        logger.error("Could not find all prefectures")
+        return []
+
+    for result in results:
+        print("prefecture:", result[0], "prices: ", result[1])
 
     return data
