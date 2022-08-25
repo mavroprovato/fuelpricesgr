@@ -77,7 +77,7 @@ def process_link(file_link: str, fuel_data_type: enums.FuelDataType, use_file_ca
         if use_file_cache:
             file_path = settings.DATA_PATH / fuel_data_type.name / file_name
             if file_path.exists():
-                logger.info("Loading from local cache")
+                logger.debug("Loading from local cache")
                 with file_path.open('rb') as f:
                     file_data = f.read()
             else:

@@ -20,6 +20,8 @@ def get_extractor(fuel_data_type: enums.FuelDataType) -> typing.Callable[[str], 
     match fuel_data_type:
         case enums.FuelDataType.DAILY_COUNTRY:
             return extract_daily_country_data
+        case enums.FuelDataType.DAILY_PREFECTURE:
+            return extract_daily_prefecture_data
 
 
 def extract_daily_country_data(text: str) -> typing.List[dict]:
@@ -83,5 +85,48 @@ def extract_daily_country_data(text: str) -> typing.List[dict]:
                 })
         except (ValueError, decimal.DecimalException):
             logger.error("Could not daily country prices for fuel type %s", fuel_type, exc_info=True)
+
+    return data
+
+
+def extract_daily_prefecture_data(text: str) -> typing.List[dict]:
+    """Extract daily country data.
+
+    :param text: The PDF file text.
+    :return: The data. It is a list of dicts with fuel_type, number_of_stations and price as keys.
+    """
+    # Try to find the fuel type data contained in the file
+    fuel_types = []
+    error = False
+    if match := re.search(r'Αμόλ[υσ] ?β\s?δ\s?η\s+95\s+ο ?κτ.', text):
+        fuel_types.append((match[0], enums.FuelType.UNLEADED_95))
+    else:
+        logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.UNLEADED_95)
+        error = True
+    if match := re.search(r'Αμό ?λ ?[υσ]\s?β\s?δ\s?η\s+100\s+ο ?κ ?τ\s?.', text):
+        fuel_types.append((match[0], enums.FuelType.UNLEADED_100))
+    else:
+        logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.UNLEADED_100)
+        error = True
+    if match := re.search(r'Super', text):
+        fuel_types.append((match[0], enums.FuelType.SUPER))
+    else:
+        logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.SUPER)
+        error = True
+    if match := re.search(r'Diesel\s+Κίν ?η[σς] ?η ?[ςσ]', text):
+        fuel_types.append((match[0], enums.FuelType.DIESEL))
+    else:
+        logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.DIESEL)
+        error = True
+    if match := re.search(r'[ΥΤ]γρα ?[έζ] ?ρ\s*ι\s*ο\s+κί ?νη ?[σς]η[ςσ]\s+\(Aut ?o ?g ?a\s*s\s*\)', text):
+        fuel_types.append((match[0], enums.FuelType.GAS))
+    else:
+        logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.GAS)
+        error = True
+    # Bail out if we could not find the required fuel types
+    if error:
+        return []
+
+    data = []
 
     return data
