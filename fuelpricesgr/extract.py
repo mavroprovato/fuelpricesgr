@@ -97,42 +97,41 @@ def extract_daily_prefecture_data(text: str) -> typing.List[dict]:
     """
     # Try to find the fuel type data contained in the file
     fuel_types = []
-    error = False
     if match := re.search(r'Αμόλ[υσ] ?β\s?δ\s?η\s+95\s+ο ?κτ.', text):
         fuel_types.append((enums.FuelType.UNLEADED_95, match.span()))
     else:
         logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.UNLEADED_95)
-        error = True
+        return []
     if match := re.search(r'Αμό ?λ ?[υσ]\s?β\s?δ\s?η\s+100\s+ο ?κ ?τ\s?.', text):
         fuel_types.append((enums.FuelType.UNLEADED_100, match.span()))
     else:
         logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.UNLEADED_100)
-        error = True
+        return []
     if match := re.search(r'Super', text):
         fuel_types.append((enums.FuelType.SUPER, match.span()))
     else:
         logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.SUPER)
-        error = True
+        return []
     if match := re.search(r'Diesel\s+Κίν ?η[σς] ?η ?[ςσ]', text):
         fuel_types.append((enums.FuelType.DIESEL, match.span()))
     else:
         logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.DIESEL)
-        error = True
+        return []
+    if match := re.search(r'Die ?s ?e ?l\s+Θέ ?ρ ?μ ?α ?ν ?σ ?η ?ς\s+Κα ?τ ?΄ ?ο ?ί ?κ ?ο ?ν', text):
+        fuel_types.append((enums.FuelType.DIESEL_HEATING, match.span()))
     if match := re.search(r'[ΥΤ]γρα ?[έζ] ?ρ\s*ι\s*ο\s+κί ?νη ?[σς]η[ςσ]\s+\(Aut ?o ?g ?a\s*s\s*\)', text):
         fuel_types.append((enums.FuelType.GAS, match.span()))
     else:
         logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.GAS)
-        error = True
-    # Bail out if we could not find the required fuel types
-    if error:
         return []
+
     # Sort the fuel types
     fuel_types.sort(key=lambda x: x[1][0])
     # Only search the text after the fuel types
     text = text[fuel_types[-1][1][-1] + 1:]
 
     data = []
-    results = re.findall(r'ΝΟ ?Μ ?Ο ?[Σ\u03a2] ? (\D+) ([0-9,\- ]+)', text)
+    results = re.findall(r'ΝΟ ?Μ ?Ο ?[Σ\u03a2] ? (\D+) ([0-9,.\-\s]+)', text, re.MULTILINE)
     if len(results) != len(enums.Prefecture):
         logger.error("Could not find all prefectures")
         return []
@@ -141,5 +140,18 @@ def extract_daily_prefecture_data(text: str) -> typing.List[dict]:
         prefecture = enums.Prefecture.from_text(result[0])
         if prefecture is None:
             logger.error(f"Could not parse prefecture {result[0]}")
+            return []
+        prices = re.findall(r'(\d[,.]\d ?\d ?\d)|-|\n', result[1].strip(), re.MULTILINE)
+        if len(prices) != len(fuel_types):
+            logger.error(f"Could not find enough prices")
+            return []
+        data += [
+            {
+                'fuel_type': fuel_types[index], 'prefecture': prefecture, 'price': price
+            } for index, price in enumerate([
+                decimal.Decimal(price.replace(' ', '').replace(',', '.')) if (price and price != '-') else None
+                for price in prices
+            ])
+        ]
 
     return data
