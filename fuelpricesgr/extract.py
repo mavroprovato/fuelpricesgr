@@ -10,6 +10,64 @@ from fuelpricesgr import enums
 # The module logger
 logger = logging.getLogger(__name__)
 
+# The regular expressions used to find the prefectures from the PDF text.
+PREFECTURE_REGEXES = {
+    enums.Prefecture.ATTICA: re.compile(r'Α ?[ΤΣ] ?[ΤΣ] ?[ΙΗ] ?Κ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.AETOLIA_ACARNANIA: re.compile(
+        r'Α ?[ΙΗ] ?[ΤΣ] ?Ω ?Λ ?[ΙΗ] ?Α ?[Σ\u03a2] {1,2}Κ ?Α ?[ΙΗ]\s{1,2}Α ?Κ ?Α ?Ρ ?Ν ?Α ?Ν ?[ΙΗ] ?Α ?[Σ\u03a2]',
+        re.MULTILINE),
+    enums.Prefecture.ARGOLIS: re.compile(r'ΑΡΓΟ ?Λ ?[ΙΗ][ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.ARKADIAS: re.compile(r'Α ?Ρ ?ΚΑ ?[ΔΓ][ΙΗ]Α[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.ARTA: re.compile(r'Α ?Ρ ?[ΤΣ] ?[ΗΖ][Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.ACHAEA: re.compile(r'Α ?[ΧΥ] ?Α ?Ϊ ?Α ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.BOEOTIA: re.compile(r'Β ?Ο ?[ΙΗ] ?Ω ?[ΤΣ] ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.DRAMA: re.compile(r'[ΔΓ]ΡΑΜΑ ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.GREVENA: re.compile(r'Γ ?Ρ ?[ΕΔ] ?Β ?[ΕΔ] ?Ν ?Ω ?Ν', re.MULTILINE),
+    enums.Prefecture.DODECANESE: re.compile(r'[ΔΓ] ?Ω[ΔΓ] ?[ΕΔ] ?ΚΑΝ[ΗΖ] ?[Σ\u03a2]Ο[ΤΥ]', re.MULTILINE),
+    enums.Prefecture.EVROS: re.compile(r'[ΕΔ] ?Β ?Ρ ?Ο ?[ΥΤ]', re.MULTILINE),
+    enums.Prefecture.EUBOEA: re.compile(r'[ΕΔ] ?[ΥΤ] ?Β ?Ο ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.EVRYTANIA: re.compile(r'[ΕΔ][ΥΤ]Ρ ?[ΥΤ] ?[ΤΣ]Α ?Ν ?[ΙΗ]Α[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.ZAKYNTHOS: re.compile(r'[ΖΕ] ?Α ?Κ ?[ΥΤ]Ν ?Θ ?Ο ?[ΥΤ]', re.MULTILINE),
+    enums.Prefecture.ELIS: re.compile(r'[ΗΖ] ?Λ[ΕΔ] ?[ΙΗ]Α ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.IMATHIA: re.compile(r'[ΗΖ] ?Μ ?Α ?Θ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.HERAKLION: re.compile(r'[ΗΖ] ?Ρ ?Α ?Κ ?Λ ?[ΕΔ] ?[ΙΗ] ?Ο ?[ΥΤ]', re.MULTILINE),
+    enums.Prefecture.THESPROTIA: re.compile(r'Θ[ΕΔ] ?[Σ\u03a2]Π ?ΡΩ ?[ΤΣ][ΙΗ]Α ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.THESSALONIKI: re.compile(
+        r'Θ[ΕΔ] ?[Σ\u03a2][Σ|\u03a2] ?Α ?ΛΟΝ[ΙΗ] ?Κ ?[ΗΖ][Σ|\u03a2]', re.MULTILINE),
+    enums.Prefecture.IOANNINA: re.compile(r'[ΙΗ] ?Ω ?Α ?Ν ?Ν ?[ΙΗ] ?Ν ?Ω ?Ν', re.MULTILINE),
+    enums.Prefecture.KAVALA: re.compile(r'ΚΑ ?Β ?Α ?Λ ?Α ?[Σ|\u03a2]', re.MULTILINE),
+    enums.Prefecture.KARDITSA: re.compile(r'Κ ?Α ?Ρ ?[ΔΓ] ?[ΙΗ] ?Τ? ?Σ[ \u03a2]?[ΗΖ] ?[Σ|\u03a2]', re.MULTILINE),
+    enums.Prefecture.KASTORIA: re.compile(r'Κ ?Α ?[Σ\u03a2] ?[ΤΣ]ΟΡ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.KERKYRA: re.compile(r'Κ[ΕΔ]ΡΚ[ΥΤ]ΡΑ[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.CEPHALONIA: re.compile(r'Κ[ΕΔ]ΦΑΛΛ[ΗΖ] ?Ν ?[ΙΗ]Α ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.KILKIS: re.compile(r'Κ ?[ΙΗ] ?Λ ?Κ ?[ΙΗ] ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.KOZANI: re.compile(r'Κ ?Ο ?[ΖΕ] ?Α ?Ν ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.CORINTHIA: re.compile(r'Κ ?Ο ?Ρ ?[ΙΗ] ?Ν ?Θ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.CYCLADES: re.compile(r'Κ[ΥΤ]ΚΛΑ ?[ΔΓ] ?Ω ?Ν', re.MULTILINE),
+    enums.Prefecture.LACONIA: re.compile(r'ΛΑΚ ?ΩΝ ?[ΙΗ]Α[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.LARISSA: re.compile(r'ΛΑΡ ?[ΙΗ] ?[Σ\u03a2][ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.LASITHI: re.compile(r'Λ ?Α ?[Σ\u03a2] ?[ΙΗ] ?Θ ?[ΙΗ] ?Ο ?[ΥΤ]', re.MULTILINE),
+    enums.Prefecture.LESBOS: re.compile(r'Λ ?[ΕΔ] ?[Σ\u03a2]Β ?Ο ?[ΥΤ]', re.MULTILINE),
+    enums.Prefecture.LEFKADA: re.compile(r'Λ ?[ΕΔ] ?[ΥΤ]Κ ?Α ?[ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.MAGNESIA: re.compile(r'ΜΑΓ ?Ν[ΗΖ][Σ\u03a2][ΙΗ] ?Α[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.MESSENIA: re.compile(r'Μ[ΕΔ][Σ\u03a2] ?[Σ\u03a2] ?[ΗΖ]Ν[ΙΗ]Α ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.XANTHI: re.compile(r'Ξ ?Α ?Ν ?Θ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.PELLA: re.compile(r'Π ?[ΕΔ] ?Λ ?Λ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.PIERIA: re.compile(r'Π ?[ΙΗ] ?[ΕΔ] ?Ρ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.PREVEZA: re.compile(r'ΠΡ ?[ΕΔ] ?Β[ΕΔ][ΖΕ][ΗΖ][Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.RETHYMNO: re.compile(r'Ρ[ΕΔ]Θ[ΥΤ]Μ ?Ν[ΗΖ][Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.RHODOPE: re.compile(r'ΡΟ ?[ΔΓ]Ο ?Π ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.SAMOS: re.compile(r'[Σ\u03a2]ΑΜ ?Ο ?[ΥΤ]', re.MULTILINE),
+    enums.Prefecture.SERRES: re.compile(r'[Σ\u03a2] ?[ΕΔ] ?Ρ ?Ρ ?Ω ?Ν', re.MULTILINE),
+    enums.Prefecture.TRIKALA: re.compile(r'[ΤΣ] ?Ρ ?[ΙΗ] ?Κ ?Α ?Λ ?Ω ?Ν', re.MULTILINE),
+    enums.Prefecture.PHTHIOTIS: re.compile(r'Φ ?Θ ?[ΙΗ] ?Ω ?[ΤΣ] ?[ΙΗ][ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.FLORINA: re.compile(r'ΦΛΩ ?Ρ[ΙΗ]Ν[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.PHOCIS: re.compile(r'Φ ?Ω ?Κ ?[ΙΗ] ?[ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.CHALKIDIKI: re.compile(r'[ΧΥ] ?Α ?Λ ?Κ ?[ΙΗ] ?[ΔΓ] ?[ΙΗ] ?Κ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.CHANIA: re.compile(r'[ΧΥ]Α ?Ν ?[ΙΗ] ?Ω ?Ν', re.MULTILINE),
+    enums.Prefecture.CHIOS: re.compile(r'[ΧΥ] ?[ΙΗ] ?Ο ?[ΥΤ]', re.MULTILINE),
+}
+
 
 def get_extractor(fuel_data_type: enums.FuelDataType) -> typing.Callable[[str], typing.List[dict]] | None:
     """Returns the data extractor function for a fuel data type.
@@ -89,6 +147,20 @@ def extract_daily_country_data(text: str) -> typing.List[dict]:
     return data
 
 
+def extract_prefecture(prefecture_text: str) -> enums.Prefecture:
+    """Extract the prefecture from the PDF text.
+
+    :param prefecture_text: The prefecture text.
+    :return: The prefecture.
+    :raises ValueError: If the prefecture text cannot be parsed.
+    """
+    for prefecture, prefecture_regex in PREFECTURE_REGEXES.items():
+        if prefecture_regex.match(prefecture_text):
+            return prefecture
+
+    raise ValueError(f"Could not parse prefecture text: {prefecture_text}")
+
+
 def extract_daily_prefecture_data(text: str) -> typing.List[dict]:
     """Extract daily country data.
 
@@ -117,9 +189,9 @@ def extract_daily_prefecture_data(text: str) -> typing.List[dict]:
     else:
         logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.DIESEL)
         return []
-    if match := re.search(r'Die ?s ?e ?l\s+Θέ ?ρ ?μ ?α ?ν ?σ ?η ?ς\s+Κα ?τ ?΄ ?ο ?ί ?κ ?ο ?ν', text):
+    if match := re.search(r'Die ?s ?e ?l\s+Θ[έζ] ?ρ ?μ ?α\s?ν\s?σ\s?η\s*ς\s+Κα ?τ ?΄ ?ο ?ί\s?κ ?ο\s?ν', text):
         fuel_types.append((enums.FuelType.DIESEL_HEATING, match.span()))
-    if match := re.search(r'[ΥΤ]γρα ?[έζ] ?ρ\s*ι\s*ο\s+κί ?νη ?[σς]η[ςσ]\s+\(Aut ?o ?g ?a\s*s\s*\)', text):
+    if match := re.search(r'[ΥΤ]γρα ?[έζ] ?ρ\s*ι\s*ο\s+κί ?νη\s?[σς]η[ςσ]\s+\(Aut ?o ?g ?a\s*s\s*\)', text):
         fuel_types.append((enums.FuelType.GAS, match.span()))
     else:
         logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.GAS)
@@ -128,22 +200,26 @@ def extract_daily_prefecture_data(text: str) -> typing.List[dict]:
     # Sort the fuel types
     fuel_types.sort(key=lambda x: x[1][0])
     # Only search the text after the fuel types
-    text = text[fuel_types[-1][1][-1] + 1:]
+    prices_text = text[fuel_types[-1][1][-1] + 1:]
 
     data = []
-    results = re.findall(r'ΝΟ ?Μ ?Ο ?[Σ\u03a2] ? (\D+) ([0-9,.\-\s]+)', text, re.MULTILINE)
+    results = re.findall(r'ΝΟ ?Μ ?Ο ?[Σ\u03a2] ? (\D+) ([0-9,.\-\s]+)', prices_text, re.MULTILINE)
     if len(results) != len(enums.Prefecture):
         logger.error("Could not find all prefectures")
         return []
 
     for result in results:
-        prefecture = enums.Prefecture.from_text(result[0])
+        prefecture = extract_prefecture(result[0])
         if prefecture is None:
             logger.error(f"Could not parse prefecture {result[0]}")
             return []
         prices = re.findall(r'(\d[,.]\d ?\d ?\d)|-|\n', result[1].strip(), re.MULTILINE)
         if len(prices) != len(fuel_types):
             logger.error(f"Could not find enough prices")
+            if len(fuel_types) - len(prices) != 1:
+                print(fuel_types)
+                print(text)
+                raise ValueError()
             return []
         data += [
             {
