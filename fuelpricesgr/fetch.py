@@ -52,7 +52,7 @@ def extract_data(fuel_data_type: enums.FuelDataType, date: datetime.date, data: 
 
     text = pdf_to_text(data)
     if not text:
-        logger.warning("Cannot extract text for fuel data type %s and date %s", fuel_data_type, date)
+        logger.error("Cannot extract text for fuel data type %s and date %s", fuel_data_type, date)
         return []
 
     return extractor(text)

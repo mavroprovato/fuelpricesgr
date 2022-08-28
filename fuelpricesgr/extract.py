@@ -17,7 +17,7 @@ PREFECTURE_REGEXES = {
         r'Α ?[ΙΗ] ?[ΤΣ] ?Ω ?Λ ?[ΙΗ] ?Α ?[Σ\u03a2] {1,2}Κ ?Α ?[ΙΗ]\s{1,2}Α ?Κ ?Α ?Ρ ?Ν ?Α ?Ν ?[ΙΗ] ?Α ?[Σ\u03a2]',
         re.MULTILINE),
     enums.Prefecture.ARGOLIS: re.compile(r'ΑΡΓΟ ?Λ ?[ΙΗ][ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.ARKADIAS: re.compile(r'Α ?Ρ ?ΚΑ ?[ΔΓ][ΙΗ]Α[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.ARKADIAS: re.compile(r'Α ?Ρ ?ΚΑ ?[ΔΓ] ?[ΙΗ]Α[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.ARTA: re.compile(r'Α ?Ρ ?[ΤΣ] ?[ΗΖ][Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.ACHAEA: re.compile(r'Α ?[ΧΥ] ?Α ?Ϊ ?Α ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.BOEOTIA: re.compile(r'Β ?Ο ?[ΙΗ] ?Ω ?[ΤΣ] ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
@@ -31,31 +31,31 @@ PREFECTURE_REGEXES = {
     enums.Prefecture.ELIS: re.compile(r'[ΗΖ] ?Λ[ΕΔ] ?[ΙΗ]Α ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.IMATHIA: re.compile(r'[ΗΖ] ?Μ ?Α ?Θ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.HERAKLION: re.compile(r'[ΗΖ] ?Ρ ?Α ?Κ ?Λ ?[ΕΔ] ?[ΙΗ] ?Ο ?[ΥΤ]', re.MULTILINE),
-    enums.Prefecture.THESPROTIA: re.compile(r'Θ[ΕΔ] ?[Σ\u03a2]Π ?ΡΩ ?[ΤΣ][ΙΗ]Α ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.THESPROTIA: re.compile(r'Θ[ΕΔ] ?[Σ\u03a2] ?Π ?ΡΩ ?[ΤΣ][ΙΗ]Α ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.THESSALONIKI: re.compile(
         r'Θ[ΕΔ] ?[Σ\u03a2][Σ|\u03a2] ?Α ?ΛΟΝ[ΙΗ] ?Κ ?[ΗΖ][Σ|\u03a2]', re.MULTILINE),
     enums.Prefecture.IOANNINA: re.compile(r'[ΙΗ] ?Ω ?Α ?Ν ?Ν ?[ΙΗ] ?Ν ?Ω ?Ν', re.MULTILINE),
     enums.Prefecture.KAVALA: re.compile(r'ΚΑ ?Β ?Α ?Λ ?Α ?[Σ|\u03a2]', re.MULTILINE),
     enums.Prefecture.KARDITSA: re.compile(r'Κ ?Α ?Ρ ?[ΔΓ] ?[ΙΗ] ?Τ? ?Σ[ \u03a2]?[ΗΖ] ?[Σ|\u03a2]', re.MULTILINE),
-    enums.Prefecture.KASTORIA: re.compile(r'Κ ?Α ?[Σ\u03a2] ?[ΤΣ]ΟΡ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.KERKYRA: re.compile(r'Κ[ΕΔ]ΡΚ[ΥΤ]ΡΑ[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.CEPHALONIA: re.compile(r'Κ[ΕΔ]ΦΑΛΛ[ΗΖ] ?Ν ?[ΙΗ]Α ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.KASTORIA: re.compile(r'Κ ?Α ?[Σ\u03a2] ?[ΤΣ] ?ΟΡ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.KERKYRA: re.compile(r'Κ[ΕΔ] ?ΡΚ ?[ΥΤ]ΡΑ ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.CEPHALONIA: re.compile(r'Κ[ΕΔ]Φ ?Α ?Λ ?Λ[ΗΖ] ?Ν ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.KILKIS: re.compile(r'Κ ?[ΙΗ] ?Λ ?Κ ?[ΙΗ] ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.KOZANI: re.compile(r'Κ ?Ο ?[ΖΕ] ?Α ?Ν ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.CORINTHIA: re.compile(r'Κ ?Ο ?Ρ ?[ΙΗ] ?Ν ?Θ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.CYCLADES: re.compile(r'Κ[ΥΤ]ΚΛΑ ?[ΔΓ] ?Ω ?Ν', re.MULTILINE),
-    enums.Prefecture.LACONIA: re.compile(r'ΛΑΚ ?ΩΝ ?[ΙΗ]Α[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.LACONIA: re.compile(r'ΛΑΚ ?ΩΝ ?[ΙΗ]Α ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.LARISSA: re.compile(r'ΛΑΡ ?[ΙΗ] ?[Σ\u03a2][ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.LASITHI: re.compile(r'Λ ?Α ?[Σ\u03a2] ?[ΙΗ] ?Θ ?[ΙΗ] ?Ο ?[ΥΤ]', re.MULTILINE),
     enums.Prefecture.LESBOS: re.compile(r'Λ ?[ΕΔ] ?[Σ\u03a2]Β ?Ο ?[ΥΤ]', re.MULTILINE),
     enums.Prefecture.LEFKADA: re.compile(r'Λ ?[ΕΔ] ?[ΥΤ]Κ ?Α ?[ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.MAGNESIA: re.compile(r'ΜΑΓ ?Ν[ΗΖ][Σ\u03a2][ΙΗ] ?Α[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.MESSENIA: re.compile(r'Μ[ΕΔ][Σ\u03a2] ?[Σ\u03a2] ?[ΗΖ]Ν[ΙΗ]Α ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.MESSENIA: re.compile(r'Μ[ΕΔ][Σ\u03a2] ?[Σ\u03a2] ?[ΗΖ] ?Ν ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.XANTHI: re.compile(r'Ξ ?Α ?Ν ?Θ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.PELLA: re.compile(r'Π ?[ΕΔ] ?Λ ?Λ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.PIERIA: re.compile(r'Π ?[ΙΗ] ?[ΕΔ] ?Ρ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.PREVEZA: re.compile(r'ΠΡ ?[ΕΔ] ?Β[ΕΔ][ΖΕ][ΗΖ][Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.RETHYMNO: re.compile(r'Ρ[ΕΔ]Θ[ΥΤ]Μ ?Ν[ΗΖ][Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.RETHYMNO: re.compile(r'Ρ[ΕΔ] ?Θ ?[ΥΤ]Μ ?Ν ?[ΗΖ][Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.RHODOPE: re.compile(r'ΡΟ ?[ΔΓ]Ο ?Π ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.SAMOS: re.compile(r'[Σ\u03a2]ΑΜ ?Ο ?[ΥΤ]', re.MULTILINE),
     enums.Prefecture.SERRES: re.compile(r'[Σ\u03a2] ?[ΕΔ] ?Ρ ?Ρ ?Ω ?Ν', re.MULTILINE),
@@ -147,6 +147,48 @@ def extract_daily_country_data(text: str) -> typing.List[dict]:
     return data
 
 
+def extract_fuel_types(text: str) -> typing.Tuple[typing.List[enums.FuelType], int]:
+    """Get the fuel types from the PDF text. The fuel types are ordered in the order they appear in the text.
+
+    :param text: The PDF file text.
+    :return: A tuple with the ordered fuel types, and the index in the text in which the last fuel type appears.
+    """
+    # Try to find the fuel type data contained in the file
+    fuel_types = []
+    if match := re.search(r'Αμόλ[υσ] ?β\s?δ\s?η\s+95\s+ο ?κτ.', text):
+        fuel_types.append((enums.FuelType.UNLEADED_95, match.span()))
+    else:
+        raise ValueError(f"Cannot find data for {enums.FuelType.UNLEADED_95} in daily prefecture data")
+
+    if match := re.search(r'Αμό ?λ ?[υσ]\s?β\s?δ\s?η\s+100\s+ο ?κ ?τ\s?.', text):
+        fuel_types.append((enums.FuelType.UNLEADED_100, match.span()))
+    else:
+        raise ValueError(f"Cannot find data for {enums.FuelType.UNLEADED_100} in daily prefecture data")
+
+    if match := re.search(r'Super', text):
+        fuel_types.append((enums.FuelType.SUPER, match.span()))
+    else:
+        raise ValueError(f"Cannot find data for {enums.FuelType.SUPER} in daily prefecture data")
+
+    if match := re.search(r'Diesel\s+Κίν ?η[σς] ?η ?[ςσ]', text):
+        fuel_types.append((enums.FuelType.DIESEL, match.span()))
+    else:
+        raise ValueError(f"Cannot find data for {enums.FuelType.DIESEL} in daily prefecture data")
+
+    if match := re.search(r'Die ?s ?e ?l\s+Θ[έζ] ?ρ ?μ ?α\s?ν\s?σ\s?η\s*ς\s+Κα ?τ ?΄ ?ο ?ί\s?κ ?ο\s?ν', text):
+        fuel_types.append((enums.FuelType.DIESEL_HEATING, match.span()))
+
+    if match := re.search(r'[ΥΤ]γρα ?[έζ] ?ρ\s*ι\s*ο\s+κί ?νη\s?[σς]η[ςσ]\s+\(Aut ?o ?g ?a\s*s\s*\)', text):
+        fuel_types.append((enums.FuelType.GAS, match.span()))
+    else:
+        raise ValueError(f"Cannot find data for {enums.FuelType.GAS} in daily prefecture data")
+
+    # Sort the fuel types
+    fuel_types.sort(key=lambda x: x[1][0])
+
+    return [fuel_type[0] for fuel_type in fuel_types], fuel_types[-1][1][-1] + 1
+
+
 def extract_prefecture(prefecture_text: str) -> enums.Prefecture:
     """Extract the prefecture from the PDF text.
 
@@ -167,40 +209,13 @@ def extract_daily_prefecture_data(text: str) -> typing.List[dict]:
     :param text: The PDF file text.
     :return: The data. It is a list of dicts with fuel_type, number_of_stations and price as keys.
     """
-    # Try to find the fuel type data contained in the file
-    fuel_types = []
-    if match := re.search(r'Αμόλ[υσ] ?β\s?δ\s?η\s+95\s+ο ?κτ.', text):
-        fuel_types.append((enums.FuelType.UNLEADED_95, match.span()))
-    else:
-        logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.UNLEADED_95)
+    try:
+        fuel_types, last_index = extract_fuel_types(text)
+    except ValueError:
+        logger.error("Could not parse fuel types", exc_info=True)
         return []
-    if match := re.search(r'Αμό ?λ ?[υσ]\s?β\s?δ\s?η\s+100\s+ο ?κ ?τ\s?.', text):
-        fuel_types.append((enums.FuelType.UNLEADED_100, match.span()))
-    else:
-        logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.UNLEADED_100)
-        return []
-    if match := re.search(r'Super', text):
-        fuel_types.append((enums.FuelType.SUPER, match.span()))
-    else:
-        logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.SUPER)
-        return []
-    if match := re.search(r'Diesel\s+Κίν ?η[σς] ?η ?[ςσ]', text):
-        fuel_types.append((enums.FuelType.DIESEL, match.span()))
-    else:
-        logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.DIESEL)
-        return []
-    if match := re.search(r'Die ?s ?e ?l\s+Θ[έζ] ?ρ ?μ ?α\s?ν\s?σ\s?η\s*ς\s+Κα ?τ ?΄ ?ο ?ί\s?κ ?ο\s?ν', text):
-        fuel_types.append((enums.FuelType.DIESEL_HEATING, match.span()))
-    if match := re.search(r'[ΥΤ]γρα ?[έζ] ?ρ\s*ι\s*ο\s+κί ?νη\s?[σς]η[ςσ]\s+\(Aut ?o ?g ?a\s*s\s*\)', text):
-        fuel_types.append((enums.FuelType.GAS, match.span()))
-    else:
-        logger.error("Cannot find data for %s in daily prefecture data", enums.FuelType.GAS)
-        return []
-
-    # Sort the fuel types
-    fuel_types.sort(key=lambda x: x[1][0])
     # Only search the text after the fuel types
-    prices_text = text[fuel_types[-1][1][-1] + 1:]
+    prices_text = text[last_index + 1:]
 
     data = []
     results = re.findall(r'ΝΟ ?Μ ?Ο ?[Σ\u03a2] ? (\D+) ([0-9,.\-\s]+)', prices_text, re.MULTILINE)
@@ -211,16 +226,14 @@ def extract_daily_prefecture_data(text: str) -> typing.List[dict]:
     for result in results:
         prefecture = extract_prefecture(result[0])
         if prefecture is None:
-            logger.error(f"Could not parse prefecture {result[0]}")
-            return []
+            raise ValueError(f"Could not parse prefecture text {result[0]}")
+
         prices = re.findall(r'(\d[,.]\d ?\d ?\d)|-|\n', result[1].strip(), re.MULTILINE)
-        if len(prices) != len(fuel_types):
-            logger.error(f"Could not find enough prices")
-            if len(fuel_types) - len(prices) != 1:
-                print(fuel_types)
-                print(text)
-                raise ValueError()
-            return []
+        if len(fuel_types) - len(prices) == 1 and enums.FuelType.SUPER in fuel_types:
+            prices.insert(fuel_types.index(enums.FuelType.SUPER), None)
+        elif len(fuel_types) != len(prices):
+            raise ValueError("Could not parse prices")
+
         data += [
             {
                 'fuel_type': fuel_types[index], 'prefecture': prefecture, 'price': price
