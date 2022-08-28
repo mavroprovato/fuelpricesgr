@@ -42,6 +42,16 @@ class Database:
                     UNIQUE(date, fuel_type)
                 )
             """)
+            cursor.execute("""
+                CREATE TABLE daily_prefecture (
+                    id INTEGER PRIMARY KEY,
+                    date TEXT NOT NULL,
+                    prefecture TEXT NOT NULL,
+                    fuel_type TEXT NOT NULL,
+                    price DECIMAL(4, 3),
+                    UNIQUE(date, prefecture, fuel_type)
+                )
+            """)
 
     def close(self):
         """Closes the connection to the database.
@@ -67,6 +77,10 @@ class Database:
                     date=date, fuel_type=data['fuel_type'], number_of_stations=data['number_of_stations'],
                     price=data['price']
                 )
+            case enums.FuelDataType.DAILY_PREFECTURE:
+                self.insert_daily_prefecture_data(
+                    date=date, fuel_type=data['fuel_type'], prefecture=data['prefecture'], price=data['price']
+                )
 
     def insert_daily_country_data(
             self, date: datetime.date, fuel_type: enums.FuelType, number_of_stations: int = None,
@@ -85,6 +99,25 @@ class Database:
                 ON CONFLICT(date, fuel_type) DO UPDATE SET number_of_stations = :number_of_stations, price = :price
             """, {
                 'date': date, 'fuel_type': fuel_type.name, 'number_of_stations': number_of_stations, 'price': str(price)
+            })
+
+    def insert_daily_prefecture_data(
+            self, date: datetime.date, fuel_type: enums.FuelType, prefecture: enums.Prefecture,
+            price: decimal.Decimal = None):
+        """Insert daily prefecture data to the database.
+
+        :param date: The date for the data.
+        :param fuel_type: The fuel type.
+        :param prefecture: The prefecture.
+        :param price: The price.
+        """
+        with contextlib.closing(self.conn.cursor()) as cursor:
+            cursor.execute("""
+                INSERT INTO daily_prefecture(date, fuel_type, prefecture, price)
+                VALUES(:date, :fuel_type, :prefecture, :price)
+                ON CONFLICT(date, fuel_type, prefecture) DO UPDATE SET price = :price
+            """, {
+                'date': date, 'fuel_type': fuel_type.name, 'prefecture': prefecture.name, 'price': str(price)
             })
 
     def daily_country_data(
