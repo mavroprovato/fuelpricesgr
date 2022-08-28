@@ -94,105 +94,107 @@ class Prefecture(enum.Enum):
 
     @classmethod
     def from_text(cls, text):
-        if re.match(r'Α ?Τ ?Τ ?Ι ?Κ ?Η ?Σ', text):
+        if re.match(r'Α ?[ΤΣ] ?[ΤΣ] ?[ΙΗ] ?Κ ?[ΗΖ] ?[Σ\u03a2]', text):
             return cls.ATTICA
-        elif re.match(r'Α ?Ι ?Τ ?Ω ?Λ ?Ι ?Α ?Σ {1,2}Κ ?Α ?Ι {1,2}Α ?Κ ?Α ?Ρ ?Ν ?Α ?Ν ?Ι ?Α ?Σ', text):
+        elif re.match(
+                r'Α ?[ΙΗ] ?[ΤΣ] ?Ω ?Λ ?[ΙΗ] ?Α ?[Σ\u03a2] {1,2}Κ ?Α ?[ΙΗ]\s{1,2}Α ?Κ ?Α ?Ρ ?Ν ?Α ?Ν ?[ΙΗ] ?Α ?[Σ\u03a2]',
+                text, re.MULTILINE):
             return cls.AETOLIA_ACARNANIA
-        elif re.match(r'ΑΡΓΟ ?Λ ?ΙΔ ?Ο ?Σ', text):
+        elif re.match(r'ΑΡΓΟ ?Λ ?[ΙΗ][ΔΓ] ?Ο ?[Σ\u03a2]', text):
             return cls.ARGOLIS
-        elif re.match(r'ΑΡΚΑΔΙΑΣ', text):
+        elif re.match(r'Α ?Ρ ?ΚΑ ?[ΔΓ][ΙΗ]Α[Σ\u03a2]', text):
             return cls.ARKADIAS
-        elif re.match(r'Α ?Ρ ?Τ ?ΗΣ', text):
+        elif re.match(r'Α ?Ρ ?[ΤΣ] ?[ΗΖ][Σ\u03a2]', text):
             return cls.ARTA
-        elif re.match(r'Α ?Χ ?Α ?Ϊ ?Α ?Σ', text):
+        elif re.match(r'Α ?[ΧΥ] ?Α ?Ϊ ?Α ?[Σ\u03a2]', text):
             return cls.ACHAEA
-        elif re.match(r'Β ?Ο ?Ι ?Ω ?Τ ?Ι ?Α ?Σ', text):
+        elif re.match(r'Β ?Ο ?[ΙΗ] ?Ω ?[ΤΣ] ?[ΙΗ] ?Α ?[Σ\u03a2]', text):
             return cls.BOEOTIA
-        elif re.match(r'ΔΡΑΜΑ ?Σ', text):
+        elif re.match(r'[ΔΓ]ΡΑΜΑ ?[Σ\u03a2]', text):
             return cls.DRAMA
-        elif re.match(r'Γ ?Ρ ?Ε ?Β ?Ε ?Ν ?Ω ?Ν', text):
+        elif re.match(r'Γ ?Ρ ?[ΕΔ] ?Β ?[ΕΔ] ?Ν ?Ω ?Ν', text):
             return cls.GREVENA
-        elif re.match(r'Δ ?ΩΔ ?Ε ?ΚΑΝΗ ?ΣΟΥ', text):
+        elif re.match(r'[ΔΓ] ?Ω[ΔΓ] ?[ΕΔ] ?ΚΑΝ[ΗΖ] ?[Σ\u03a2]Ο[ΤΥ]', text):
             return cls.DODECANESE
-        elif re.match(r'Ε ?Β ?Ρ ?Ο ?Υ', text):
+        elif re.match(r'[ΕΔ] ?Β ?Ρ ?Ο ?[ΥΤ]', text):
             return cls.EVROS
-        elif re.match(r'Ε ?ΥΒ ?Ο ?Ι ?Α ?Σ', text):
+        elif re.match(r'[ΕΔ] ?[ΥΤ] ?Β ?Ο ?[ΙΗ] ?Α ?[Σ\u03a2]', text):
             return cls.EUBOEA
-        elif re.match(r'ΕΥΡ ?Υ ?ΤΑ ?Ν ?ΙΑ ?Σ', text):
+        elif re.match(r'[ΕΔ][ΥΤ]Ρ ?[ΥΤ] ?[ΤΣ]Α ?Ν ?[ΙΗ]Α[Σ\u03a2]', text):
             return cls.EVRYTANIA
-        elif re.match(r'Ζ ?Α ?Κ ?ΥΝ ?Θ ?Ο ?Υ', text):
+        elif re.match(r'[ΖΕ] ?Α ?Κ ?[ΥΤ]Ν ?Θ ?Ο ?[ΥΤ]', text):
             return cls.ZAKYNTHOS
-        elif re.match(r'Η ?ΛΕ ?ΙΑ ?Σ', text):
+        elif re.match(r'[ΗΖ] ?Λ[ΕΔ] ?[ΙΗ]Α ?[Σ\u03a2]', text):
             return cls.ELIS
-        elif re.match(r'Η ?Μ ?Α ?Θ ?Ι ?Α ?Σ', text):
+        elif re.match(r'[ΗΖ] ?Μ ?Α ?Θ ?[ΙΗ] ?Α ?[Σ\u03a2]', text):
             return cls.IMATHIA
-        elif re.match(r'Η ?Ρ ?Α ?Κ ?Λ ?Ε ?Ι ?Ο ?Υ', text):
+        elif re.match(r'[ΗΖ] ?Ρ ?Α ?Κ ?Λ ?[ΕΔ] ?[ΙΗ] ?Ο ?[ΥΤ]', text):
             return cls.HERAKLION
-        elif re.match(r'ΘΕ ?ΣΠ ?ΡΩ ?ΤΙΑ ?Σ', text):
+        elif re.match(r'Θ[ΕΔ] ?[Σ\u03a2]Π ?ΡΩ ?[ΤΣ][ΙΗ]Α ?[Σ\u03a2]', text):
             return cls.THESPROTIA
-        elif re.match(r'ΘΕ ?ΣΣ ?Α ?ΛΟΝΙ ?Κ ?ΗΣ', text):
+        elif re.match(r'Θ[ΕΔ] ?[Σ\u03a2][Σ|\u03a2] ?Α ?ΛΟΝ[ΙΗ] ?Κ ?[ΗΖ][Σ|\u03a2]', text):
             return cls.THESSALONIKI
-        elif re.match(r'Ι ?Ω ?Α ?Ν ?Ν ?Ι ?Ν ?Ω ?Ν', text):
+        elif re.match(r'[ΙΗ] ?Ω ?Α ?Ν ?Ν ?[ΙΗ] ?Ν ?Ω ?Ν', text):
             return cls.IOANNINA
-        elif re.match(r'ΚΑ ?Β ?Α ?Λ ?Α ?Σ', text):
+        elif re.match(r'ΚΑ ?Β ?Α ?Λ ?Α ?[Σ|\u03a2]', text):
             return cls.KAVALA
-        elif re.match(r'Κ ?Α ?Ρ ?Δ ?Ι ?Τ ?Σ ?Η ?Σ', text):
+        elif re.match(r'Κ ?Α ?Ρ ?[ΔΓ] ?[ΙΗ] ?Τ? ?Σ[ \u03a2]?[ΗΖ] ?[Σ|\u03a2]', text):
             return cls.KARDITSA
-        elif re.match(r'Κ ?Α ?ΣΤ ?ΟΡ ?ΙΑ ?Σ', text):
+        elif re.match(r'Κ ?Α ?[Σ\u03a2] ?[ΤΣ]ΟΡ ?[ΙΗ] ?Α ?[Σ\u03a2]', text):
             return cls.KASTORIA
-        elif re.match(r'ΚΕΡΚΥΡΑΣ', text):
+        elif re.match(r'Κ[ΕΔ]ΡΚ[ΥΤ]ΡΑ[Σ\u03a2]', text):
             return cls.KERKYRA
-        elif re.match(r'ΚΕΦΑΛΛΗ ?ΝΙΑ ?Σ', text):
+        elif re.match(r'Κ[ΕΔ]ΦΑΛΛ[ΗΖ] ?Ν ?[ΙΗ]Α ?[Σ\u03a2]', text):
             return cls.CEPHALONIA
-        elif re.match(r'Κ ?Ι ?Λ ?Κ ?Ι ?Σ', text):
+        elif re.match(r'Κ ?[ΙΗ] ?Λ ?Κ ?[ΙΗ] ?[Σ\u03a2]', text):
             return cls.KILKIS
-        elif re.match(r'Κ ?Ο ?Ζ ?Α ?Ν ?Η ?Σ', text):
+        elif re.match(r'Κ ?Ο ?[ΖΕ] ?Α ?Ν ?[ΗΖ] ?[Σ\u03a2]', text):
             return cls.KOZANI
-        elif re.match(r'Κ ?Ο ?Ρ ?Ι ?Ν ?Θ ?Ι ?Α ?Σ', text):
+        elif re.match(r'Κ ?Ο ?Ρ ?[ΙΗ] ?Ν ?Θ ?[ΙΗ] ?Α ?[Σ\u03a2]', text):
             return cls.CORINTHIA
-        elif re.match(r'ΚΥΚΛΑΔΩΝ', text):
+        elif re.match(r'Κ[ΥΤ]ΚΛΑ ?[ΔΓ]ΩΝ', text):
             return cls.CYCLADES
-        elif re.match(r'ΛΑΚ ?ΩΝ ?ΙΑΣ', text):
+        elif re.match(r'ΛΑΚ ?ΩΝ ?[ΙΗ]Α[Σ\u03a2]', text):
             return cls.LACONIA
-        elif re.match(r'ΛΑΡ ?Ι ?ΣΗ ?Σ', text):
+        elif re.match(r'ΛΑΡ ?[ΙΗ] ?[Σ\u03a2][ΗΖ] ?[Σ\u03a2]', text):
             return cls.LARISSA
-        elif re.match(r'Λ ?Α ?Σ ?Ι ?Θ ?Ι ?Ο ?Υ', text):
+        elif re.match(r'Λ ?Α ?[Σ\u03a2] ?[ΙΗ] ?Θ ?[ΙΗ] ?Ο ?[ΥΤ]', text):
             return cls.LASITHI
-        elif re.match(r'Λ ?Ε ?ΣΒ ?Ο ?Υ', text):
+        elif re.match(r'Λ ?[ΕΔ] ?[Σ\u03a2]Β ?Ο ?[ΥΤ]', text):
             return cls.LESBOS
-        elif re.match(r'ΛΕΥΚΑΔΟΣ', text):
+        elif re.match(r'Λ ?[ΕΔ] ?[ΥΤ]Κ ?Α[ΔΓ]Ο ?[Σ\u03a2]', text):
             return cls.LEFKADA
-        elif re.match(r'ΜΑΓ ?ΝΗΣΙΑΣ', text):
+        elif re.match(r'ΜΑΓ ?Ν[ΗΖ][Σ\u03a2][ΙΗ] ?Α[Σ\u03a2]', text):
             return cls.MAGNESIA
-        elif re.match(r'ΜΕΣ ?ΣΗΝΙΑ ?Σ', text):
+        elif re.match(r'Μ[ΕΔ][Σ\u03a2] ?[Σ\u03a2] ?[ΗΖ]Ν[ΙΗ]Α ?[Σ\u03a2]', text):
             return cls.MESSENIA
-        elif re.match(r'Ξ ?Α ?Ν ?Θ ?Η ?Σ', text):
+        elif re.match(r'Ξ ?Α ?Ν ?Θ ?[ΗΖ] ?[Σ\u03a2]', text):
             return cls.XANTHI
-        elif re.match(r'Π ?Ε ?Λ ?Λ ?Η ?Σ', text):
+        elif re.match(r'Π ?[ΕΔ] ?Λ ?Λ ?[ΗΖ] ?[Σ\u03a2]', text):
             return cls.PELLA
-        elif re.match(r'Π ?Ι ?Ε ?ΡΙ ?ΑΣ', text):
+        elif re.match(r'Π ?[ΙΗ] ?[ΕΔ] ?Ρ ?[ΙΗ] ?Α ?[Σ\u03a2]', text):
             return cls.PIERIA
-        elif re.match(r'ΠΡΕΒΕΖΗΣ', text):
+        elif re.match(r'ΠΡ ?[ΕΔ] ?Β[ΕΔ][ΖΕ][ΗΖ][Σ\u03a2]', text):
             return cls.PREVEZA
-        elif re.match(r'ΡΕΘΥΜ ?ΝΗΣ', text):
+        elif re.match(r'Ρ[ΕΔ]Θ[ΥΤ]Μ ?Ν[ΗΖ][Σ\u03a2]', text):
             return cls.RETHYMNO
-        elif re.match(r'ΡΟ ?ΔΟ ?Π ?Η ?Σ', text):
+        elif re.match(r'ΡΟ ?[ΔΓ]Ο ?Π ?[ΗΖ] ?[Σ\u03a2]', text):
             return cls.RHODOPE
-        elif re.match(r'ΣΑΜ ?Ο ?Υ', text):
+        elif re.match(r'[Σ\u03a2]ΑΜ ?Ο ?[ΥΤ]', text):
             return cls.SAMOS
-        elif re.match(r'Σ ?Ε ?Ρ ?Ρ ?Ω ?Ν', text):
+        elif re.match(r'[Σ\u03a2] ?[ΕΔ] ?Ρ ?Ρ ?Ω ?Ν', text):
             return cls.SERRES
-        elif re.match(r'Τ ?Ρ ?Ι ?Κ ?Α ?Λ ?Ω ?Ν', text):
+        elif re.match(r'[ΤΣ] ?Ρ ?[ΙΗ] ?Κ ?Α ?Λ ?Ω ?Ν', text):
             return cls.TRIKALA
-        elif re.match(r'Φ ?Θ ?Ι ?Ω ?Τ ?ΙΔ ?Ο ?Σ', text):
+        elif re.match(r'Φ ?Θ ?[ΙΗ] ?Ω ?[ΤΣ] ?[ΙΗ][ΔΓ] ?Ο ?[Σ\u03a2]', text):
             return cls.PHTHIOTIS
-        elif re.match(r'ΦΛΩΡΙΝΗ ?Σ', text):
+        elif re.match(r'ΦΛΩ ?Ρ[ΙΗ]Ν[ΗΖ] ?[Σ\u03a2]', text):
             return cls.FLORINA
-        elif re.match(r'Φ ?Ω ?Κ ?Ι ?Δ ?Ο ?Σ', text):
+        elif re.match(r'Φ ?Ω ?Κ ?[ΙΗ] ?[ΔΓ] ?Ο ?[Σ\u03a2]', text):
             return cls.PHOCIS
-        elif re.match(r'Χ ?Α ?Λ ?Κ ?Ι ?Δ ?Ι ?Κ ?Η ?Σ', text):
+        elif re.match(r'[ΧΥ] ?Α ?Λ ?Κ ?[ΙΗ] ?[ΔΓ] ?[ΙΗ] ?Κ ?[ΗΖ] ?[Σ\u03a2]', text):
             return cls.CHALKIDIKI
-        elif re.match(r'ΧΑΝ ?Ι ?Ω ?Ν', text):
+        elif re.match(r'[ΧΥ]Α ?Ν ?[ΙΗ] ?Ω ?Ν', text):
             return cls.CHANIA
-        elif re.match(r'Χ ?Ι ?Ο ?Υ', text):
+        elif re.match(r'[ΧΥ] ?[ΙΗ] ?Ο ?[ΥΤ]', text):
             return cls.CHIOS
