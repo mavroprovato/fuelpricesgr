@@ -1,6 +1,9 @@
 """The various project enums
 """
+import datetime
 import enum
+
+from fuelpricesgr import settings
 
 
 class FuelDataType(enum.Enum):
@@ -16,6 +19,10 @@ class FuelDataType(enum.Enum):
         :param page: The page path, relative to the base URL, from which we will fetch the data.
         """
         self.page = page
+
+    def link(self, date: datetime.date):
+        if self == self.DAILY_COUNTRY:
+            return f'{settings.FETCH_URL}/files/deltia/IMERISIO_DELTIO_PANELLINIO_{date:%d_%m_%Y}.pdf'
 
 
 class FuelType(enum.Enum):

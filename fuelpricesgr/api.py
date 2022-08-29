@@ -7,7 +7,7 @@ import typing
 import fastapi
 import fastapi.middleware.cors
 
-from fuelpricesgr import database
+from fuelpricesgr import database, enums
 
 app = fastapi.FastAPI()
 app.add_middleware(
@@ -50,6 +50,7 @@ async def daily_country_data(
         return [
             {
                 'date': date,
+                'data_file': enums.FuelDataType.DAILY_COUNTRY.link(date=date),
                 'results': [
                     {
                         'fuel_type': row['fuel_type'],

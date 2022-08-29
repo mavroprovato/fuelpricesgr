@@ -16,8 +16,6 @@ import requests
 
 from fuelpricesgr import database, enums, extract, settings
 
-# The base URL
-BASE_URL = 'http://www.fuelprices.gr'
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -114,16 +112,16 @@ def fetch(use_file_cache: bool = True, update: bool = True):
     """
     logger.info("Fetching missing data from the site")
     for fuel_data_type in enums.FuelDataType:
-        page_url = urllib.parse.urljoin(BASE_URL, fuel_data_type.page)
+        page_url = urllib.parse.urljoin(settings.FETCH_URL, fuel_data_type.page)
         logger.info("Processing page %s", page_url)
-        response = requests.get(f"{BASE_URL}/{fuel_data_type.page}")
+        response = requests.get(f"{settings.FETCH_URL}/{fuel_data_type.page}")
         soup = bs4.BeautifulSoup(response.text, 'html.parser')
         for link in soup.find_all('a'):
             if link.has_attr('href') and link['href'].startswith('./files'):
                 file_link = link['href'].replace(' ', '')
                 file_link = re.sub(r'\(\d\)', '', file_link)
                 file_link = re.sub(r'-\?+', '', file_link)
-                file_link = urllib.parse.urljoin(BASE_URL, file_link)
+                file_link = urllib.parse.urljoin(settings.FETCH_URL, file_link)
                 process_link(
                     file_link=file_link, fuel_data_type=fuel_data_type, use_file_cache=use_file_cache, update=update)
 
