@@ -27,6 +27,19 @@ async def index() -> dict:
     return {"status": "OK"}
 
 
+@app.get("/prefectures")
+async def prefectures():
+    """Returns the prefectures.
+    """
+    return [
+        {
+            "name": prefecture.name,
+            "description": prefecture.value,
+        }
+        for prefecture in enums.Prefecture
+    ]
+
+
 @app.get("/data/dailyCountry")
 async def daily_country_data(
         start_date: datetime.date | None = None, end_date: datetime.date | None = None) -> typing.List[dict]:
