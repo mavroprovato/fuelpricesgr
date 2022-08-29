@@ -66,14 +66,25 @@ class Database:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-    def data_exist(self, fuel_data_type: enums.FuelDataType, date: datetime.date):
+    def data_exists(self, fuel_data_type: enums.FuelDataType, date: datetime.date) -> bool:
+        """Checks if data exists for the specified fuel data type and date.
+
+        :param fuel_data_type: The fuel data type.
+        :param date: The date.
+        :return: True if the data exists, False otherwise.
+        """
         match fuel_data_type:
             case enums.FuelDataType.DAILY_COUNTRY:
-                return self.daily_country_data_exist(date=date)
+                return self.daily_country_data_exists(date=date)
             case enums.FuelDataType.DAILY_PREFECTURE:
-                return self.daily_prefecture_data_exist(date=date)
+                return self.daily_prefecture_data_exists(date=date)
 
-    def daily_country_data_exist(self, date: datetime.date):
+    def daily_country_data_exists(self, date: datetime.date) -> bool:
+        """Checks if daily country data exists for the date.
+
+        :param date: The date.
+        :return: True if the data exists, False otherwise.
+        """
         with contextlib.closing(self.conn.cursor()) as cursor:
             cursor.execute("""
                 SELECT COUNT(*) > 1
@@ -83,7 +94,12 @@ class Database:
 
             return cursor.fetchone()[0] == 1
 
-    def daily_prefecture_data_exist(self, date: datetime.date):
+    def daily_prefecture_data_exists(self, date: datetime.date) -> bool:
+        """Checks if daily prefecture data exists for the date.
+
+        :param date: The date.
+        :return: True if the data exists, False otherwise.
+        """
         with contextlib.closing(self.conn.cursor()) as cursor:
             cursor.execute("""
                SELECT COUNT(*) > 1

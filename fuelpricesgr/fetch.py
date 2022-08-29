@@ -97,7 +97,7 @@ def process_link(file_link: str, fuel_data_type: enums.FuelDataType, use_file_ca
         return
 
     with database.Database(read_only=False) as db:
-        if update or not db.data_exist(fuel_data_type=fuel_data_type, date=date):
+        if update or not db.data_exists(fuel_data_type=fuel_data_type, date=date):
             data = extract_data(fuel_data_type=fuel_data_type, date=date, data=file_data)
             for row in data:
                 db.insert_fuel_data(fuel_data_type=fuel_data_type, date=date, data=row)
