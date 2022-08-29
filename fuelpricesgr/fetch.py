@@ -1,5 +1,6 @@
 """Module used to fetch data
 """
+import argparse
 import datetime
 import io
 import logging
@@ -105,12 +106,12 @@ def process_link(file_link: str, fuel_data_type: enums.FuelDataType, use_file_ca
             db.save()
 
 
-def main():
-    """Entry point of the script.
+def fetch(use_file_cache: bool = True, update: bool = True):
+    """Fetch the data from the site and insert to the database.
+
+    :param use_file_cache: True to use the local file cache.
+    :param update: True to update the existing data.
     """
-    logging.basicConfig(
-        stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s %(message)s'
-    )
     logger.info("Fetching missing data from the site")
     for fuel_data_type in enums.FuelDataType:
         page_url = urllib.parse.urljoin(BASE_URL, fuel_data_type.page)
@@ -123,7 +124,22 @@ def main():
                 file_link = re.sub(r'\(\d\)', '', file_link)
                 file_link = re.sub(r'-\?+', '', file_link)
                 file_link = urllib.parse.urljoin(BASE_URL, file_link)
-                process_link(file_link=file_link, fuel_data_type=fuel_data_type)
+                process_link(
+                    file_link=file_link, fuel_data_type=fuel_data_type, use_file_cache=use_file_cache, update=update)
+
+
+def main():
+    """Entry point of the script.
+    """
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s %(message)s'
+    )
+    parser = argparse.ArgumentParser(description='Fetch the data from the site and insert them to the database.')
+    parser.add_argument(
+        '--use_file_cache', default=True, action=argparse.BooleanOptionalAction, help="Use the local file cache")
+    parser.add_argument('--update', default=False, action=argparse.BooleanOptionalAction, help="Update existing data")
+    args = parser.parse_args()
+    fetch(use_file_cache=args.use_file_cache, update=args.update)
 
 
 if __name__ == '__main__':
