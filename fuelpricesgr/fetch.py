@@ -104,14 +104,17 @@ def process_link(file_link: str, fuel_data_type: enums.FuelDataType, use_file_ca
             db.save()
 
 
-def fetch(use_file_cache: bool = True, update: bool = True):
+def fetch(fuel_data_types: typing.List[enums.FuelDataType], use_file_cache: bool = True, update: bool = True):
     """Fetch the data from the site and insert to the database.
 
+    :param fuel_data_types: The fuel data types to parse.
     :param use_file_cache: True to use the local file cache.
     :param update: True to update the existing data.
     """
     logger.info("Fetching missing data from the site")
     for fuel_data_type in enums.FuelDataType:
+        if fuel_data_type not in fuel_data_types:
+            continue
         page_url = urllib.parse.urljoin(settings.FETCH_URL, fuel_data_type.page)
         logger.info("Processing page %s", page_url)
         response = requests.get(f"{settings.FETCH_URL}/{fuel_data_type.page}")
@@ -133,11 +136,20 @@ def main():
         stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s %(message)s'
     )
     parser = argparse.ArgumentParser(description='Fetch the data from the site and insert them to the database.')
+    parser.add_argument('--types', help="Comma separated fuel data types to parse")
     parser.add_argument(
         '--use_file_cache', default=True, action=argparse.BooleanOptionalAction, help="Use the local file cache")
     parser.add_argument('--update', default=False, action=argparse.BooleanOptionalAction, help="Update existing data")
     args = parser.parse_args()
-    fetch(use_file_cache=args.use_file_cache, update=args.update)
+    if args.types:
+        try:
+            fuel_data_types = [enums.FuelDataType[fdt] for fdt in args.types.split(',')]
+        except KeyError:
+            print("Could not parse fuel data types")
+            return
+    else:
+        fuel_data_types = enums.FuelDataType
+    fetch(fuel_data_types=fuel_data_types, use_file_cache=args.use_file_cache, update=args.update)
 
 
 if __name__ == '__main__':
