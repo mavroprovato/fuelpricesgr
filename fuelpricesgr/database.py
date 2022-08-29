@@ -7,6 +7,8 @@ import logging
 import sqlite3
 import typing
 
+import dateutil.parser
+
 from . import enums, settings
 
 # The module logger
@@ -125,7 +127,10 @@ class Database:
                 VALUES(:date, :fuel_type, :number_of_stations, :price)
                 ON CONFLICT(date, fuel_type) DO UPDATE SET number_of_stations = :number_of_stations, price = :price
             """, {
-                'date': date, 'fuel_type': fuel_type.name, 'number_of_stations': number_of_stations, 'price': str(price)
+                'date': date,
+                'fuel_type': fuel_type.name,
+                'number_of_stations': number_of_stations if number_of_stations else None,
+                'price': str(price) if price else None
             })
 
     def insert_daily_prefecture_data(
@@ -144,7 +149,10 @@ class Database:
                 VALUES(:date, :fuel_type, :prefecture, :price)
                 ON CONFLICT(date, fuel_type, prefecture) DO UPDATE SET price = :price
             """, {
-                'date': date, 'fuel_type': fuel_type.name, 'prefecture': prefecture.name, 'price': str(price)
+                'date': date,
+                'fuel_type': fuel_type.name,
+                'prefecture': prefecture.name,
+                'price': str(price) if price else None
             })
 
     def daily_country_data(
@@ -170,9 +178,15 @@ class Database:
                 params['end_date'] = end_date
             sql += " ORDER BY date"
             cursor.execute(sql, params)
-            column_names = [col[0] for col in cursor.description]
 
-            return [dict(zip(column_names, row)) for row in cursor.fetchall()]
+            return [
+                {
+                    'date': dateutil.parser.parse(row[0]).date(),
+                    'fuel_type': enums.FuelType[row[1]],
+                    'number_of_stations': int(row[2]) if row[2] else None,
+                    'price': decimal.Decimal(row[3]) if row[3] else None,
+                } for row in cursor.fetchall()
+            ]
 
     def save(self):
         """Save pending changes to the database.
