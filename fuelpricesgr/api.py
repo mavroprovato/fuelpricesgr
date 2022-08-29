@@ -45,19 +45,7 @@ async def daily_country_data(
         start_date: datetime.date | None = None, end_date: datetime.date | None = None) -> typing.List[dict]:
     """Returns daily country averages.
     """
-    # Make sure that we don't get more days than MAX_DAYS
-    if start_date is None and end_date is None:
-        end_date = datetime.date.today()
-        start_date = end_date - datetime.timedelta(days=MAX_DAYS)
-    elif start_date is None:
-        start_date = end_date - datetime.timedelta(days=MAX_DAYS)
-    elif end_date is None:
-        end_date = start_date + datetime.timedelta(days=MAX_DAYS)
-    elif start_date > end_date:
-        raise fastapi.HTTPException(status_code=400, detail="Start date must be before end date")
-    else:
-        days = (end_date - start_date).days
-        start_date = end_date - datetime.timedelta(days=min(days, MAX_DAYS))
+    end_date, start_date = get_date_range(start_date, end_date)
 
     with database.Database(read_only=True) as db:
         return [
@@ -75,3 +63,27 @@ async def daily_country_data(
                 db.daily_country_data(start_date=start_date, end_date=end_date), lambda x: x['date']
             )
         ]
+
+
+def get_date_range(start_date: datetime.date, end_date: datetime.date) -> typing.Tuple[datetime.date, datetime.date]:
+    """Get the date range from the provided start and end dates.
+
+    :param start_date: The start date.
+    :param end_date: The end date.
+    :return: The date range as a tuple, with the start date as the first element and the end date as the second.
+    """
+    # Make sure that we don't get more days than MAX_DAYS
+    if start_date is None and end_date is None:
+        end_date = datetime.date.today()
+        start_date = end_date - datetime.timedelta(days=MAX_DAYS)
+    elif start_date is None:
+        start_date = end_date - datetime.timedelta(days=MAX_DAYS)
+    elif end_date is None:
+        end_date = start_date + datetime.timedelta(days=MAX_DAYS)
+    elif start_date > end_date:
+        raise fastapi.HTTPException(status_code=400, detail="Start date must be before end date")
+    else:
+        days = (end_date - start_date).days
+        start_date = end_date - datetime.timedelta(days=min(days, MAX_DAYS))
+
+    return end_date, start_date
