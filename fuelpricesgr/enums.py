@@ -20,9 +20,16 @@ class FuelDataType(enum.Enum):
         """
         self.page = page
 
-    def link(self, date: datetime.date):
+    def link(self, date: datetime.date) -> str:
+        """Return the link of the file from which we got the data for the specified date.
+
+        :param date: The date.
+        :return: The file link.
+        """
         if self == self.DAILY_COUNTRY:
             return f'{settings.FETCH_URL}/files/deltia/IMERISIO_DELTIO_PANELLINIO_{date:%d_%m_%Y}.pdf'
+        elif self == self.DAILY_PREFECTURE:
+            return f'{settings.FETCH_URL}/files/deltia/IMERISIO_DELTIO_ANA_NOMO_{date:%d_%m_%Y}.pdf'
 
 
 class FuelType(enum.Enum):

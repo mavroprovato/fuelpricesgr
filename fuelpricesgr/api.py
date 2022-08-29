@@ -43,7 +43,7 @@ async def prefectures():
 @app.get("/data/dailyCountry")
 async def daily_country_data(
         start_date: datetime.date | None = None, end_date: datetime.date | None = None) -> typing.List[dict]:
-    """Returns daily country averages.
+    """Returns daily country data.
     """
     end_date, start_date = get_date_range(start_date, end_date)
 
@@ -61,6 +61,37 @@ async def daily_country_data(
                 ]
             } for date, date_group in itertools.groupby(
                 db.daily_country_data(start_date=start_date, end_date=end_date), lambda x: x['date']
+            )
+        ]
+
+
+@app.get("/data/dailyPrefecture/{prefecture}")
+async def daily_prefecture_data(
+        prefecture: str, start_date: datetime.date | None = None, end_date: datetime.date | None = None
+) -> typing.List[dict]:
+    """Returns daily prefecture averages.
+    """
+    end_date, start_date = get_date_range(start_date, end_date)
+    try:
+        prefecture = enums.Prefecture[prefecture]
+    except KeyError:
+        raise fastapi.HTTPException(status_code=400, detail=f"Invalid prefecture {prefecture}")
+
+    with database.Database(read_only=True) as db:
+        return [
+            {
+                'date': date,
+                'data_file': enums.FuelDataType.DAILY_PREFECTURE.link(date=date),
+                'results': [
+                    {
+                        'fuel_type': row['fuel_type'],
+                        'price': row['price'],
+                    } for row in date_group
+                ]
+            } for date, date_group in itertools.groupby(
+                db.daily_prefecture_data(
+                    prefecture=prefecture, start_date=start_date, end_date=end_date
+                ), lambda x: x['date']
             )
         ]
 
