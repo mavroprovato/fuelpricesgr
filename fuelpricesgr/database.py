@@ -157,7 +157,7 @@ class Database:
 
     def daily_country_data(
             self, start_date: datetime.date | None = None, end_date: datetime.date | None = None) -> typing.List[dict]:
-        """Returns the daily country data. The data are sorted by date.
+        """Returns the daily country data. The data are sorted by date ascending.
 
         :param start_date: The start date.
         :param end_date: The end date.
@@ -185,6 +185,40 @@ class Database:
                     'fuel_type': enums.FuelType[row[1]],
                     'number_of_stations': int(row[2]) if row[2] else None,
                     'price': decimal.Decimal(row[3]) if row[3] else None,
+                } for row in cursor.fetchall()
+            ]
+
+    def daily_prefecture_data(
+            self, prefecture: enums.Prefecture, start_date: datetime.date | None = None,
+            end_date: datetime.date | None = None) -> typing.List[dict]:
+        """Returns the daily prefecture data. The data are sorted by date ascending.
+
+        :param prefecture: The prefecture.
+        :param start_date: The start date.
+        :param end_date: The end date.
+        :return: The daily country data.
+        """
+        with contextlib.closing(self.conn.cursor()) as cursor:
+            sql = "SELECT date, fuel_type, price FROM daily_prefecture WHERE prefecture = :prefecture "
+            params = {'prefecture': prefecture.name}
+            if start_date or end_date:
+                sql += " AND"
+            if start_date:
+                sql += " date >= :start_date"
+                params['start_date'] = start_date
+            if end_date:
+                if start_date:
+                    sql += " AND"
+                sql += " date <= :end_date"
+                params['end_date'] = end_date
+            sql += " ORDER BY date"
+            cursor.execute(sql, params)
+
+            return [
+                {
+                    'date': dateutil.parser.parse(row[0]).date(),
+                    'fuel_type': enums.FuelType[row[1]],
+                    'price': decimal.Decimal(row[2]) if row[2] else None,
                 } for row in cursor.fetchall()
             ]
 
