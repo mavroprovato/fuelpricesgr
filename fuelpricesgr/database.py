@@ -64,6 +64,33 @@ class Database:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
+    def data_exist(self, fuel_data_type: enums.FuelDataType, date: datetime.date):
+        match fuel_data_type:
+            case enums.FuelDataType.DAILY_COUNTRY:
+                return self.daily_country_data_exist(date=date)
+            case enums.FuelDataType.DAILY_PREFECTURE:
+                return self.daily_prefecture_data_exist(date=date)
+
+    def daily_country_data_exist(self, date: datetime.date):
+        with contextlib.closing(self.conn.cursor()) as cursor:
+            cursor.execute("""
+                SELECT COUNT(*) > 1
+                FROM daily_country
+                WHERE date = :date
+            """, {'date': date})
+
+            return cursor.fetchone()[0] == 1
+
+    def daily_prefecture_data_exist(self, date: datetime.date):
+        with contextlib.closing(self.conn.cursor()) as cursor:
+            cursor.execute("""
+               SELECT COUNT(*) > 1
+               FROM daily_prefecture
+               WHERE date = :date
+            """, {'date': date})
+
+            return cursor.fetchone()[0] == 1
+
     def insert_fuel_data(self, fuel_data_type: enums.FuelDataType, date: datetime.date, data: dict):
         """Insert fuel data to the database.
 

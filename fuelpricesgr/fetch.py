@@ -58,14 +58,14 @@ def extract_data(fuel_data_type: enums.FuelDataType, date: datetime.date, data: 
     return extractor(text)
 
 
-def process_link(file_link: str, fuel_data_type: enums.FuelDataType, use_file_cache: bool = True):
+def process_link(file_link: str, fuel_data_type: enums.FuelDataType, use_file_cache: bool = True, update: bool = False):
     """Process a file link. This function downloads the PDF file if needed, extracts the data from it, and inserts the
     data to the database.
 
     :param file_link: The file link.
     :param fuel_data_type: The fuel data type.
     :param use_file_cache: True if we are to save the data file to the local storage
-    :return:
+    :param update: True if we want to update existing data from the database.
     """
     file_name = file_link[file_link.rfind('/') + 1:]
     result = re.search(r'(\d{2})_(\d{2})_(\d{4})', file_name)
@@ -97,11 +97,12 @@ def process_link(file_link: str, fuel_data_type: enums.FuelDataType, use_file_ca
         logger.error("Could not fetch link %s", file_link, exc_info=True)
         return
 
-    data = extract_data(fuel_data_type=fuel_data_type, date=date, data=file_data)
     with database.Database(read_only=False) as db:
-        for row in data:
-            db.insert_fuel_data(fuel_data_type=fuel_data_type, date=date, data=row)
-        db.save()
+        if update or not db.data_exist(fuel_data_type=fuel_data_type, date=date):
+            data = extract_data(fuel_data_type=fuel_data_type, date=date, data=file_data)
+            for row in data:
+                db.insert_fuel_data(fuel_data_type=fuel_data_type, date=date, data=row)
+            db.save()
 
 
 def main():
