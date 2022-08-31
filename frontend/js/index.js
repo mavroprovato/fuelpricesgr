@@ -1,5 +1,5 @@
 const loadData = async () => {
-    const response = await fetch('http://localhost:8000/data/dailyCountry');
+    const response = await fetch('http://localhost:8000/data/country');
     return await response.json()
 }
 

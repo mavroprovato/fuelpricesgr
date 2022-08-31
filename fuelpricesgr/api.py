@@ -27,7 +27,7 @@ async def prefectures() -> list[models.Prefecture]:
     return [models.Prefecture(name=prefecture.name, description=prefecture.value) for prefecture in enums.Prefecture]
 
 
-@app.get("/data/dailyCountry", response_model=list[models.CountryDateResult])
+@app.get("/data/country", response_model=list[models.CountryDateResult])
 async def daily_country_data(
         start_date: datetime.date | None = None, end_date: datetime.date | None = None
 ) -> list[models.CountryDateResult]:
@@ -54,7 +54,7 @@ async def daily_country_data(
         ]
 
 
-@app.get("/data/dailyPrefecture/{prefecture}", response_model=list[models.PrefecturesDateResult])
+@app.get("/data/prefectures/{prefecture}", response_model=list[models.PrefecturesDateResult])
 async def daily_prefecture_data(
         prefecture: str, start_date: datetime.date | None = None, end_date: datetime.date | None = None
 ) -> typing.List[models.PrefecturesDateResult]:
