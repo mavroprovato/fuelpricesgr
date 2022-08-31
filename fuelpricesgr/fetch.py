@@ -112,7 +112,7 @@ def process_link(file_link: str, fuel_data_type: enums.FuelDataType, use_file_ca
             db.save()
 
 
-def fetch(fuel_data_types: typing.List[enums.FuelDataType], use_file_cache: bool = True, update: bool = True,
+def fetch(fuel_data_types: typing.List[enums.FuelDataType] = None, use_file_cache: bool = True, update: bool = True,
           start_date: datetime.date = None, end_date: datetime.date = None):
     """Fetch the data from the site and insert to the database.
 
@@ -124,7 +124,7 @@ def fetch(fuel_data_types: typing.List[enums.FuelDataType], use_file_cache: bool
     """
     logger.info("Fetching missing data from the site")
     for fuel_data_type in enums.FuelDataType:
-        if fuel_data_type not in fuel_data_types:
+        if fuel_data_types is not None and fuel_data_type not in fuel_data_types:
             continue
         page_url = urllib.parse.urljoin(settings.FETCH_URL, fuel_data_type.page)
         logger.info("Processing page %s", page_url)
@@ -142,6 +142,19 @@ def fetch(fuel_data_types: typing.List[enums.FuelDataType], use_file_cache: bool
                 )
 
 
+def parse_fuel_data_types(fuel_data_types: str) -> list[enums.FuelDataType] | None:
+    """Parse the fuel data types argument.
+
+    :param fuel_data_types: The fuel data types argument.
+    :return: The parsed fuel data types or None if the argument is not provided.
+    """
+    if fuel_data_types:
+        try:
+            return [enums.FuelDataType[fdt] for fdt in fuel_data_types.split(',')]
+        except KeyError:
+            raise argparse.ArgumentTypeError("Could not parse fuel data types")
+
+
 def main():
     """Entry point of the script.
     """
@@ -149,8 +162,9 @@ def main():
         stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s %(message)s'
     )
     parser = argparse.ArgumentParser(description='Fetch the data from the site and insert them to the database.')
-    parser.add_argument('--types', help=f"Comma separated fuel data types to fetch. Available types are "
-                                        f"{','.join(fdt.name for fdt in enums.FuelDataType)}")
+    parser.add_argument('--types', type=parse_fuel_data_types,
+                        help=f"Comma separated fuel data types to fetch. Available types are "
+                             f"{','.join(fdt.name for fdt in enums.FuelDataType)}")
     parser.add_argument('--start-date', type=datetime.date.fromisoformat,
                         help="The start date for the data to fetch. The date must be in ISO date format (YYYY-MM-DD)")
     parser.add_argument('--end-date', type=datetime.date.fromisoformat,
@@ -160,16 +174,8 @@ def main():
     parser.add_argument('--update', default=False, action=argparse.BooleanOptionalAction,
                         help="Update existing data. By default existing data are not updated.")
     args = parser.parse_args()
-    if args.types:
-        try:
-            fuel_data_types = [enums.FuelDataType[fdt] for fdt in args.types.split(',')]
-        except KeyError:
-            print("Could not parse fuel data types")
-            return
-    else:
-        fuel_data_types = enums.FuelDataType
     fetch(
-        fuel_data_types=fuel_data_types, use_file_cache=args.use_file_cache, update=args.update,
+        fuel_data_types=args.types, use_file_cache=args.use_file_cache, update=args.update,
         start_date=args.start_date, end_date=args.end_date
     )
 
