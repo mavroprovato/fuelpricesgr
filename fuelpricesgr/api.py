@@ -7,7 +7,7 @@ import typing
 import fastapi
 import fastapi.middleware.cors
 
-from fuelpricesgr import database, enums, settings
+from fuelpricesgr import database, enums, models, settings
 
 app = fastapi.FastAPI()
 app.add_middleware(fastapi.middleware.cors.CORSMiddleware, allow_origins=settings.CORS_ALLOW_ORIGINS)
@@ -21,46 +21,43 @@ async def index() -> dict:
 
 
 @app.get("/prefectures")
-async def prefectures():
+async def prefectures() -> list[models.Prefecture]:
     """Returns the prefectures.
     """
-    return [
-        {
-            "name": prefecture.name,
-            "description": prefecture.value,
-        } for prefecture in enums.Prefecture
-    ]
+    return [models.Prefecture(name=prefecture.name, description=prefecture.value) for prefecture in enums.Prefecture]
 
 
-@app.get("/data/dailyCountry")
+@app.get("/data/dailyCountry", response_model=list[models.CountryDateResult])
 async def daily_country_data(
-        start_date: datetime.date | None = None, end_date: datetime.date | None = None) -> typing.List[dict]:
+        start_date: datetime.date | None = None, end_date: datetime.date | None = None
+) -> list[models.CountryDateResult]:
     """Returns daily country data.
     """
     end_date, start_date = get_date_range(start_date, end_date)
 
     with database.Database(read_only=True) as db:
         return [
-            {
-                'date': date,
-                'data_file': enums.FuelDataType.DAILY_COUNTRY.link(date=date),
-                'results': [
-                    {
-                        'fuel_type': row['fuel_type'],
-                        'number_of_stations': row['number_of_stations'],
-                        'price': row['price'],
-                    } for row in date_group
+            models.CountryDateResult(
+                date=date,
+                data_file=enums.FuelDataType.DAILY_COUNTRY.link(date=date),
+                data=[
+                    models.CountryDateFuelTypeResult(
+                        fuel_type=row['fuel_type'].name,
+                        number_of_stations=row['number_of_stations'],
+                        price=row['price'],
+                    ) for row in date_group
                 ]
-            } for date, date_group in itertools.groupby(
+            )
+            for date, date_group in itertools.groupby(
                 db.daily_country_data(start_date=start_date, end_date=end_date), lambda x: x['date']
             )
         ]
 
 
-@app.get("/data/dailyPrefecture/{prefecture}")
+@app.get("/data/dailyPrefecture/{prefecture}", response_model=list[models.PrefecturesDateResult])
 async def daily_prefecture_data(
         prefecture: str, start_date: datetime.date | None = None, end_date: datetime.date | None = None
-) -> typing.List[dict]:
+) -> typing.List[models.PrefecturesDateResult]:
     """Returns daily prefecture averages.
     """
     end_date, start_date = get_date_range(start_date, end_date)
@@ -71,19 +68,17 @@ async def daily_prefecture_data(
 
     with database.Database(read_only=True) as db:
         return [
-            {
-                'date': date,
-                'data_file': enums.FuelDataType.DAILY_PREFECTURE.link(date=date),
-                'results': [
-                    {
-                        'fuel_type': row['fuel_type'],
-                        'price': row['price'],
-                    } for row in date_group
+            models.PrefecturesDateResult(
+                date=date,
+                data_file=enums.FuelDataType.DAILY_COUNTRY.link(date=date),
+                data=[
+                    models.PrefectureDateFuelTypeResult(fuel_type=row['fuel_type'].name, price=row['price'])
+                    for row in date_group
                 ]
-            } for date, date_group in itertools.groupby(
-                db.daily_prefecture_data(
-                    prefecture=prefecture, start_date=start_date, end_date=end_date
-                ), lambda x: x['date']
+            )
+            for date, date_group in itertools.groupby(
+                db.daily_prefecture_data(start_date=start_date, end_date=end_date, prefecture=prefecture),
+                lambda x: x['date']
             )
         ]
 

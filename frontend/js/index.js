@@ -41,7 +41,7 @@ loadData().then(data => {
         for (const fuelType in FuelType) {
             prices[fuelType].push(null);
         }
-        for (const result of row['results']) {
+        for (const result of row['data']) {
             prices[result['fuel_type']][prices[result['fuel_type']].length - 1] = result['price'];
         }
     }
