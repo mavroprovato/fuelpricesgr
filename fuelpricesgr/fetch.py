@@ -57,7 +57,8 @@ def extract_data(fuel_data_type: enums.FuelDataType, date: datetime.date, data: 
     return extractor(text)
 
 
-def process_link(file_link: str, fuel_data_type: enums.FuelDataType, use_file_cache: bool = True, update: bool = False):
+def process_link(file_link: str, fuel_data_type: enums.FuelDataType, use_file_cache: bool = True, update: bool = False,
+                 start_date: datetime.date = None, end_date: datetime.date = None):
     """Process a file link. This function downloads the PDF file if needed, extracts the data from it, and inserts the
     data to the database.
 
@@ -65,13 +66,20 @@ def process_link(file_link: str, fuel_data_type: enums.FuelDataType, use_file_ca
     :param fuel_data_type: The fuel data type.
     :param use_file_cache: True if we are to save the data file to the local storage
     :param update: True if we want to update existing data from the database.
+    :param start_date: The start date for the data to process. Can be None.
+    :param end_date: The end date for the data to process. Can be None.
     """
     file_name = file_link[file_link.rfind('/') + 1:]
     result = re.search(r'(\d{2})_(\d{2})_(\d{4})', file_name)
     if not result:
-        logger.warning("Could not find date in file name")
+        logger.error("Could not find date in file name")
         return
     date = datetime.date(day=int(result[1]), month=int(result[2]), year=int(result[3]))
+    if start_date is not None and date > start_date:
+        return
+    if end_date is not None and date < end_date:
+        return
+
     try:
         if use_file_cache:
             file_path = settings.DATA_PATH / fuel_data_type.name / file_name
@@ -104,12 +112,15 @@ def process_link(file_link: str, fuel_data_type: enums.FuelDataType, use_file_ca
             db.save()
 
 
-def fetch(fuel_data_types: typing.List[enums.FuelDataType], use_file_cache: bool = True, update: bool = True):
+def fetch(fuel_data_types: typing.List[enums.FuelDataType], use_file_cache: bool = True, update: bool = True,
+          start_date: datetime.date = None, end_date: datetime.date = None):
     """Fetch the data from the site and insert to the database.
 
     :param fuel_data_types: The fuel data types to parse.
     :param use_file_cache: True to use the local file cache.
     :param update: True to update the existing data.
+    :param start_date: The start date for the data to process. Can be None.
+    :param end_date: The end date for the data to process. Can be None.
     """
     logger.info("Fetching missing data from the site")
     for fuel_data_type in enums.FuelDataType:
@@ -126,7 +137,9 @@ def fetch(fuel_data_types: typing.List[enums.FuelDataType], use_file_cache: bool
                 file_link = re.sub(r'-\?+', '', file_link)
                 file_link = urllib.parse.urljoin(settings.FETCH_URL, file_link)
                 process_link(
-                    file_link=file_link, fuel_data_type=fuel_data_type, use_file_cache=use_file_cache, update=update)
+                    file_link=file_link, fuel_data_type=fuel_data_type, use_file_cache=use_file_cache, update=update,
+                    start_date=start_date, end_date=end_date
+                )
 
 
 def main():
@@ -136,10 +149,16 @@ def main():
         stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s %(message)s'
     )
     parser = argparse.ArgumentParser(description='Fetch the data from the site and insert them to the database.')
-    parser.add_argument('--types', help="Comma separated fuel data types to parse")
-    parser.add_argument(
-        '--use_file_cache', default=True, action=argparse.BooleanOptionalAction, help="Use the local file cache")
-    parser.add_argument('--update', default=False, action=argparse.BooleanOptionalAction, help="Update existing data")
+    parser.add_argument('--types', help=f"Comma separated fuel data types to fetch. Available types are "
+                                        f"{','.join(fdt.name for fdt in enums.FuelDataType)}")
+    parser.add_argument('--start-date', type=datetime.date.fromisoformat,
+                        help="The start date for the data to fetch. The date must be in ISO date format (YYYY-MM-DD)")
+    parser.add_argument('--end-date', type=datetime.date.fromisoformat,
+                        help="The end date for the data to fetch. The date must be in ISO date format (YYYY-MM-DD)")
+    parser.add_argument('--use_file_cache', default=True, action=argparse.BooleanOptionalAction,
+                        help="Use the file cache. By default, the file cache is used.")
+    parser.add_argument('--update', default=False, action=argparse.BooleanOptionalAction,
+                        help="Update existing data. By default existing data are not updated.")
     args = parser.parse_args()
     if args.types:
         try:
@@ -149,7 +168,10 @@ def main():
             return
     else:
         fuel_data_types = enums.FuelDataType
-    fetch(fuel_data_types=fuel_data_types, use_file_cache=args.use_file_cache, update=args.update)
+    fetch(
+        fuel_data_types=fuel_data_types, use_file_cache=args.use_file_cache, update=args.update,
+        start_date=args.start_date, end_date=args.end_date
+    )
 
 
 if __name__ == '__main__':
