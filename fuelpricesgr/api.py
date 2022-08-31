@@ -28,8 +28,7 @@ async def prefectures():
         {
             "name": prefecture.name,
             "description": prefecture.value,
-        }
-        for prefecture in enums.Prefecture
+        } for prefecture in enums.Prefecture
     ]
 
 
