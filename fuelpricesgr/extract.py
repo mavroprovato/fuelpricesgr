@@ -90,59 +90,49 @@ def extract_daily_country_data(text: str) -> typing.List[dict]:
     """
     data = []
 
-    for line in text.splitlines():
-        line = ' '.join(line.strip().split())
+    matches = {}
+    if match := re.search(r'Αμόλ[υσ]βδ[ηθ] 95 οκ ?[τη]\. +([\d.,\- ]+)', text):
+        matches[enums.FuelType.UNLEADED_95] = match[1]
+    else:
+        logger.warning(f"Cannot find data for {enums.FuelType.UNLEADED_95} in daily country data")
+    if match := re.search(r'Αμόλ?[υσ]β ?δ ?[ηθ] +10 ?0 +ο ?κ ?[τη]\. +([\d.,\- ]+)', text):
+        matches[enums.FuelType.UNLEADED_100] = match[1]
+    else:
+        logger.warning(f"Cannot find data for {enums.FuelType.UNLEADED_100} in daily country data")
+    if match := re.search(r'Super +([\d.,\- #ΔΙΑΡ/0!]+)', text):
+        matches[enums.FuelType.SUPER] = match[1]
+    else:
+        logger.warning(f"Cannot find data for {enums.FuelType.SUPER} in daily country data")
+    if match := re.search(r'Die ?s ?el +Κ ?ί ?ν ?[ηθ] ?[σζς] ?[ηθ] ?[ςσ] +([\d.,\- ]+)', text):
+        matches[enums.FuelType.DIESEL] = match[1]
+    else:
+        logger.warning(f"Cannot find data for {enums.FuelType.DIESEL} in daily country data")
+    if match := re.search(
+            r'Die ?s ?e ?l Θ ?[έζ] ?ρ ?μ ?α ?ν ?[σζς] ?[ηθ] ?[ςσ] +Κ ?α ?[τη] ?΄ ?ο ?ί ?κ ?ο ?ν +([\d.,\- ]+)', text):
+        matches[enums.FuelType.DIESEL_HEATING] = match[1]
+    else:
+        logger.warning(f"Cannot find data for {enums.FuelType.DIESEL_HEATING} in daily country data")
+    if match := re.search(
+            r'[ΥT]γρ ?α[έσζ] ?ριο\s+κί ?ν[ηθ] ?[σζς] ?[ηθ][ςσ]\s+\(A ?ut ?o ?g ?a ?s ?\) +([\d.,\- ]+)', text):
+        matches[enums.FuelType.GAS] = match[1]
+    else:
+        logger.warning(f"Cannot find data for {enums.FuelType.GAS} in daily country data")
 
-        if match := re.search(r'^Αμόλ[υσ]βδ[ηθ] 95 οκ[τη]\.', line):
-            fuel_type = enums.FuelType.UNLEADED_95
-        elif match := re.search(r'^Αμόλ[υσ]βδ[ηθ] 100 ο ?κ ?[τη]\.', line):
-            fuel_type = enums.FuelType.UNLEADED_100
-        elif match := re.search(r'^Super', line):
-            fuel_type = enums.FuelType.SUPER
-        elif match := re.search(r'^Diesel Κί ?ν[ηθ][σζς][ηθ] ?[ςσ]', line):
-            fuel_type = enums.FuelType.DIESEL
-        elif match := re.search(r'^Diesel Θ[έζ]ρμαν[ζσς][ηθ][ςσ] Κα[τη]΄οίκον', line):
-            fuel_type = enums.FuelType.DIESEL_HEATING
-        elif match := re.search(r'^Υγρα[έζ]ριο κί ?ν[ηθ] ?[σςζ] ?[ηθ][ςσ] \(A ?ut ?o ?g ?a ?s ?\)', line):
-            fuel_type = enums.FuelType.GAS
-        else:
-            continue
-
-        line = line[match.span(0)[1] + 1:]
-        parts = line.strip().split()
-        if len(parts) == 2:
-            number_of_stations_str = parts[0]
-            price_str = parts[1]
-        elif len(parts) == 3:
-            if parts[1].find(',') != -1:
-                number_of_stations_str = parts[0]
-                price_str = parts[1] + parts[2]
-            elif parts[0].find('.') != -1:
-                number_of_stations_str = parts[0] + parts[1]
-                price_str = parts[2]
-            else:
-                logger.error("Could not get daily country prices for fuel type %s", fuel_type)
-                continue
-        elif len(parts) == 4:
-            number_of_stations_str = parts[0] + parts[1]
-            price_str = parts[2] + parts[3]
-        else:
-            logger.error("No daily country prices for fuel type %s", fuel_type)
-            continue
-
-        try:
+    for fuel_type, fuel_type_text in matches.items():
+        if fuel_type_text.strip():
+            matches = re.match(r'(\d? ?\.?\d ?\d ?\d|\d? ?\d? ?\d?|-) +(\d?[,.] ?\d ?\d ?\d|-|#ΔΙΑΙΡ\./0!)',
+                               fuel_type_text)
+            if not matches or len(matches.groups()) != 2:
+                raise ValueError(f"Could not parse data for fuel type {fuel_type}")
             number_of_stations = None
-            if number_of_stations_str != '-':
-                number_of_stations = int(number_of_stations_str.replace('.', ''))
+            if matches.group(1) != '-':
+                number_of_stations = int(matches.group(1).replace(' ', '').replace('.', ''))
             price = None
-            if price_str not in ('-', '#ΔΙΑΙΡ./0!'):
-                price = decimal.Decimal(price_str.replace(',', '.'))
-            if number_of_stations or price:
-                data.append({
-                    'fuel_type': fuel_type, 'number_of_stations': number_of_stations, 'price': price
-                })
-        except (ValueError, decimal.DecimalException):
-            logger.error("Could not daily country prices for fuel type %s", fuel_type, exc_info=True)
+            if matches.group(2) != '-' and matches.group(2) != '#ΔΙΑΙΡ./0!':
+                price = decimal.Decimal(matches.group(2).replace(' ', '').replace(',', '.'))
+            data.append({
+                'fuel_type': fuel_type, 'number_of_stations': number_of_stations, 'price': price
+            })
 
     return data
 
