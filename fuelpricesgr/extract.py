@@ -108,7 +108,7 @@ def extract_daily_country_data(text: str) -> typing.List[dict]:
     else:
         logger.warning(f"Cannot find data for {enums.FuelType.DIESEL} in daily country data")
     if match := re.search(
-            r'Die ?s ?e ?l Θ ?[έζ] ?ρ ?μ ?α ?ν ?[σζς] ?[ηθ] ?[ςσ] +Κ ?α ?[τη] ?΄ ?ο ?ί ?κ ?ο ?ν +([\d.,\- ]+)', text):
+            r'Die ?s ?e ?l +Θ ?[έζ] ?ρ ?μ ?α ?ν ?[σζς] ?[ηθ] ?[ςσ] +Κ ?α ?[τη] ?΄ ?ο ?ί ?κ ?ο ?ν +([\d.,\- ]+)', text):
         matches[enums.FuelType.DIESEL_HEATING] = match[1]
     else:
         logger.warning(f"Cannot find data for {enums.FuelType.DIESEL_HEATING} in daily country data")
