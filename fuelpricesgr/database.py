@@ -184,14 +184,10 @@ class Database:
             params = {}
             if start_date or end_date:
                 sql += " WHERE"
-            if start_date:
-                sql += " date >= :start_date"
-                params['start_date'] = start_date
-            if end_date:
-                if start_date:
-                    sql += " AND"
-                sql += " date <= :end_date"
-                params['end_date'] = end_date
+            date_sql, date_params = self._add_date_restriction(start_date=start_date, end_date=end_date)
+            if date_sql:
+                sql += date_sql
+            params.update(date_params)
             sql += " ORDER BY date"
             cursor.execute(sql, params)
 
@@ -219,14 +215,10 @@ class Database:
             params = {'prefecture': prefecture.name}
             if start_date or end_date:
                 sql += " AND"
-            if start_date:
-                sql += " date >= :start_date"
-                params['start_date'] = start_date
-            if end_date:
-                if start_date:
-                    sql += " AND"
-                sql += " date <= :end_date"
-                params['end_date'] = end_date
+            date_sql, date_params = self._add_date_restriction(start_date=start_date, end_date=end_date)
+            if date_sql:
+                sql += date_sql
+            params.update(date_params)
             sql += " ORDER BY date"
             cursor.execute(sql, params)
 
@@ -237,6 +229,29 @@ class Database:
                     'price': decimal.Decimal(row[2]) if row[2] else None,
                 } for row in cursor.fetchall()
             ]
+
+    @staticmethod
+    def _add_date_restriction(
+            start_date: datetime.date | None, end_date: datetime.date | None) -> tuple[str, dict]:
+        """Add date restrictions for tables that have a column named date.
+
+        :param start_date: The start date.
+        :param end_date: The end date.
+        :return: A tuple with the SQL clause for the restriction and the parameters needed to be added to run the query.
+        """
+        sql = ''
+        params = {}
+
+        if start_date:
+            sql += " date >= :start_date"
+            params['start_date'] = start_date
+        if end_date:
+            if start_date:
+                sql += " AND"
+            sql += " date <= :end_date"
+            params['end_date'] = end_date
+
+        return sql, params
 
     def save(self):
         """Save pending changes to the database.
