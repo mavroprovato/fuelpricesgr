@@ -80,6 +80,8 @@ def get_extractor(fuel_data_type: enums.FuelDataType) -> collections.abc.Callabl
             return extract_daily_country_data
         case enums.FuelDataType.DAILY_PREFECTURE:
             return extract_daily_prefecture_data
+        case enums.FuelDataType.WEEKLY:
+            return extract_weekly_data
 
 
 def extract_daily_country_data(text: str) -> list[dict]:
@@ -234,3 +236,22 @@ def extract_daily_prefecture_data(text: str) -> list[dict]:
         ]
 
     return data
+
+
+def extract_weekly_data(text: str) -> list[dict]:
+    unleaded_95_match = re.search(r'Απ ?λ ?[ήι] +Αμ ?όλ ?υβδ ?[ηθ] Β ?ε ?ν ?[ζη]ί ?ν[ηθ] +9 ?5 οκ ?τα ?ν ?ίω ?ν', text)
+    if unleaded_95_match:
+        pass
+    else:
+        raise ValueError(f"Could not find weekly data for {enums.FuelType.UNLEADED_95}")
+
+    diesel_match = re.search(
+        r'Π ?ε[τη][ρξ] ?[έζ] ?[λι] ?α[ιη] ?[ον] +Κ ?ί ?[νλ] ?[ηθε] ?[σςζ] ?[ηθε] ?[ςσο] +\( ?B ?i ?o ?d ?ies ?e ?l ?\)',
+        text
+    )
+    if diesel_match:
+        pass
+    else:
+        logger.error("Could not find weekly data for %s", enums.FuelType.DIESEL)
+
+    return []
