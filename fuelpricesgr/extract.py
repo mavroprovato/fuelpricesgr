@@ -254,4 +254,13 @@ def extract_weekly_data(text: str) -> list[dict]:
     else:
         logger.error("Could not find weekly data for %s", enums.FuelType.DIESEL)
 
+    diesel_heating_match = re.search(
+        r'Π ?ετ ?ρ ?[έζ] ?λ ?α ?ι ?ο +Θ ?[έζ] ?ρμ ?αν[σς] ?[ηθ][ςσ] +\(Κα ?τ ?΄ο ?ί ?κον ?\)',
+        text
+    )
+    if diesel_heating_match:
+        pass
+    else:
+        logger.error("Could not find weekly data for %s", enums.FuelType.DIESEL_HEATING)
+
     return []
