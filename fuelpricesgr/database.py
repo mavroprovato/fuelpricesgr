@@ -5,7 +5,6 @@ import datetime
 import decimal
 import logging
 import sqlite3
-import typing
 
 import dateutil.parser
 
@@ -172,7 +171,7 @@ class Database:
             })
 
     def daily_country_data(
-            self, start_date: datetime.date | None = None, end_date: datetime.date | None = None) -> typing.List[dict]:
+            self, start_date: datetime.date | None = None, end_date: datetime.date | None = None) -> list[dict]:
         """Returns the daily country data. The data are sorted by date ascending.
 
         :param start_date: The start date.
@@ -202,7 +201,7 @@ class Database:
 
     def daily_prefecture_data(
             self, prefecture: enums.Prefecture, start_date: datetime.date | None = None,
-            end_date: datetime.date | None = None) -> typing.List[dict]:
+            end_date: datetime.date | None = None) -> list[dict]:
         """Returns the daily prefecture data. The data are sorted by date ascending.
 
         :param prefecture: The prefecture.

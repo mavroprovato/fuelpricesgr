@@ -1,9 +1,9 @@
 """Contains functions used to extract data from PDF file text.
 """
+import collections.abc
 import decimal
 import logging
 import re
-import typing
 
 from fuelpricesgr import enums
 
@@ -69,7 +69,7 @@ PREFECTURE_REGEXES = {
 }
 
 
-def get_extractor(fuel_data_type: enums.FuelDataType) -> typing.Callable[[str], typing.List[dict]] | None:
+def get_extractor(fuel_data_type: enums.FuelDataType) -> collections.abc.Callable[[str], list[dict]] | None:
     """Returns the data extractor function for a fuel data type.
 
     :param fuel_data_type: The fuel data type.
@@ -82,7 +82,7 @@ def get_extractor(fuel_data_type: enums.FuelDataType) -> typing.Callable[[str], 
             return extract_daily_prefecture_data
 
 
-def extract_daily_country_data(text: str) -> typing.List[dict]:
+def extract_daily_country_data(text: str) -> list[dict]:
     """Extract daily country data.
 
     :param text: The PDF file text.
@@ -137,7 +137,7 @@ def extract_daily_country_data(text: str) -> typing.List[dict]:
     return data
 
 
-def extract_fuel_types(text: str) -> typing.Tuple[typing.List[enums.FuelType], int]:
+def extract_fuel_types(text: str) -> tuple[list[enums.FuelType], int]:
     """Get the fuel types from the PDF text. The fuel types are ordered in the order they appear in the text.
 
     :param text: The PDF file text.
@@ -193,7 +193,7 @@ def extract_prefecture(prefecture_text: str) -> enums.Prefecture:
     raise ValueError(f"Could not parse prefecture text: {prefecture_text}")
 
 
-def extract_daily_prefecture_data(text: str) -> typing.List[dict]:
+def extract_daily_prefecture_data(text: str) -> list[dict]:
     """Extract daily country data.
 
     :param text: The PDF file text.

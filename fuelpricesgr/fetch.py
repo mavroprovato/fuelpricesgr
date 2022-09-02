@@ -6,7 +6,6 @@ import io
 import logging
 import re
 import sys
-import typing
 import urllib.parse
 
 import bs4
@@ -21,7 +20,7 @@ from fuelpricesgr import database, enums, extract, settings
 logger = logging.getLogger(__name__)
 
 
-def pdf_to_text(pdf_file: bytes) -> typing.Optional[str]:
+def pdf_to_text(pdf_file: bytes) -> str | None:
     """Extract text from a PDF file.
 
     :param pdf_file: The PRF file.
@@ -35,7 +34,7 @@ def pdf_to_text(pdf_file: bytes) -> typing.Optional[str]:
         logger.error("Error parsing PDF data", exc_info=True)
 
 
-def extract_data(fuel_data_type: enums.FuelDataType, date: datetime.date, data: bytes) -> typing.List[dict]:
+def extract_data(fuel_data_type: enums.FuelDataType, date: datetime.date, data: bytes) -> list[dict]:
     """Extract fuel data from a PDF file.
 
     :param fuel_data_type: The type of fuel data.
@@ -112,7 +111,7 @@ def process_link(file_link: str, fuel_data_type: enums.FuelDataType, use_file_ca
             db.save()
 
 
-def fetch(fuel_data_types: typing.List[enums.FuelDataType] = None, use_file_cache: bool = True, update: bool = True,
+def fetch(fuel_data_types: list[enums.FuelDataType] = None, use_file_cache: bool = True, update: bool = True,
           start_date: datetime.date = None, end_date: datetime.date = None):
     """Fetch the data from the site and insert to the database.
 

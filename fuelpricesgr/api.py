@@ -2,7 +2,6 @@
 """
 import datetime
 import itertools
-import typing
 
 import fastapi
 import fastapi.middleware.cors
@@ -57,7 +56,7 @@ async def daily_country_data(
 @app.get("/data/prefectures/{prefecture}", response_model=list[models.PrefecturesDateResult])
 async def daily_prefecture_data(
         prefecture: str, start_date: datetime.date | None = None, end_date: datetime.date | None = None
-) -> typing.List[models.PrefecturesDateResult]:
+) -> list[models.PrefecturesDateResult]:
     """Returns daily prefecture averages.
     """
     end_date, start_date = get_date_range(start_date, end_date)
@@ -83,7 +82,7 @@ async def daily_prefecture_data(
         ]
 
 
-def get_date_range(start_date: datetime.date, end_date: datetime.date) -> typing.Tuple[datetime.date, datetime.date]:
+def get_date_range(start_date: datetime.date, end_date: datetime.date) -> tuple[datetime.date, datetime.date]:
     """Get the date range from the provided start and end dates.
 
     :param start_date: The start date.
