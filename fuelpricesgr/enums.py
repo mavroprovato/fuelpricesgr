@@ -9,9 +9,9 @@ from fuelpricesgr import settings
 class FuelDataType(enum.Enum):
     """Enumeration for the different types of fuel data.
     """
-    WEEKLY = 'deltia.view',
-    DAILY_COUNTRY = 'deltia_d.view',
-    DAILY_PREFECTURE = 'deltia_dn.view',
+    WEEKLY = 'deltia.view'
+    DAILY_COUNTRY = 'deltia_d.view'
+    DAILY_PREFECTURE = 'deltia_dn.view'
 
     def __init__(self, page: str):
         """Creates the enum.
@@ -20,7 +20,7 @@ class FuelDataType(enum.Enum):
         """
         self.page = page
 
-    def link(self, date: datetime.date) -> str:
+    def link(self, date: datetime.date) -> str | None:
         """Return the link of the file from which we got the data for the specified date.
 
         :param date: The date.
@@ -28,8 +28,10 @@ class FuelDataType(enum.Enum):
         """
         if self == self.DAILY_COUNTRY:
             return f'{settings.FETCH_URL}/files/deltia/IMERISIO_DELTIO_PANELLINIO_{date:%d_%m_%Y}.pdf'
-        elif self == self.DAILY_PREFECTURE:
+        if self == self.DAILY_PREFECTURE:
             return f'{settings.FETCH_URL}/files/deltia/IMERISIO_DELTIO_ANA_NOMO_{date:%d_%m_%Y}.pdf'
+
+        return None
 
 
 class FuelType(enum.Enum):

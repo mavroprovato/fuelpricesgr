@@ -94,29 +94,29 @@ def extract_daily_country_data(text: str) -> list[dict]:
     if match := re.search(r'Αμόλ[υσ]βδ[ηθ] 95 οκ ?[τη]\. +([\d.,\- ]+)', text):
         matches[enums.FuelType.UNLEADED_95] = match[1]
     else:
-        logger.warning(f"Cannot find data for {enums.FuelType.UNLEADED_95} in daily country data")
+        logger.warning("Cannot find data for %s in daily country data", enums.FuelType.UNLEADED_95)
     if match := re.search(r'Αμόλ?[υσ]β ?δ ?[ηθ] +10 ?0 +ο ?κ ?[τη]\. +([\d.,\- ]+)', text):
         matches[enums.FuelType.UNLEADED_100] = match[1]
     else:
-        logger.warning(f"Cannot find data for {enums.FuelType.UNLEADED_100} in daily country data")
+        logger.warning("Cannot find data for %s in daily country data", enums.FuelType.UNLEADED_100)
     if match := re.search(r'Super +([\d.,\- #ΔΙΑΡ/0!]+)', text):
         matches[enums.FuelType.SUPER] = match[1]
     else:
-        logger.warning(f"Cannot find data for {enums.FuelType.SUPER} in daily country data")
+        logger.warning("Cannot find data for %s in daily country data", enums.FuelType.SUPER)
     if match := re.search(r'Die ?s ?el +Κ ?ί ?ν ?[ηθ] ?[σζς] ?[ηθ] ?[ςσ] +([\d.,\- ]+)', text):
         matches[enums.FuelType.DIESEL] = match[1]
     else:
-        logger.warning(f"Cannot find data for {enums.FuelType.DIESEL} in daily country data")
+        logger.warning("Cannot find data for %s in daily country data", enums.FuelType.DIESEL)
     if match := re.search(
             r'Die ?s ?e ?l +Θ ?[έζ] ?ρ ?μ ?α ?ν ?[σζς] ?[ηθ] ?[ςσ] +Κ ?α ?[τη] ?΄ ?ο ?ί ?κ ?ο ?ν +([\d.,\- ]+)', text):
         matches[enums.FuelType.DIESEL_HEATING] = match[1]
     else:
-        logger.warning(f"Cannot find data for {enums.FuelType.DIESEL_HEATING} in daily country data")
+        logger.warning("Cannot find data for %s in daily country data", enums.FuelType.DIESEL_HEATING)
     if match := re.search(
             r'[ΥT]γρ ?α[έσζ] ?ριο\s+κί ?ν[ηθ] ?[σζς] ?[ηθ][ςσ]\s+\(A ?ut ?o ?g ?a ?s ?\) +([\d.,\- ]+)', text):
         matches[enums.FuelType.GAS] = match[1]
     else:
-        logger.warning(f"Cannot find data for {enums.FuelType.GAS} in daily country data")
+        logger.warning("Cannot find data for %s in daily country data", enums.FuelType.GAS)
 
     for fuel_type, fuel_type_text in matches.items():
         if fuel_type_text.strip():

@@ -33,6 +33,8 @@ def pdf_to_text(pdf_file: bytes) -> str | None:
     except PyPDF2.errors.PdfReadError:
         logger.error("Error parsing PDF data", exc_info=True)
 
+        return None
+
 
 def extract_data(fuel_data_type: enums.FuelDataType, date: datetime.date, data: bytes) -> list[dict]:
     """Extract fuel data from a PDF file.
@@ -84,19 +86,19 @@ def process_link(file_link: str, fuel_data_type: enums.FuelDataType, use_file_ca
             file_path = settings.DATA_PATH / fuel_data_type.name / file_name
             if file_path.exists():
                 logger.debug("Loading from local cache")
-                with file_path.open('rb') as f:
-                    file_data = f.read()
+                with file_path.open('rb') as file:
+                    file_data = file.read()
             else:
                 logger.info("Fetching file")
-                response = requests.get(file_link, stream=True)
+                response = requests.get(file_link, stream=True, timeout=settings.REQUESTS_TIMEOUT)
                 response.raise_for_status()
                 file_path.parent.mkdir(parents=True, exist_ok=True)
                 file_data = response.raw.read()
-                with file_path.open('wb') as f:
-                    f.write(file_data)
+                with file_path.open('wb') as file:
+                    file.write(file_data)
         else:
             logger.info("Fetching file")
-            response = requests.get(file_link, stream=True)
+            response = requests.get(file_link, stream=True, timeout=settings.REQUESTS_TIMEOUT)
             response.raise_for_status()
             file_data = response.raw.read()
     except requests.HTTPError:
@@ -127,7 +129,7 @@ def fetch(fuel_data_types: list[enums.FuelDataType] = None, use_file_cache: bool
             continue
         page_url = urllib.parse.urljoin(settings.FETCH_URL, fuel_data_type.page)
         logger.info("Processing page %s", page_url)
-        response = requests.get(f"{settings.FETCH_URL}/{fuel_data_type.page}")
+        response = requests.get(f"{settings.FETCH_URL}/{fuel_data_type.page}", timeout=settings.REQUESTS_TIMEOUT)
         soup = bs4.BeautifulSoup(response.text, 'html.parser')
         for link in soup.find_all('a'):
             if link.has_attr('href') and link['href'].startswith('./files'):
@@ -150,8 +152,10 @@ def parse_fuel_data_types(fuel_data_types: str) -> list[enums.FuelDataType] | No
     if fuel_data_types:
         try:
             return [enums.FuelDataType[fdt] for fdt in fuel_data_types.split(',')]
-        except KeyError:
-            raise argparse.ArgumentTypeError("Could not parse fuel data types")
+        except KeyError as exc:
+            raise argparse.ArgumentTypeError("Could not parse fuel data types") from exc
+
+    return None
 
 
 def main():

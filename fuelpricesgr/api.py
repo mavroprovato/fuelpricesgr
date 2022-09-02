@@ -62,8 +62,8 @@ async def daily_prefecture_data(
     end_date, start_date = get_date_range(start_date, end_date)
     try:
         prefecture = enums.Prefecture[prefecture]
-    except KeyError:
-        raise fastapi.HTTPException(status_code=400, detail=f"Invalid prefecture {prefecture}")
+    except KeyError as exc:
+        raise fastapi.HTTPException(status_code=400, detail=f"Invalid prefecture {prefecture}") from exc
 
     with database.Database(read_only=True) as db:
         return [
