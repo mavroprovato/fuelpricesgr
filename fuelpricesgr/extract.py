@@ -122,8 +122,8 @@ def extract_daily_country_data(text: str) -> list[dict]:
 
     for fuel_type, fuel_type_text in matches.items():
         if fuel_type_text.strip():
-            matches = re.match(r'(\d? ?\.?\d ?\d ?\d|\d? ?\d? ?\d?|-) +(\d?[,.] ?\d ?\d ?\d|-|#ΔΙΑΙΡ\./0!)',
-                               fuel_type_text)
+            matches = re.match(
+                r'(\d? ?\.?\d ?\d ?\d|\d? ?\d? ?\d?|-) +(\d?[,.] ?\d ?\d ?\d|-|#ΔΙΑΙΡ\./0!)', fuel_type_text)
             if not matches or len(matches.groups()) != 2:
                 raise ValueError(f"Could not parse data for fuel type {fuel_type}")
             number_of_stations = None
@@ -237,6 +237,11 @@ def extract_daily_prefecture_data(text: str) -> list[dict]:
 
 
 def extract_weekly_data(text: str) -> list[dict]:
+    """Extract daily country data.
+
+    :param text: The PDF file text.
+    :return: The data. It is a list of dicts with fuel_type, lowest_price, highest_price and median_price as keys.
+    """
     unleaded_95_match = re.search(r'Απ ?λ ?[ήι] +Αμ ?όλ ?υβδ ?[ηθ] Β ?ε ?ν ?[ζη]ί ?ν[ηθ] +9 ?5 οκ ?τα ?ν ?ίω ?ν', text)
     if not unleaded_95_match:
         raise ValueError(f"Could not find weekly data for {enums.FuelType.UNLEADED_95}")
@@ -260,11 +265,12 @@ def extract_weekly_data(text: str) -> list[dict]:
     }
     if diesel_match:
         matches[enums.FuelType.DIESEL] = text[
-                                         diesel_match.span()[1]:(
-                                             diesel_heating_match.span()[0] if diesel_heating_match else None)
-                                         ]
+            diesel_match.span()[1]:(diesel_heating_match.span()[0] if diesel_heating_match else None)
+        ]
     if diesel_heating_match:
         matches[enums.FuelType.DIESEL_HEATING] = text[diesel_heating_match.span()[1]:]
+
+    data = []
     for fuel_type, prices_text in matches.items():
         prices_text = re.sub(
             r'ΝΟ ?Μ ?Ο ?[Σ\u03a2]\s+'
@@ -272,11 +278,22 @@ def extract_weekly_data(text: str) -> list[dict]:
             r'ΜΕ ?[Σ\u03a2] ?Η\s+Α ?Ν ?Ω ?[ΤΣ] ?Α ?[ΤΣ] ?Η\s+ΜΕ\s+Φ ?Π ?Α\s+'
             r'(ΔΙΑ ?Μ ?Ε ?[Σ\u03a2] ?Ο ?[Σ\u03a2]|MΕ ?[Σ\u03a2] ?Η)\s+[ΤΣ] ?Ι ?Μ ?Η', '', prices_text, re.MULTILINE)
         results = re.findall(
-            r'ΝΟ ?Μ ?Ο ?[Σ\u03a2] +([\D ]+) +([0-9,]+) +([0-9,]+) +([0-9,]+)', prices_text, re.MULTILINE)
+            r'ΝΟ ?Μ ?Ο ?[Σ\u03a2] +(\D+) ([0-9,\-\s]+)', prices_text, re.MULTILINE)
         if len(results) != len(enums.Prefecture):
             raise ValueError("Could not find all prefectures")
         for result in results:
             prefecture = extract_prefecture(result[0])
-            # TODO get data
+            prices = re.findall(r'\d[,.]\d ?\d ?\d', result[1].strip(), re.MULTILINE)
+            if len(prices) != 3:
+                raise ValueError("Could not parse prices")
+            lowest_price, highest_price, median_price = (
+                decimal.Decimal(prices[0].replace(' ', '').replace(',', '.')),
+                decimal.Decimal(prices[1].replace(' ', '').replace(',', '.')),
+                decimal.Decimal(prices[2].replace(' ', '').replace(',', '.'))
+            )
+            data.append({
+                'prefecture': prefecture, 'fuel_type': fuel_type, 'lowest_price': lowest_price,
+                'highest_price': highest_price, 'median_price': median_price
+            })
 
-    return []
+    return data

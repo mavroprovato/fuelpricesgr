@@ -53,6 +53,18 @@ class Database:
                     UNIQUE(date, prefecture, fuel_type)
                 )
             """)
+            cursor.execute("""
+                CREATE TABLE weekly_prefecture (
+                    id INTEGER PRIMARY KEY,
+                    date TEXT NOT NULL,
+                    prefecture TEXT NOT NULL,
+                    fuel_type TEXT NOT NULL,
+                    lowest_price DECIMAL(4, 3),
+                    highest_price DECIMAL(4, 3),
+                    median_price DECIMAL(4, 3),
+                    UNIQUE(date, prefecture, fuel_type)
+                )
+            """)
 
     def close(self):
         """Closes the connection to the database.
@@ -64,6 +76,11 @@ class Database:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
+
+    def save(self):
+        """Save pending changes to the database.
+        """
+        self.conn.commit()
 
     def data_exists(self, fuel_data_type: enums.FuelDataType, date: datetime.date) -> bool:
         """Checks if data exists for the specified fuel data type and date.
@@ -77,6 +94,8 @@ class Database:
                 return self.daily_country_data_exists(date=date)
             case enums.FuelDataType.DAILY_PREFECTURE:
                 return self.daily_prefecture_data_exists(date=date)
+            case enums.FuelDataType.WEEKLY:
+                return self.weekly_prefecture_data_exists(date=date)
 
     def daily_country_data_exists(self, date: datetime.date) -> bool:
         """Checks if daily country data exists for the date.
@@ -108,6 +127,21 @@ class Database:
 
             return cursor.fetchone()[0] == 1
 
+    def weekly_prefecture_data_exists(self, date: datetime.date) -> bool:
+        """Checks if weekly prefecture data exists for the date.
+
+        :param date: The date.
+        :return: True if the data exists, False otherwise.
+        """
+        with contextlib.closing(self.conn.cursor()) as cursor:
+            cursor.execute("""
+               SELECT COUNT(*) > 1
+               FROM weekly_prefecture
+               WHERE date = :date
+            """, {'date': date})
+
+            return cursor.fetchone()[0] == 1
+
     def insert_fuel_data(self, fuel_data_type: enums.FuelDataType, date: datetime.date, data: dict):
         """Insert fuel data to the database.
 
@@ -124,6 +158,12 @@ class Database:
             case enums.FuelDataType.DAILY_PREFECTURE:
                 self.insert_daily_prefecture_data(
                     date=date, fuel_type=data['fuel_type'], prefecture=data['prefecture'], price=data['price']
+                )
+            case enums.FuelDataType.WEEKLY:
+                self.insert_weekly_prefecture_data(
+                    date=date, fuel_type=data['fuel_type'], prefecture=data['prefecture'],
+                    lowest_price=data['lowest_price'], highest_price=data['highest_price'],
+                    median_price=data['median_price']
                 )
 
     def insert_daily_country_data(
@@ -168,6 +208,33 @@ class Database:
                 'fuel_type': fuel_type.name,
                 'prefecture': prefecture.name,
                 'price': str(price) if price else None
+            })
+
+    def insert_weekly_prefecture_data(
+            self, date: datetime.date, fuel_type: enums.FuelType, prefecture: enums.Prefecture,
+            lowest_price: decimal.Decimal, highest_price: decimal.Decimal, median_price: decimal.Decimal):
+        """Insert weekly prefecture data to the database.
+
+        :param date: The date for the data.
+        :param fuel_type: The fuel type.
+        :param prefecture: The prefecture.
+        :param lowest_price: The lowest price.
+        :param highest_price: The highest price.
+        :param median_price: The median price.
+        """
+        with contextlib.closing(self.conn.cursor()) as cursor:
+            cursor.execute("""
+                INSERT INTO weekly_prefecture(date, fuel_type, prefecture, lowest_price, highest_price, median_price)
+                VALUES(:date, :fuel_type, :prefecture, :lowest_price, :highest_price, :median_price)
+                ON CONFLICT(date, fuel_type, prefecture) DO UPDATE
+                SET lowest_price = :lowest_price, highest_price = :highest_price, median_price = :median_price
+            """, {
+                'date': date,
+                'fuel_type': fuel_type.name,
+                'prefecture': prefecture.name,
+                'lowest_price': str(lowest_price),
+                'highest_price': str(highest_price),
+                'median_price': str(median_price),
             })
 
     def daily_country_data(
@@ -251,8 +318,3 @@ class Database:
             params['end_date'] = end_date
 
         return sql, params
-
-    def save(self):
-        """Save pending changes to the database.
-        """
-        self.conn.commit()
