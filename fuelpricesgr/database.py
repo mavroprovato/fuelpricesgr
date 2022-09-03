@@ -110,7 +110,7 @@ class Database:
                 WHERE date = :date
             """, {'date': date})
 
-            return cursor.fetchone()[0] == 1
+            return bool(cursor.fetchone()[0])
 
     def daily_prefecture_data_exists(self, date: datetime.date) -> bool:
         """Checks if daily prefecture data exists for the date.
@@ -125,7 +125,7 @@ class Database:
                WHERE date = :date
             """, {'date': date})
 
-            return cursor.fetchone()[0] == 1
+            return bool(cursor.fetchone()[0])
 
     def weekly_prefecture_data_exists(self, date: datetime.date) -> bool:
         """Checks if weekly prefecture data exists for the date.
@@ -140,7 +140,7 @@ class Database:
                WHERE date = :date
             """, {'date': date})
 
-            return cursor.fetchone()[0] == 1
+            return bool(cursor.fetchone()[0])
 
     def insert_fuel_data(self, fuel_data_type: enums.FuelDataType, date: datetime.date, data: dict):
         """Insert fuel data to the database.
