@@ -38,7 +38,7 @@ async def daily_country_data(
         return [
             models.CountryDateResult(
                 date=date,
-                data_file=enums.FuelDataType.DAILY_COUNTRY.link(date=date),
+                data_file=enums.DataFileType.DAILY_COUNTRY.link(date=date),
                 data=[
                     models.CountryDateFuelTypeResult(
                         fuel_type=row['fuel_type'].name,
@@ -69,7 +69,7 @@ async def daily_prefecture_data(
         return [
             models.PrefecturesDateResult(
                 date=date,
-                data_file=enums.FuelDataType.DAILY_COUNTRY.link(date=date),
+                data_file=enums.DataFileType.DAILY_COUNTRY.link(date=date),
                 data=[
                     models.PrefectureDateFuelTypeResult(fuel_type=row['fuel_type'].name, price=row['price'])
                     for row in date_group
