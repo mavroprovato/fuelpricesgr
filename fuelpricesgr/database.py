@@ -362,6 +362,69 @@ class Database:
                 } for row in cursor.fetchall()
             ]
 
+    def weekly_country_data(
+            self, start_date: datetime.date | None = None, end_date: datetime.date | None = None) -> list[dict]:
+        """Returns the weekly country data. The data are sorted by date ascending.
+
+        :param start_date: The start date.
+        :param end_date: The end date.
+        :return: The daily country data.
+        """
+        with contextlib.closing(self.conn.cursor()) as cursor:
+            sql = "SELECT date, fuel_type, lowest_price, highest_price, median_price FROM weekly_country"
+            params = {}
+            if start_date or end_date:
+                sql += " WHERE"
+            date_sql, date_params = self._add_date_restriction(start_date=start_date, end_date=end_date)
+            if date_sql:
+                sql += date_sql
+            params.update(date_params)
+            sql += " ORDER BY date"
+            cursor.execute(sql, params)
+
+            return [
+                {
+                    'date': dateutil.parser.parse(row[0]).date(),
+                    'fuel_type': enums.FuelType[row[1]],
+                    'lowest_price': decimal.Decimal(row[2]),
+                    'highest_price': decimal.Decimal(row[3]),
+                    'median_price': decimal.Decimal(row[4]),
+                } for row in cursor.fetchall()
+            ]
+
+    def weekly_prefecture_data(
+            self, prefecture: enums.Prefecture, start_date: datetime.date | None = None,
+            end_date: datetime.date | None = None) -> list[dict]:
+        """Returns the weekly prefecture data. The data are sorted by date ascending.
+
+        :param prefecture: The prefecture.
+        :param start_date: The start date.
+        :param end_date: The end date.
+        :return: The daily country data.
+        """
+        with contextlib.closing(self.conn.cursor()) as cursor:
+            sql = "SELECT date, fuel_type, lowest_price, highest_price, median_price FROM weekly_prefecture " \
+                  "WHERE prefecture = :prefecture "
+            params = {'prefecture': prefecture.name}
+            if start_date or end_date:
+                sql += " AND"
+            date_sql, date_params = self._add_date_restriction(start_date=start_date, end_date=end_date)
+            if date_sql:
+                sql += date_sql
+            params.update(date_params)
+            sql += " ORDER BY date"
+            cursor.execute(sql, params)
+
+            return [
+                {
+                    'date': dateutil.parser.parse(row[0]).date(),
+                    'fuel_type': enums.FuelType[row[1]],
+                    'lowest_price': decimal.Decimal(row[2]),
+                    'highest_price': decimal.Decimal(row[3]),
+                    'median_price': decimal.Decimal(row[4]),
+                } for row in cursor.fetchall()
+            ]
+
     @staticmethod
     def _add_date_restriction(
             start_date: datetime.date | None, end_date: datetime.date | None) -> tuple[str, dict]:

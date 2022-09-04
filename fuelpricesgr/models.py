@@ -13,7 +13,7 @@ class Prefecture(pydantic.BaseModel):
     description: str
 
 
-class CountryDateFuelTypeResult(pydantic.BaseModel):
+class DailyCountryFuelTypeResult(pydantic.BaseModel):
     """The country date fuel type result model.
     """
     fuel_type: str
@@ -21,24 +21,58 @@ class CountryDateFuelTypeResult(pydantic.BaseModel):
     price: decimal.Decimal | None
 
 
-class CountryDateResult(pydantic.BaseModel):
+class DailyCountryResult(pydantic.BaseModel):
     """The country date result model.
     """
     date: datetime.date
     data_file: str
-    data: list[CountryDateFuelTypeResult]
+    data: list[DailyCountryFuelTypeResult]
 
 
-class PrefectureDateFuelTypeResult(pydantic.BaseModel):
+class DailyPrefectureFuelTypeResult(pydantic.BaseModel):
     """The country date fuel type result model.
     """
     fuel_type: str
     price: decimal.Decimal | None
 
 
-class PrefecturesDateResult(pydantic.BaseModel):
+class DailyPrefectureResult(pydantic.BaseModel):
     """The country date result model.
     """
     date: datetime.date
     data_file: str
-    data: list[PrefectureDateFuelTypeResult]
+    data: list[DailyPrefectureFuelTypeResult]
+
+
+class WeeklyCountryFuelTypeResult(pydantic.BaseModel):
+    """The country date fuel type result model.
+    """
+    fuel_type: str
+    lowest_price: decimal.Decimal
+    highest_price: decimal.Decimal
+    median_price: decimal.Decimal
+
+
+class WeeklyCountryResult(pydantic.BaseModel):
+    """The country date result model.
+    """
+    date: datetime.date
+    data_file: str
+    data: list[WeeklyCountryFuelTypeResult]
+
+
+class WeeklyPrefectureFuelTypeResult(pydantic.BaseModel):
+    """The country date fuel type result model.
+    """
+    fuel_type: str
+    lowest_price: decimal.Decimal
+    highest_price: decimal.Decimal
+    median_price: decimal.Decimal
+
+
+class WeeklyPrefectureResult(pydantic.BaseModel):
+    """The country date result model.
+    """
+    date: datetime.date
+    data_file: str
+    data: list[WeeklyPrefectureFuelTypeResult]

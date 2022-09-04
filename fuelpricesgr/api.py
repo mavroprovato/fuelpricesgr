@@ -26,21 +26,21 @@ async def prefectures() -> list[models.Prefecture]:
     return [models.Prefecture(name=prefecture.name, description=prefecture.value) for prefecture in enums.Prefecture]
 
 
-@app.get("/data/country", response_model=list[models.CountryDateResult])
+@app.get("/data/daily/country", response_model=list[models.DailyCountryResult])
 async def daily_country_data(
         start_date: datetime.date | None = None, end_date: datetime.date | None = None
-) -> list[models.CountryDateResult]:
+) -> list[models.DailyCountryResult]:
     """Returns daily country data.
     """
     end_date, start_date = get_date_range(start_date, end_date)
 
     with database.Database(read_only=True) as db:
         return [
-            models.CountryDateResult(
+            models.DailyCountryResult(
                 date=date,
                 data_file=enums.DataFileType.DAILY_COUNTRY.link(date=date),
                 data=[
-                    models.CountryDateFuelTypeResult(
+                    models.DailyCountryFuelTypeResult(
                         fuel_type=row['fuel_type'].name,
                         number_of_stations=row['number_of_stations'],
                         price=row['price'],
@@ -53,11 +53,11 @@ async def daily_country_data(
         ]
 
 
-@app.get("/data/prefectures/{prefecture}", response_model=list[models.PrefecturesDateResult])
+@app.get("/data/daily/prefectures/{prefecture}", response_model=list[models.DailyPrefectureResult])
 async def daily_prefecture_data(
         prefecture: str, start_date: datetime.date | None = None, end_date: datetime.date | None = None
-) -> list[models.PrefecturesDateResult]:
-    """Returns daily prefecture averages.
+) -> list[models.DailyPrefectureResult]:
+    """Returns daily prefecture data.
     """
     end_date, start_date = get_date_range(start_date, end_date)
     try:
@@ -67,16 +67,77 @@ async def daily_prefecture_data(
 
     with database.Database(read_only=True) as db:
         return [
-            models.PrefecturesDateResult(
+            models.DailyPrefectureResult(
                 date=date,
                 data_file=enums.DataFileType.DAILY_COUNTRY.link(date=date),
                 data=[
-                    models.PrefectureDateFuelTypeResult(fuel_type=row['fuel_type'].name, price=row['price'])
+                    models.DailyPrefectureFuelTypeResult(fuel_type=row['fuel_type'].name, price=row['price'])
                     for row in date_group
                 ]
             )
             for date, date_group in itertools.groupby(
                 db.daily_prefecture_data(start_date=start_date, end_date=end_date, prefecture=prefecture),
+                lambda x: x['date']
+            )
+        ]
+
+
+@app.get("/data/weekly/country", response_model=list[models.WeeklyCountryResult])
+async def weekly_country_data(
+        start_date: datetime.date | None = None, end_date: datetime.date | None = None
+) -> list[models.WeeklyCountryResult]:
+    """Returns weekly country data.
+    """
+    end_date, start_date = get_date_range(start_date, end_date)
+
+    with database.Database(read_only=True) as db:
+        return [
+            models.WeeklyCountryResult(
+                date=date,
+                data_file=enums.DataFileType.WEEKLY.link(date=date),
+                data=[
+                    models.WeeklyCountryFuelTypeResult(
+                        fuel_type=row['fuel_type'].name,
+                        lowest_price=row['lowest_price'],
+                        highest_price=row['highest_price'],
+                        median_price=row['median_price'],
+                    ) for row in date_group
+                ]
+            )
+            for date, date_group in itertools.groupby(
+                db.weekly_country_data(start_date=start_date, end_date=end_date), lambda x: x['date']
+            )
+        ]
+
+
+@app.get("/data/weekly/prefectures/{prefecture}", response_model=list[models.WeeklyPrefectureResult])
+async def weekly_prefecture_data(
+        prefecture: str, start_date: datetime.date | None = None, end_date: datetime.date | None = None
+) -> list[models.WeeklyPrefectureResult]:
+    """Returns weekly prefecture data.
+    """
+    end_date, start_date = get_date_range(start_date, end_date)
+    try:
+        prefecture = enums.Prefecture[prefecture]
+    except KeyError as exc:
+        raise fastapi.HTTPException(status_code=400, detail=f"Invalid prefecture {prefecture}") from exc
+
+    with database.Database(read_only=True) as db:
+        return [
+            models.WeeklyPrefectureResult(
+                date=date,
+                data_file=enums.DataFileType.DAILY_COUNTRY.link(date=date),
+                data=[
+                    models.WeeklyPrefectureFuelTypeResult(
+                        fuel_type=row['fuel_type'].name,
+                        lowest_price=row['lowest_price'],
+                        highest_price=row['highest_price'],
+                        median_price=row['median_price'],
+                    ) for row in date_group
+                ]
+            )
+            for date, date_group in itertools.groupby(
+                db.weekly_prefecture_data(start_date=start_date, end_date=end_date, prefecture=prefecture),
                 lambda x: x['date']
             )
         ]
