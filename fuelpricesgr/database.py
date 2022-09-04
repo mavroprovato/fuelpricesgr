@@ -55,6 +55,17 @@ class Database:
                 )
             """)
             cursor.execute("""
+                CREATE TABLE weekly_country (
+                    id INTEGER PRIMARY KEY,
+                    date TEXT NOT NULL,
+                    fuel_type TEXT NOT NULL,
+                    lowest_price DECIMAL(4, 3),
+                    highest_price DECIMAL(4, 3),
+                    median_price DECIMAL(4, 3),
+                    UNIQUE(date, fuel_type)
+                )
+            """)
+            cursor.execute("""
                 CREATE TABLE weekly_prefecture (
                     id INTEGER PRIMARY KEY,
                     date TEXT NOT NULL,
@@ -93,17 +104,19 @@ class Database:
         for data_type in data_types:
             match data_type:
                 case enums.DataType.DAILY_COUNTRY:
-                    if self.daily_country_data_exists(date=date):
-                        return True
+                    if not self.daily_country_data_exists(date=date):
+                        return False
                 case enums.DataType.DAILY_PREFECTURE:
-                    if self.daily_prefecture_data_exists(date=date):
-                        return True
+                    if not self.daily_prefecture_data_exists(date=date):
+                        return False
                 case enums.DataType.WEEKLY_COUNTRY:
-                    # TODO: implement
-                    pass
+                    if not self.weekly_country_data_exists(date=date):
+                        return False
                 case enums.DataType.WEEKLY_PREFECTURE:
-                    if self.weekly_prefecture_data_exists(date=date):
-                        return True
+                    if not self.weekly_prefecture_data_exists(date=date):
+                        return False
+
+        return True
 
     def daily_country_data_exists(self, date: datetime.date) -> bool:
         """Checks if daily country data exists for the date.
@@ -113,7 +126,7 @@ class Database:
         """
         with contextlib.closing(self.conn.cursor()) as cursor:
             cursor.execute("""
-                SELECT COUNT(*) > 1
+                SELECT COUNT(*) > 0
                 FROM daily_country
                 WHERE date = :date
             """, {'date': date})
@@ -128,8 +141,23 @@ class Database:
         """
         with contextlib.closing(self.conn.cursor()) as cursor:
             cursor.execute("""
-               SELECT COUNT(*) > 1
+               SELECT COUNT(*) > 0
                FROM daily_prefecture
+               WHERE date = :date
+            """, {'date': date})
+
+            return bool(cursor.fetchone()[0])
+
+    def weekly_country_data_exists(self, date: datetime.date) -> bool:
+        """Checks if weekly country data exists for the date.
+
+        :param date: The date.
+        :return: True if the data exists, False otherwise.
+        """
+        with contextlib.closing(self.conn.cursor()) as cursor:
+            cursor.execute("""
+               SELECT COUNT(*) > 0
+               FROM weekly_country
                WHERE date = :date
             """, {'date': date})
 
@@ -143,7 +171,7 @@ class Database:
         """
         with contextlib.closing(self.conn.cursor()) as cursor:
             cursor.execute("""
-               SELECT COUNT(*) > 1
+               SELECT COUNT(*) > 0
                FROM weekly_prefecture
                WHERE date = :date
             """, {'date': date})
@@ -166,6 +194,11 @@ class Database:
             case enums.DataType.DAILY_PREFECTURE:
                 self.insert_daily_prefecture_data(
                     date=date, fuel_type=data['fuel_type'], prefecture=data['prefecture'], price=data['price']
+                )
+            case enums.DataType.WEEKLY_COUNTRY:
+                self.insert_weekly_country_data(
+                    date=date, fuel_type=data['fuel_type'], lowest_price=data['lowest_price'],
+                    highest_price=data['highest_price'], median_price=data['median_price']
                 )
             case enums.DataType.WEEKLY_PREFECTURE:
                 self.insert_weekly_prefecture_data(
@@ -216,6 +249,31 @@ class Database:
                 'fuel_type': fuel_type.name,
                 'prefecture': prefecture.name,
                 'price': str(price) if price else None
+            })
+
+    def insert_weekly_country_data(
+            self, date: datetime.date, fuel_type: enums.FuelType, lowest_price: decimal.Decimal,
+            highest_price: decimal.Decimal, median_price: decimal.Decimal):
+        """Insert weekly prefecture data to the database.
+
+        :param date: The date for the data.
+        :param fuel_type: The fuel type.
+        :param lowest_price: The lowest price.
+        :param highest_price: The highest price.
+        :param median_price: The median price.
+        """
+        with contextlib.closing(self.conn.cursor()) as cursor:
+            cursor.execute("""
+                INSERT INTO weekly_country(date, fuel_type, lowest_price, highest_price, median_price)
+                VALUES(:date, :fuel_type, :lowest_price, :highest_price, :median_price)
+                ON CONFLICT(date, fuel_type) DO UPDATE
+                SET lowest_price = :lowest_price, highest_price = :highest_price, median_price = :median_price
+            """, {
+                'date': date,
+                'fuel_type': fuel_type.name,
+                'lowest_price': str(lowest_price),
+                'highest_price': str(highest_price),
+                'median_price': str(median_price),
             })
 
     def insert_weekly_prefecture_data(
