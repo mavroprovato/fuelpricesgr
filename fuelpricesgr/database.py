@@ -1,5 +1,6 @@
 """Contains the functionality needed to communicate with the database
 """
+import collections.abc
 import contextlib
 import datetime
 import decimal
@@ -82,20 +83,27 @@ class Database:
         """
         self.conn.commit()
 
-    def data_exists(self, fuel_data_type: enums.FuelDataType, date: datetime.date) -> bool:
+    def data_exists(self, data_types: collections.abc.Iterable[enums.DataType], date: datetime.date) -> bool:
         """Checks if data exists for the specified fuel data type and date.
 
-        :param fuel_data_type: The fuel data type.
+        :param data_types: The data types to check.
         :param date: The date.
-        :return: True if the data exists, False otherwise.
+        :return: True if data exist, False otherwise.
         """
-        match fuel_data_type:
-            case enums.FuelDataType.DAILY_COUNTRY:
-                return self.daily_country_data_exists(date=date)
-            case enums.FuelDataType.DAILY_PREFECTURE:
-                return self.daily_prefecture_data_exists(date=date)
-            case enums.FuelDataType.WEEKLY:
-                return self.weekly_prefecture_data_exists(date=date)
+        for data_type in data_types:
+            match data_type:
+                case enums.DataType.DAILY_COUNTRY:
+                    if self.daily_country_data_exists(date=date):
+                        return True
+                case enums.DataType.DAILY_PREFECTURE:
+                    if self.daily_prefecture_data_exists(date=date):
+                        return True
+                case enums.DataType.WEEKLY_COUNTRY:
+                    # TODO: implement
+                    pass
+                case enums.DataType.WEEKLY_PREFECTURE:
+                    if self.weekly_prefecture_data_exists(date=date):
+                        return True
 
     def daily_country_data_exists(self, date: datetime.date) -> bool:
         """Checks if daily country data exists for the date.
@@ -142,24 +150,24 @@ class Database:
 
             return bool(cursor.fetchone()[0])
 
-    def insert_fuel_data(self, fuel_data_type: enums.FuelDataType, date: datetime.date, data: dict):
-        """Insert fuel data to the database.
+    def insert_fuel_data(self, data_type: enums.DataType, date: datetime.date, data: dict):
+        """Insert data to the database.
 
-        :param fuel_data_type: The fuel data type.
+        :param data_type: The data type.
         :param date: The date for the data.
         :param data: The data as a dictionary.
         """
-        match fuel_data_type:
-            case enums.FuelDataType.DAILY_COUNTRY:
+        match data_type:
+            case enums.DataType.DAILY_COUNTRY:
                 self.insert_daily_country_data(
                     date=date, fuel_type=data['fuel_type'], number_of_stations=data['number_of_stations'],
                     price=data['price']
                 )
-            case enums.FuelDataType.DAILY_PREFECTURE:
+            case enums.DataType.DAILY_PREFECTURE:
                 self.insert_daily_prefecture_data(
                     date=date, fuel_type=data['fuel_type'], prefecture=data['prefecture'], price=data['price']
                 )
-            case enums.FuelDataType.WEEKLY:
+            case enums.DataType.WEEKLY_PREFECTURE:
                 self.insert_weekly_prefecture_data(
                     date=date, fuel_type=data['fuel_type'], prefecture=data['prefecture'],
                     lowest_price=data['lowest_price'], highest_price=data['highest_price'],

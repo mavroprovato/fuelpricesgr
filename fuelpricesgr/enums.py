@@ -1,24 +1,41 @@
 """The various project enums
 """
+import collections.abc
 import datetime
 import enum
 
 from fuelpricesgr import settings
 
 
-class FuelDataType(enum.Enum):
-    """Enumeration for the different types of fuel data.
+class DataType(enum.Enum):
+    """Enumeration for the different types of data contained in the data
     """
-    WEEKLY = 'deltia.view'
-    DAILY_COUNTRY = 'deltia_d.view'
-    DAILY_PREFECTURE = 'deltia_dn.view'
+    WEEKLY_COUNTRY = 'weekly_country'
+    WEEKLY_PREFECTURE = 'weekly_prefecture'
+    DAILY_COUNTRY = 'daily_country'
+    DAILY_PREFECTURE = 'daily_prefecture'
 
-    def __init__(self, page: str):
+
+class DataFileType(enum.Enum):
+    """Enumeration for the different data file types.
+    """
+    WEEKLY = 'weekly', 'deltia.view', (DataType.WEEKLY_COUNTRY, DataType.WEEKLY_PREFECTURE)
+    DAILY_COUNTRY = 'daily_country', 'deltia_d.view', (DataType.DAILY_COUNTRY, )
+    DAILY_PREFECTURE = 'daily_prefecture', 'deltia_dn.view', (DataType.DAILY_PREFECTURE, )
+
+    def __new__(cls, value: str, page: str, data_types: collections.abc.Iterable[DataType]):
         """Creates the enum.
 
-        :param page: The page path, relative to the base URL, from which we will fetch the data.
+        :param value: The enum value.
+        :param page: The path, relative to the base URL, from which we will fetch the data.
+        :param data_types: The data types that this page contains.
         """
-        self.page = page
+        obj = object.__new__(cls)
+        obj._value_ = value
+        obj.page = page
+        obj.data_types = data_types
+
+        return obj
 
     def link(self, date: datetime.date) -> str | None:
         """Return the link of the file from which we got the data for the specified date.
@@ -26,6 +43,8 @@ class FuelDataType(enum.Enum):
         :param date: The date.
         :return: The file link.
         """
+        if self == self.WEEKLY:
+            return f'{settings.FETCH_URL}/files/deltia/EBDOM_DELTIO_{date:%d_%m_%Y}.pdf'
         if self == self.DAILY_COUNTRY:
             return f'{settings.FETCH_URL}/files/deltia/IMERISIO_DELTIO_PANELLINIO_{date:%d_%m_%Y}.pdf'
         if self == self.DAILY_PREFECTURE:
@@ -37,12 +56,12 @@ class FuelDataType(enum.Enum):
 class FuelType(enum.Enum):
     """Enumeration for the different fuel types
     """
-    UNLEADED_95 = 'Αμόλυβδη 95'
-    UNLEADED_100 = 'Αμόλυβδη 100'
-    SUPER = 'Super'
-    DIESEL = 'Diesel'
-    DIESEL_HEATING = 'Diesel Θέρμανσης'
-    GAS = 'Υγραέριο'
+    UNLEADED_95 = "Αμόλυβδη 95"
+    UNLEADED_100 = "Αμόλυβδη 100"
+    SUPER = "Super"
+    DIESEL = "Diesel"
+    DIESEL_HEATING = "Diesel Θέρμανσης"
+    GAS = "Υγραέριο"
 
 
 class Prefecture(enum.Enum):
