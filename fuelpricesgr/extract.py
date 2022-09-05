@@ -210,11 +210,11 @@ def extract_daily_prefecture_data(text: str) -> dict[enums.DataType, list[dict]]
         logger.error("Could not parse fuel types", exc_info=True)
         return {}
     # Only search the text after the fuel types
-    prices_text = text[last_index + 1:]
+    prices_text = text[last_index:]
 
     data = []
     results = re.findall(r'ΝΟ ?Μ ?Ο ?[Σ\u03a2] ? (\D+) ([0-9,.\-\s]+)', prices_text, re.MULTILINE)
-    if len(results) != len(enums.Prefecture):
+    if len(results) < len(enums.Prefecture):
         logger.error("Could not find all prefectures")
         return {}
 
