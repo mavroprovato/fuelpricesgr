@@ -44,7 +44,8 @@ async def prefectures() -> list[models.Prefecture]:
     response_model=list[models.DailyCountryResult]
 )
 async def daily_country_data(
-    start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
+    end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
 ) -> list[models.DailyCountryResult]:
     """Returns the daily country data.
 
@@ -80,7 +81,9 @@ async def daily_country_data(
     response_model=list[models.DailyPrefectureResult]
 )
 async def daily_prefecture_data(
-    prefecture: str, start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
+    start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
+    end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
 ) -> list[models.DailyPrefectureResult]:
     """Returns the daily prefecture data.
 
@@ -90,10 +93,6 @@ async def daily_prefecture_data(
     :return: The daily prefecture data.
     """
     end_date, start_date = get_date_range(start_date, end_date)
-    try:
-        prefecture = enums.Prefecture[prefecture]
-    except KeyError as exc:
-        raise fastapi.HTTPException(status_code=400, detail=f"Invalid prefecture {prefecture}") from exc
 
     with database.Database(read_only=True) as db:
         return [
@@ -119,7 +118,8 @@ async def daily_prefecture_data(
     response_model=list[models.WeeklyCountryResult]
 )
 async def weekly_country_data(
-    start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
+    end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
 ) -> list[models.WeeklyCountryResult]:
     """Return the weekly country data.
 
@@ -156,7 +156,9 @@ async def weekly_country_data(
     response_model=list[models.WeeklyPrefectureResult]
 )
 async def weekly_prefecture_data(
-    prefecture: str, start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    prefecture: str = fastapi.Path(title="The prefecture"),
+    start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
+    end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
 ) -> list[models.WeeklyPrefectureResult]:
     """Return the weekly prefecture data
 
