@@ -19,7 +19,7 @@ async def index() -> dict:
     return {"status": "OK"}
 
 
-@app.get("/prefectures")
+@app.get("/prefectures", response_model=list[models.Prefecture])
 async def prefectures() -> list[models.Prefecture]:
     """Returns the prefectures.
     """
