@@ -126,16 +126,18 @@ def extract_daily_country_data(text: str) -> dict[enums.DataType, list[dict]]:
             matches = re.match(
                 r'(\d? ?\.?\d ?\d ?\d|\d? ?\d? ?\d?|-) +(\d?[,.] ?\d ?\d ?\d|-|#ΔΙΑΙΡ\./0!)', fuel_type_text)
             if not matches or len(matches.groups()) != 2:
-                raise ValueError(f"Could not parse data for fuel type {fuel_type}")
+                logger.warning(f"Could not parse data for fuel type %s", fuel_type)
+                continue
             number_of_stations = None
             if matches.group(1) != '-':
                 number_of_stations = int(matches.group(1).replace(' ', '').replace('.', ''))
             price = None
             if matches.group(2) != '-' and matches.group(2) != '#ΔΙΑΙΡ./0!':
                 price = decimal.Decimal(matches.group(2).replace(' ', '').replace(',', '.'))
-            data.append({
-                'fuel_type': fuel_type, 'number_of_stations': number_of_stations, 'price': price
-            })
+            if number_of_stations is not None and price is not None:
+                data.append({
+                    'fuel_type': fuel_type, 'number_of_stations': number_of_stations, 'price': price
+                })
 
     return {enums.DataType.DAILY_COUNTRY: data}
 
@@ -223,7 +225,7 @@ def extract_daily_prefecture_data(text: str) -> dict[enums.DataType, list[dict]]
 
         prices = re.findall(r'(\d[,.]\d ?\d ?\d)|-|\n', result[1].strip(), re.MULTILINE)
         if len(fuel_types) - len(prices) == 1 and enums.FuelType.SUPER in fuel_types:
-            prices.insert(fuel_types.index(enums.FuelType.SUPER), None)
+            pass
         elif len(fuel_types) != len(prices):
             raise ValueError("Could not parse prices")
 
@@ -231,8 +233,10 @@ def extract_daily_prefecture_data(text: str) -> dict[enums.DataType, list[dict]]
             {
                 'fuel_type': fuel_types[index], 'prefecture': prefecture, 'price': price
             } for index, price in enumerate([
-                decimal.Decimal(price.replace(' ', '').replace(',', '.')) if (price and price != '-') else None
-                for price in prices
+                decimal.Decimal(price.replace(' ', '').replace(',', '.'))
+                for price in prices if (
+                    price and price != '-' and decimal.Decimal(price.replace(' ', '').replace(',', '.'))
+                )
             ])
         ]
 

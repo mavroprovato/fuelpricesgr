@@ -39,8 +39,8 @@ class Database:
                     id INTEGER PRIMARY KEY,
                     date TEXT NOT NULL,
                     fuel_type TEXT NOT NULL,
-                    number_of_stations INTEGER,
-                    price DECIMAL(4, 3),
+                    number_of_stations INTEGER NOT NULL,
+                    price DECIMAL(4, 3) NOT NULL,
                     UNIQUE(date, fuel_type)
                 )
             """)
@@ -50,7 +50,7 @@ class Database:
                     date TEXT NOT NULL,
                     prefecture TEXT NOT NULL,
                     fuel_type TEXT NOT NULL,
-                    price DECIMAL(4, 3),
+                    price DECIMAL(4, 3) NOT NULL,
                     UNIQUE(date, prefecture, fuel_type)
                 )
             """)
@@ -59,9 +59,9 @@ class Database:
                     id INTEGER PRIMARY KEY,
                     date TEXT NOT NULL,
                     fuel_type TEXT NOT NULL,
-                    lowest_price DECIMAL(4, 3),
-                    highest_price DECIMAL(4, 3),
-                    median_price DECIMAL(4, 3),
+                    lowest_price DECIMAL(4, 3) NOT NULL,
+                    highest_price DECIMAL(4, 3) NOT NULL,
+                    median_price DECIMAL(4, 3) NOT NULL,
                     UNIQUE(date, fuel_type)
                 )
             """)
@@ -71,9 +71,9 @@ class Database:
                     date TEXT NOT NULL,
                     prefecture TEXT NOT NULL,
                     fuel_type TEXT NOT NULL,
-                    lowest_price DECIMAL(4, 3),
-                    highest_price DECIMAL(4, 3),
-                    median_price DECIMAL(4, 3),
+                    lowest_price DECIMAL(4, 3) NOT NULL,
+                    highest_price DECIMAL(4, 3) NOT NULL,
+                    median_price DECIMAL(4, 3) NOT NULL,
                     UNIQUE(date, prefecture, fuel_type)
                 )
             """)
@@ -207,9 +207,8 @@ class Database:
                     median_price=data['median_price']
                 )
 
-    def insert_daily_country_data(
-            self, date: datetime.date, fuel_type: enums.FuelType, number_of_stations: int = None,
-            price: decimal.Decimal = None):
+    def insert_daily_country_data(self, date: datetime.date, fuel_type: enums.FuelType, number_of_stations: int,
+                                  price: decimal.Decimal):
         """Insert daily country data to the database.
 
         :param date: The date for the data.
@@ -229,9 +228,8 @@ class Database:
                 'price': str(price) if price else None
             })
 
-    def insert_daily_prefecture_data(
-            self, date: datetime.date, fuel_type: enums.FuelType, prefecture: enums.Prefecture,
-            price: decimal.Decimal = None):
+    def insert_daily_prefecture_data(self, date: datetime.date, fuel_type: enums.FuelType, prefecture: enums.Prefecture,
+                                     price: decimal.Decimal):
         """Insert daily prefecture data to the database.
 
         :param date: The date for the data.
@@ -248,7 +246,7 @@ class Database:
                 'date': date,
                 'fuel_type': fuel_type.name,
                 'prefecture': prefecture.name,
-                'price': str(price) if price else None
+                'price': str(price)
             })
 
     def insert_weekly_country_data(
