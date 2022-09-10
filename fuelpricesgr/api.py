@@ -12,25 +12,45 @@ app = fastapi.FastAPI()
 app.add_middleware(fastapi.middleware.cors.CORSMiddleware, allow_origins=settings.CORS_ALLOW_ORIGINS)
 
 
-@app.get("/")
+@app.get(
+    path="/",
+    summary="Return the status of the application",
+    description="Return the status of the application",
+)
 async def index() -> dict:
-    """Returns the status of the application.
+    """Return the status of the application.
     """
     return {"status": "OK"}
 
 
-@app.get("/prefectures", response_model=list[models.Prefecture])
+@app.get(
+    path="/prefectures",
+    summary="Return all prefectures",
+    description="Return all prefectures",
+    response_model=list[models.Prefecture]
+)
 async def prefectures() -> list[models.Prefecture]:
-    """Returns the prefectures.
+    """Returns all prefectures.
+
+    :return: The prefectures.
     """
     return [models.Prefecture(name=prefecture.name, description=prefecture.value) for prefecture in enums.Prefecture]
 
 
-@app.get("/data/daily/country", response_model=list[models.DailyCountryResult])
+@app.get(
+    path="/data/daily/country",
+    summary="Returns the daily country data",
+    description="Returns the daily country data",
+    response_model=list[models.DailyCountryResult]
+)
 async def daily_country_data(
-        start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    start_date: datetime.date | None = None, end_date: datetime.date | None = None
 ) -> list[models.DailyCountryResult]:
-    """Returns daily country data.
+    """Returns the daily country data.
+
+    :param start_date: The start date of the data to fetch.
+    :param end_date: The end date of the data to fetch.
+    :return: The daily country data.
     """
     end_date, start_date = get_date_range(start_date, end_date)
 
@@ -53,11 +73,21 @@ async def daily_country_data(
         ]
 
 
-@app.get("/data/daily/prefectures/{prefecture}", response_model=list[models.DailyPrefectureResult])
+@app.get(
+    path="/data/daily/prefectures/{prefecture}",
+    summary="Return the daily prefecture data",
+    description="Return the daily prefecture data",
+    response_model=list[models.DailyPrefectureResult]
+)
 async def daily_prefecture_data(
-        prefecture: str, start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    prefecture: str, start_date: datetime.date | None = None, end_date: datetime.date | None = None
 ) -> list[models.DailyPrefectureResult]:
-    """Returns daily prefecture data.
+    """Returns the daily prefecture data.
+
+    :param prefecture: The prefecture for which to fetch data.
+    :param start_date: The start date of the data to fetch.
+    :param end_date: The end date of the data to fetch.
+    :return: The daily prefecture data.
     """
     end_date, start_date = get_date_range(start_date, end_date)
     try:
@@ -82,11 +112,20 @@ async def daily_prefecture_data(
         ]
 
 
-@app.get("/data/weekly/country", response_model=list[models.WeeklyCountryResult])
+@app.get(
+    path="/data/weekly/country",
+    summary="Return the weekly country data",
+    description="Return the weekly country data",
+    response_model=list[models.WeeklyCountryResult]
+)
 async def weekly_country_data(
-        start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    start_date: datetime.date | None = None, end_date: datetime.date | None = None
 ) -> list[models.WeeklyCountryResult]:
-    """Returns weekly country data.
+    """Return the weekly country data.
+
+    :param start_date: The start date of the data to fetch.
+    :param end_date: The end date of the data to fetch.
+    :return: The weekly country data.
     """
     end_date, start_date = get_date_range(start_date, end_date)
 
@@ -110,11 +149,21 @@ async def weekly_country_data(
         ]
 
 
-@app.get("/data/weekly/prefectures/{prefecture}", response_model=list[models.WeeklyPrefectureResult])
+@app.get(
+    path="/data/weekly/prefectures/{prefecture}",
+    summary="Return the weekly prefecture data",
+    description="Return the weekly prefecture data",
+    response_model=list[models.WeeklyPrefectureResult]
+)
 async def weekly_prefecture_data(
-        prefecture: str, start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    prefecture: str, start_date: datetime.date | None = None, end_date: datetime.date | None = None
 ) -> list[models.WeeklyPrefectureResult]:
-    """Returns weekly prefecture data.
+    """Return the weekly prefecture data
+
+    :param prefecture: The prefecture for which to fetch data.
+    :param start_date: The start date of the data to fetch.
+    :param end_date: The end date of the data to fetch.
+    :return: The weekly prefecture data.
     """
     end_date, start_date = get_date_range(start_date, end_date)
     try:

@@ -17,8 +17,8 @@ class DailyCountryFuelTypeResult(pydantic.BaseModel):
     """The country date fuel type result model.
     """
     fuel_type: str
-    number_of_stations: int | None
-    price: decimal.Decimal | None
+    number_of_stations: int
+    price: decimal.Decimal
 
 
 class DailyCountryResult(pydantic.BaseModel):
@@ -33,7 +33,7 @@ class DailyPrefectureFuelTypeResult(pydantic.BaseModel):
     """The country date fuel type result model.
     """
     fuel_type: str
-    price: decimal.Decimal | None
+    price: decimal.Decimal
 
 
 class DailyPrefectureResult(pydantic.BaseModel):
