@@ -6,6 +6,13 @@ import decimal
 import pydantic
 
 
+class StatusModel(pydantic.BaseModel):
+    """The application status model.
+    """
+    status: str
+    error: str | None
+
+
 class PrefectureModel(pydantic.BaseModel):
     """The prefecture model.
     """

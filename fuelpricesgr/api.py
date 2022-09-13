@@ -31,11 +31,16 @@ app.add_middleware(fastapi.middleware.cors.CORSMiddleware, allow_origins=setting
     path="/",
     summary="Return the status of the application",
     description="Return the status of the application",
+    response_model=models.StatusModel
 )
-async def index() -> dict:
+async def index() -> models.StatusModel:
     """Return the status of the application.
     """
-    return {"status": "OK"}
+    try:
+        with database.Database(read_only=True):
+            return models.StatusModel(status="OK")
+    except Exception as ex:
+        return models.StatusModel(status="ERROR", error=str(ex))
 
 
 @app.get(

@@ -25,7 +25,7 @@ class Database:
 
         :param read_only: True if the connection should be read only.
         """
-        if not self.DB_FILE.exists():
+        if not self.DB_FILE.exists() and not read_only:
             logger.info("Database does not exist, creating")
             self._create_db()
         self.conn = sqlite3.connect(f"{self.DB_FILE.as_uri()}{'?mode=ro' if read_only else ''}")
