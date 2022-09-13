@@ -8,7 +8,22 @@ import fastapi.middleware.cors
 
 from fuelpricesgr import database, enums, models, settings
 
-app = fastapi.FastAPI()
+app = fastapi.FastAPI(
+    title="Fuel Prices in Greece",
+    description=
+    """An API that returns data for fuel prices in Greece. Daily and weekly data about fuel prices are regularly
+    uploaded at the [Παρατηρητήριο Τιμών Υγρών Καυσίμων](http://www.fuelprices.gr/) website by the Greek Government, but
+    the data are published as PDF files. With this API you can get the data in a structured manner.""",
+    contact={
+        "name": "Kostas Kokkoros",
+        "url": "https://www.mavroprovato.net",
+        "email": "mavroprovato@gmail.com",
+    },
+    license_info={
+        "name": "The MIT License (MIT)",
+        "url": "https://opensource.org/licenses/MIT",
+    },
+)
 app.add_middleware(fastapi.middleware.cors.CORSMiddleware, allow_origins=settings.CORS_ALLOW_ORIGINS)
 
 
@@ -46,8 +61,8 @@ async def prefectures() -> list[models.PrefectureModel]:
     response_model=list[models.DailyCountryModel]
 )
 async def daily_country_data(
-    start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
-    end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
+        start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
+        end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
 ) -> list[models.DailyCountryModel]:
     """Returns the daily country data.
 
@@ -83,9 +98,9 @@ async def daily_country_data(
     response_model=list[models.DailyPrefectureModel]
 )
 async def daily_prefecture_data(
-    prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
-    start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
-    end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
+        prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
+        start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
+        end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
 ) -> list[models.DailyPrefectureModel]:
     """Returns the daily prefecture data.
 
@@ -120,8 +135,8 @@ async def daily_prefecture_data(
     response_model=list[models.WeeklyModel]
 )
 async def weekly_country_data(
-    start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
-    end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
+        start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
+        end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
 ) -> list[models.WeeklyModel]:
     """Return the weekly country data.
 
@@ -158,9 +173,9 @@ async def weekly_country_data(
     response_model=list[models.WeeklyModel]
 )
 async def weekly_prefecture_data(
-    prefecture: str = fastapi.Path(title="The prefecture"),
-    start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
-    end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
+        prefecture: str = fastapi.Path(title="The prefecture"),
+        start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
+        end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
 ) -> list[models.WeeklyModel]:
     """Return the weekly prefecture data
 
