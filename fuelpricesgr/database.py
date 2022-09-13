@@ -325,8 +325,8 @@ class Database:
                 {
                     'date': dateutil.parser.parse(row[0]).date(),
                     'fuel_type': enums.FuelType[row[1]],
-                    'number_of_stations': int(row[2]) if row[2] else None,
-                    'price': decimal.Decimal(row[3]) if row[3] else None,
+                    'number_of_stations': int(row[2]),
+                    'price': decimal.Decimal(row[3]),
                 } for row in cursor.fetchall()
             ]
 
@@ -356,7 +356,7 @@ class Database:
                 {
                     'date': dateutil.parser.parse(row[0]).date(),
                     'fuel_type': enums.FuelType[row[1]],
-                    'price': decimal.Decimal(row[2]) if row[2] else None,
+                    'price': decimal.Decimal(row[2]),
                 } for row in cursor.fetchall()
             ]
 
@@ -420,6 +420,42 @@ class Database:
                     'lowest_price': decimal.Decimal(row[2]),
                     'highest_price': decimal.Decimal(row[3]),
                     'median_price': decimal.Decimal(row[4]),
+                } for row in cursor.fetchall()
+            ]
+
+    def country_data(self, date: datetime.date) -> list[dict]:
+        """Return the country data for a date.
+
+        :param date: The date.
+        :return: The country data.
+        """
+        with contextlib.closing(self.conn.cursor()) as cursor:
+            sql = "SELECT fuel_type, number_of_stations, price FROM daily_country WHERE date = :date"
+            cursor.execute(sql, {'date': date})
+
+            return [
+                {
+                    'fuel_type': enums.FuelType[row[0]],
+                    'number_of_stations': int(row[1]) if row[1] else None,
+                    'price': decimal.Decimal(row[2]),
+                } for row in cursor.fetchall()
+            ]
+
+    def prefecture_data(self, date: datetime.date) -> list[dict]:
+        """Return the data for all prefectures for a date.
+
+        :param date: The date.
+        :return: The prefecture data.
+        """
+        with contextlib.closing(self.conn.cursor()) as cursor:
+            sql = "SELECT prefecture, fuel_type, price FROM daily_prefecture WHERE date = :date"
+            cursor.execute(sql, {'date': date})
+
+            return [
+                {
+                    'prefecture': enums.Prefecture[row[0]],
+                    'fuel_type': enums.FuelType[row[1]],
+                    'price': decimal.Decimal(row[2]),
                 } for row in cursor.fetchall()
             ]
 

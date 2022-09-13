@@ -194,6 +194,25 @@ async def weekly_prefecture_data(
         ]
 
 
+@app.get(
+    path="/data/country/{date}",
+    summary="Return the country data for a date",
+    description="Return country data for a date for all prefectures along with the country averages",
+    response_model=models.CountryDateResult
+)
+async def country_data(date: datetime.date = fastapi.Path(title="The date")):
+    """Return the country data for a date.
+
+    :param date: The date.
+    :return: The country data.
+    """
+    with database.Database(read_only=True) as db:
+        return {
+            'prefectures': db.prefecture_data(date=date),
+            'country': db.country_data(date=date)
+        }
+
+
 def get_date_range(start_date: datetime.date, end_date: datetime.date) -> tuple[datetime.date, datetime.date]:
     """Get the date range from the provided start and end dates.
 

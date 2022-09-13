@@ -76,3 +76,10 @@ class WeeklyPrefectureResult(pydantic.BaseModel):
     date: datetime.date
     data_file: str
     data: list[WeeklyPrefectureFuelTypeResult]
+
+
+class CountryDateResult(pydantic.BaseModel):
+    """The country result for a date.
+    """
+    prefectures: list[dict]
+    country: list[dict]
