@@ -53,7 +53,7 @@ async def daily_country_data(
     :param end_date: The end date of the data to fetch.
     :return: The daily country data.
     """
-    end_date, start_date = get_date_range(start_date, end_date)
+    start_date, end_date = get_date_range(start_date, end_date)
 
     with database.Database(read_only=True) as db:
         return [
@@ -92,7 +92,7 @@ async def daily_prefecture_data(
     :param end_date: The end date of the data to fetch.
     :return: The daily prefecture data.
     """
-    end_date, start_date = get_date_range(start_date, end_date)
+    start_date, end_date = get_date_range(start_date, end_date)
 
     with database.Database(read_only=True) as db:
         return [
@@ -127,7 +127,7 @@ async def weekly_country_data(
     :param end_date: The end date of the data to fetch.
     :return: The weekly country data.
     """
-    end_date, start_date = get_date_range(start_date, end_date)
+    start_date, end_date = get_date_range(start_date, end_date)
 
     with database.Database(read_only=True) as db:
         return [
@@ -167,7 +167,7 @@ async def weekly_prefecture_data(
     :param end_date: The end date of the data to fetch.
     :return: The weekly prefecture data.
     """
-    end_date, start_date = get_date_range(start_date, end_date)
+    start_date, end_date = get_date_range(start_date, end_date)
     try:
         prefecture = enums.Prefecture[prefecture]
     except KeyError as exc:
@@ -234,4 +234,4 @@ def get_date_range(start_date: datetime.date, end_date: datetime.date) -> tuple[
         days = (end_date - start_date).days
         start_date = end_date - datetime.timedelta(days=min(days, settings.MAX_DAYS))
 
-    return end_date, start_date
+    return start_date, end_date
