@@ -27,26 +27,28 @@ async def index() -> dict:
     path="/prefectures",
     summary="Return all prefectures",
     description="Return all prefectures",
-    response_model=list[models.Prefecture]
+    response_model=list[models.PrefectureModel]
 )
-async def prefectures() -> list[models.Prefecture]:
+async def prefectures() -> list[models.PrefectureModel]:
     """Returns all prefectures.
 
     :return: The prefectures.
     """
-    return [models.Prefecture(name=prefecture.name, description=prefecture.value) for prefecture in enums.Prefecture]
+    return [
+        models.PrefectureModel(name=prefecture.name, description=prefecture.value) for prefecture in enums.Prefecture
+    ]
 
 
 @app.get(
     path="/data/daily/country",
     summary="Returns the daily country data",
     description="Returns the daily country data",
-    response_model=list[models.DailyCountryResult]
+    response_model=list[models.DailyCountryModel]
 )
 async def daily_country_data(
     start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
     end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> list[models.DailyCountryResult]:
+) -> list[models.DailyCountryModel]:
     """Returns the daily country data.
 
     :param start_date: The start date of the data to fetch.
@@ -57,11 +59,11 @@ async def daily_country_data(
 
     with database.Database(read_only=True) as db:
         return [
-            models.DailyCountryResult(
+            models.DailyCountryModel(
                 date=date,
                 data_file=enums.DataFileType.DAILY_COUNTRY.link(date=date),
                 data=[
-                    models.DailyCountryFuelTypeResult(
+                    models.FuelTypePriceStationsModel(
                         fuel_type=row['fuel_type'].name,
                         number_of_stations=row['number_of_stations'],
                         price=row['price'],
@@ -78,13 +80,13 @@ async def daily_country_data(
     path="/data/daily/prefectures/{prefecture}",
     summary="Return the daily prefecture data",
     description="Return the daily prefecture data",
-    response_model=list[models.DailyPrefectureResult]
+    response_model=list[models.DailyPrefectureModel]
 )
 async def daily_prefecture_data(
     prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
     start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
     end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> list[models.DailyPrefectureResult]:
+) -> list[models.DailyPrefectureModel]:
     """Returns the daily prefecture data.
 
     :param prefecture: The prefecture for which to fetch data.
@@ -96,11 +98,11 @@ async def daily_prefecture_data(
 
     with database.Database(read_only=True) as db:
         return [
-            models.DailyPrefectureResult(
+            models.DailyPrefectureModel(
                 date=date,
                 data_file=enums.DataFileType.DAILY_COUNTRY.link(date=date),
                 data=[
-                    models.DailyPrefectureFuelTypeResult(fuel_type=row['fuel_type'].name, price=row['price'])
+                    models.FuelTypePriceModel(fuel_type=row['fuel_type'].name, price=row['price'])
                     for row in date_group
                 ]
             )
@@ -115,12 +117,12 @@ async def daily_prefecture_data(
     path="/data/weekly/country",
     summary="Return the weekly country data",
     description="Return the weekly country data",
-    response_model=list[models.WeeklyCountryResult]
+    response_model=list[models.WeeklyModel]
 )
 async def weekly_country_data(
     start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
     end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> list[models.WeeklyCountryResult]:
+) -> list[models.WeeklyModel]:
     """Return the weekly country data.
 
     :param start_date: The start date of the data to fetch.
@@ -131,11 +133,11 @@ async def weekly_country_data(
 
     with database.Database(read_only=True) as db:
         return [
-            models.WeeklyCountryResult(
+            models.WeeklyModel(
                 date=date,
                 data_file=enums.DataFileType.WEEKLY.link(date=date),
                 data=[
-                    models.WeeklyCountryFuelTypeResult(
+                    models.FuelTypeWeeklyPriceModel(
                         fuel_type=row['fuel_type'].name,
                         lowest_price=row['lowest_price'],
                         highest_price=row['highest_price'],
@@ -153,13 +155,13 @@ async def weekly_country_data(
     path="/data/weekly/prefectures/{prefecture}",
     summary="Return the weekly prefecture data",
     description="Return the weekly prefecture data",
-    response_model=list[models.WeeklyPrefectureResult]
+    response_model=list[models.WeeklyModel]
 )
 async def weekly_prefecture_data(
     prefecture: str = fastapi.Path(title="The prefecture"),
     start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
     end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> list[models.WeeklyPrefectureResult]:
+) -> list[models.WeeklyModel]:
     """Return the weekly prefecture data
 
     :param prefecture: The prefecture for which to fetch data.
@@ -175,11 +177,11 @@ async def weekly_prefecture_data(
 
     with database.Database(read_only=True) as db:
         return [
-            models.WeeklyPrefectureResult(
+            models.WeeklyModel(
                 date=date,
                 data_file=enums.DataFileType.DAILY_COUNTRY.link(date=date),
                 data=[
-                    models.WeeklyPrefectureFuelTypeResult(
+                    models.FuelTypeWeeklyPriceModel(
                         fuel_type=row['fuel_type'].name,
                         lowest_price=row['lowest_price'],
                         highest_price=row['highest_price'],
@@ -198,7 +200,7 @@ async def weekly_prefecture_data(
     path="/data/country/{date}",
     summary="Return the country data for a date",
     description="Return country data for a date for all prefectures along with the country averages",
-    response_model=models.CountryDateResult
+    response_model=models.CountryModel
 )
 async def country_data(date: datetime.date = fastapi.Path(title="The date")):
     """Return the country data for a date.
@@ -208,8 +210,16 @@ async def country_data(date: datetime.date = fastapi.Path(title="The date")):
     """
     with database.Database(read_only=True) as db:
         return {
-            'prefectures': db.prefecture_data(date=date),
-            'country': db.country_data(date=date)
+            'prefectures': [
+                models.FuelTypePricePrefectureModel(
+                    fuel_type=row['fuel_type'].name, price=row['price'], prefecture=row['prefecture'].name
+                ) for row in db.prefecture_data(date=date)
+            ],
+            'country': [
+                models.FuelTypePriceStationsModel(
+                    fuel_type=row['fuel_type'].name, price=row['price'], number_of_stations=row['number_of_stations']
+                ) for row in db.country_data(date=date)
+            ]
         }
 
 
