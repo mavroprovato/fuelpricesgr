@@ -90,7 +90,7 @@ def process_link(file_link: str, data_file_type: enums.DataFileType, use_file_ca
                 with file_path.open('rb') as file:
                     file_data = file.read()
             else:
-                logger.info("Fetching file")
+                logger.info("Fetching file %s", file_link)
                 response = requests.get(file_link, stream=True, timeout=settings.REQUESTS_TIMEOUT)
                 response.raise_for_status()
                 file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -98,7 +98,7 @@ def process_link(file_link: str, data_file_type: enums.DataFileType, use_file_ca
                 with file_path.open('wb') as file:
                     file.write(file_data)
         else:
-            logger.info("Fetching file")
+            logger.info("Fetching file %s", file_link)
             response = requests.get(file_link, stream=True, timeout=settings.REQUESTS_TIMEOUT)
             response.raise_for_status()
             file_data = response.raw.read()
