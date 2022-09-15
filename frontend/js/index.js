@@ -54,6 +54,7 @@ const API = {
  */
 function loadLatestValues(data) {
     if (data) {
+        document.getElementById('latest-prices-heading').innerHTML += ' ' + data[data.length - 1]['date'];
         const table = document.getElementById('latest-prices');
         data[data.length - 1].data.forEach(latestData => {
             const tableRow = table.querySelector(`#${latestData['fuel_type'].toLowerCase().replace('_', '-')}`);
