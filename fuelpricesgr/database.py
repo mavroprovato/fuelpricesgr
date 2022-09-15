@@ -307,20 +307,8 @@ class Database:
         :param data_type: The data type.
         :return: The data date range.
         """
-        match data_type:
-            case enums.DataType.DAILY_COUNTRY:
-                table = 'daily_country'
-            case enums.DataType.DAILY_PREFECTURE:
-                table = 'daily_country'
-            case enums.DataType.WEEKLY_COUNTRY:
-                table = 'daily_country'
-            case enums.DataType.WEEKLY_PREFECTURE:
-                table = 'daily_country'
-            case _:
-                raise ValueError(f"Data type {data_type} is not handled")
-
         with contextlib.closing(self.conn.cursor()) as cursor:
-            cursor.execute(f"SELECT MIN(date), MAX(date) FROM {table}")
+            cursor.execute(f"SELECT MIN(date), MAX(date) FROM {self._table_for_data_type(data_type)}")
             data = cursor.fetchone()
             if data:
                 return data
@@ -484,6 +472,25 @@ class Database:
                     'price': decimal.Decimal(row[2]),
                 } for row in cursor.fetchall()
             ]
+
+    @staticmethod
+    def _table_for_data_type(data_type: enums.DataType) -> str:
+        """Return the table name for the data type.
+
+        :param data_type: The data type.
+        :return: The table name.
+        """
+        match data_type:
+            case enums.DataType.DAILY_COUNTRY:
+                return 'daily_country'
+            case enums.DataType.DAILY_PREFECTURE:
+                return 'daily_prefecture'
+            case enums.DataType.WEEKLY_COUNTRY:
+                return 'weekly_country'
+            case enums.DataType.WEEKLY_PREFECTURE:
+                return 'weekly_prefecture'
+            case _:
+                raise ValueError(f"Data type {data_type} is not handled")
 
     @staticmethod
     def _add_date_restriction(
