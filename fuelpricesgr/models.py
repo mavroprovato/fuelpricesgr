@@ -20,6 +20,13 @@ class PrefectureModel(pydantic.BaseModel):
     description: str
 
 
+class DateRangeModel(pydantic.BaseModel):
+    """The date range model.
+    """
+    start_date: datetime.date | None
+    end_date: datetime.date | None
+
+
 class PriceModel(pydantic.BaseModel):
     """The price model.
     """

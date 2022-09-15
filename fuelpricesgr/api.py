@@ -60,6 +60,24 @@ async def prefectures() -> list[models.PrefectureModel]:
 
 
 @app.get(
+    path="/dateRange/{data_type}",
+    summary="Get the available data date range for a data type",
+    description="Get the available data date range for a data type",
+    response_model=models.DateRangeModel
+)
+async def date_range(data_type: enums.DataType) -> models.DateRangeModel:
+    """Returns the available data date range for a data type.
+
+    :param data_type: The data type.
+    :return: The available data date range for a data type.
+    """
+    with database.Database(read_only=True) as db:
+        start_date, end_date = db.date_range(data_type=data_type)
+
+        return models.DateRangeModel(start_date=start_date, end_date=end_date)
+
+
+@app.get(
     path="/data/daily/country",
     summary="Returns the daily country data",
     description="Returns the daily country data",
