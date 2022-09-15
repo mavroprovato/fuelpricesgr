@@ -1,8 +1,6 @@
-const loadData = async () => {
-    const response = await fetch('http://localhost:8000/data/country');
-    return await response.json()
-}
-
+/**
+ * The fuel types enumeration.
+ */
 const FuelType = {
     UNLEADED_95: {
         label: "Αμόλυβδη 95",
@@ -14,7 +12,8 @@ const FuelType = {
     },
     SUPER: {
         label: "Super",
-        borderColor: 'rgb(181, 29, 20)'
+        borderColor: 'rgb(181, 29, 20)',
+        hidden: true
     },
     DIESEL: {
         label: "Diesel",
@@ -30,12 +29,32 @@ const FuelType = {
     }
 }
 
-loadData().then(data => {
-    const dates = [];
+/**
+ * The API object.
+ */
+const API = {
+    /** The base API URL. */
+    baseApiUrl: 'http://localhost:8000',
+
+    /**
+     * Fetch the country data.
+     *
+     * @returns {Promise<Response>}
+     */
+    async fetchCountryData() {
+        return await fetch(`${this.baseApiUrl}/data/daily/country`);
+    }
+}
+
+/**
+ * Load the country chart.
+ */
+function loadCountryChart(data) {
     const prices = {};
     for (const fuelType in FuelType) {
         prices[fuelType] = [];
     }
+    const dates = [];
     for (const row of data) {
         dates.push(row['date']);
         for (const fuelType in FuelType) {
@@ -49,19 +68,31 @@ loadData().then(data => {
     for (const fuelType in FuelType) {
         datasets.push({
             label: FuelType[fuelType].label,
+            borderColor: FuelType[fuelType].borderColor,
+            hidden: FuelType[fuelType].hidden,
             data: prices[fuelType],
-            borderColor:  FuelType[fuelType].borderColor
         })
     }
-    const chartData = {
-        labels: dates,
-        datasets: datasets
-    };
-    const config = {
-        type: 'line',
-        data: chartData,
-    };
     const ctx = document.getElementById('chart').getContext('2d');
-    new Chart(ctx, config);
-});
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: datasets
+        }
+    });
+}
 
+/**
+ * Called when the DOM has been loaded.
+ */
+document.addEventListener("DOMContentLoaded", function() {
+    // Fetch country data on load.
+    API.fetchCountryData().then(response => {
+        if (response.ok) {
+            response.json().then(loadCountryChart);
+        } else {
+            console.error("Could not fetch country data");
+        }
+    });
+});
