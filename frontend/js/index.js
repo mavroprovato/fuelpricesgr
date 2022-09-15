@@ -10,10 +10,9 @@ const FuelType = {
         label: 'Αμόλυβδη 100',
         borderColor: 'rgb(211, 179, 16)'
     },
-    SUPER: {
-        label: "Super",
-        borderColor: 'rgb(181, 29, 20)',
-        hidden: true
+    GAS: {
+        label: "Υγραέριο",
+        borderColor: 'rgb(0, 178, 93)'
     },
     DIESEL: {
         label: "Diesel",
@@ -23,9 +22,10 @@ const FuelType = {
         label: "Diesel Θέρμανσης",
         borderColor: 'rgb(251, 73, 176)'
     },
-    GAS: {
-        label: "Υγραέριο",
-        borderColor: 'rgb(0, 178, 93)'
+    SUPER: {
+        label: "Super",
+        borderColor: 'rgb(181, 29, 20)',
+        hidden: true
     }
 }
 
@@ -47,7 +47,40 @@ const API = {
 }
 
 /**
+ * Load the latest country values.
+ *
+ * @param data The country daily data.
+ * @returns {*} The country daily data.
+ */
+function loadLatestValues(data) {
+    if (data) {
+        const table = document.getElementById('latest-prices');
+        data[data.length - 1].data.forEach(latestData => {
+            const tableRow = table.querySelector(`#${latestData['fuel_type'].toLowerCase().replace('_', '-')}`);
+            if (tableRow) {
+                tableRow.style.display = 'table-row';
+                tableRow.querySelector('.fuel-price').innerHTML = latestData['price'];
+                if (data.length > 1) {
+                    data[data.length - 2].data.forEach(previousData => {
+                        if (previousData['fuel_type'] === latestData['fuel_type']) {
+                            const evolution = (latestData['price'] - previousData['price']) / latestData['price'];
+                            tableRow.querySelector('.fuel-price-evolution').innerHTML =
+                                (evolution > 0 ? '+' : '') + (evolution * 100).toFixed(2) + '%';
+                        }
+                    })
+                }
+            }
+        });
+    }
+
+    return data
+}
+
+/**
  * Load the country chart.
+ *
+ * @param data The country daily data.
+ * @returns {*} The country daily data.
  */
 function loadCountryChart(data) {
     const prices = {};
@@ -81,16 +114,22 @@ function loadCountryChart(data) {
             datasets: datasets
         }
     });
+
+    return data
 }
 
 /**
  * Called when the DOM has been loaded.
  */
 document.addEventListener("DOMContentLoaded", function() {
+    // Hide all latest prices elements initially, because they can be missing.
+    document.getElementById('latest-prices').querySelectorAll('tr').forEach(elem => {
+        elem.style.display = 'none';
+    })
     // Fetch country data on load.
     API.fetchCountryData().then(response => {
         if (response.ok) {
-            response.json().then(loadCountryChart);
+            response.json().then(loadLatestValues).then(loadCountryChart);
         } else {
             console.error("Could not fetch country data");
         }

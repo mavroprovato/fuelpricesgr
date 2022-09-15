@@ -5,3 +5,7 @@
     height: 400px;
     width: 800px;
 }
+
+.fuel-type-label {
+    font-weight: bold;
+}
