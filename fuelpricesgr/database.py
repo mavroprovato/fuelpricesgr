@@ -95,86 +95,30 @@ class Database:
         self.conn.commit()
 
     def data_exists(self, data_types: collections.abc.Iterable[enums.DataType], date: datetime.date) -> bool:
-        """Checks if data exists for the specified fuel data type and date.
+        """Checks if data exists for the specified fuel data types and date.
 
         :param data_types: The data types to check.
         :param date: The date.
         :return: True if data exist, False otherwise.
         """
         for data_type in data_types:
-            match data_type:
-                case enums.DataType.DAILY_COUNTRY:
-                    if not self.daily_country_data_exists(date=date):
-                        return False
-                case enums.DataType.DAILY_PREFECTURE:
-                    if not self.daily_prefecture_data_exists(date=date):
-                        return False
-                case enums.DataType.WEEKLY_COUNTRY:
-                    if not self.weekly_country_data_exists(date=date):
-                        return False
-                case enums.DataType.WEEKLY_PREFECTURE:
-                    if not self.weekly_prefecture_data_exists(date=date):
-                        return False
+            if not self.data_type_data_exists(data_type=data_type, date=date):
+                return False
 
         return True
 
-    def daily_country_data_exists(self, date: datetime.date) -> bool:
-        """Checks if daily country data exists for the date.
+    def data_type_data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
+        """Checks if data exists for the specified fuel data types and date.
 
+        :param data_type: The data type to check.
         :param date: The date.
-        :return: True if the data exists, False otherwise.
+        :return: True if data exist, False otherwise.
         """
         with contextlib.closing(self.conn.cursor()) as cursor:
-            cursor.execute("""
-                SELECT COUNT(*) > 0
-                FROM daily_country
-                WHERE date = :date
-            """, {'date': date})
-
-            return bool(cursor.fetchone()[0])
-
-    def daily_prefecture_data_exists(self, date: datetime.date) -> bool:
-        """Checks if daily prefecture data exists for the date.
-
-        :param date: The date.
-        :return: True if the data exists, False otherwise.
-        """
-        with contextlib.closing(self.conn.cursor()) as cursor:
-            cursor.execute("""
-               SELECT COUNT(*) > 0
-               FROM daily_prefecture
-               WHERE date = :date
-            """, {'date': date})
-
-            return bool(cursor.fetchone()[0])
-
-    def weekly_country_data_exists(self, date: datetime.date) -> bool:
-        """Checks if weekly country data exists for the date.
-
-        :param date: The date.
-        :return: True if the data exists, False otherwise.
-        """
-        with contextlib.closing(self.conn.cursor()) as cursor:
-            cursor.execute("""
-               SELECT COUNT(*) > 0
-               FROM weekly_country
-               WHERE date = :date
-            """, {'date': date})
-
-            return bool(cursor.fetchone()[0])
-
-    def weekly_prefecture_data_exists(self, date: datetime.date) -> bool:
-        """Checks if weekly prefecture data exists for the date.
-
-        :param date: The date.
-        :return: True if the data exists, False otherwise.
-        """
-        with contextlib.closing(self.conn.cursor()) as cursor:
-            cursor.execute("""
-               SELECT COUNT(*) > 0
-               FROM weekly_prefecture
-               WHERE date = :date
-            """, {'date': date})
+            cursor.execute(
+                f"SELECT COUNT(*) > 0 FROM {self._table_for_data_type(data_type)} WHERE date = :date",
+                {'date': date}
+            )
 
             return bool(cursor.fetchone()[0])
 
