@@ -127,6 +127,14 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('latest-prices').querySelectorAll('tr').forEach(elem => {
         elem.style.display = 'none';
     })
+    // Initialize the date picker
+    new easepick.create({
+        element: document.getElementById('datepicker'),
+        css: [
+            'https://cdn.jsdelivr.net/npm/@easepick/bundle@1.2.0/dist/index.css',
+        ],
+        plugins: ['RangePlugin'],
+    });
     // Fetch country data on load.
     API.fetchCountryData().then(response => {
         if (response.ok) {

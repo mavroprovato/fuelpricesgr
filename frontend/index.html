@@ -8,6 +8,10 @@
 <body>
 <div class="main">
     <h1>Τιμές Υγρών Καυσίμων</h1>
+    <p>
+        <label for="datepicker">Επιλεγμένη περίοδος:</label>
+        <input id="datepicker"/>
+    </p>
     <h2 id="latest-prices-heading">Τιμές Καυσίμων</h2>
     <table id="latest-prices">
         <tr id="unleaded-95">
@@ -45,6 +49,7 @@
     <canvas id="chart"></canvas>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@easepick/bundle@1.2.0/dist/index.umd.min.js"></script>
 <script src="js/index.js"></script>
 </body>
 </html>
