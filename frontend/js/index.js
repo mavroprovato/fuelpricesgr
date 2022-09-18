@@ -37,12 +37,36 @@ const API = {
     baseApiUrl: 'http://localhost:8000',
 
     /**
+     * Return the date range for the data type.
+     *
+     * @param dataType The data type.
+     * @returns {Promise<Response>}
+     */
+    async dateRage(dataType) {
+        return await fetch(`${this.baseApiUrl}/dateRange/${dataType}`);
+    },
+
+    /**
      * Fetch the country data.
      *
      * @returns {Promise<Response>}
      */
-    async fetchCountryData() {
-        return await fetch(`${this.baseApiUrl}/data/daily/country`);
+    async dailyCountryData(startDate, endDate) {
+        let url = `${this.baseApiUrl}/data/daily/country`;
+        let queryString = '';
+        if (startDate) {
+            queryString += `start_date=${startDate.toISODate()}`
+        }
+        if (endDate) {
+            if (queryString) {
+                queryString += '&';
+            }
+            queryString += `end_date=${endDate.toISODate()}`
+        }
+        if (queryString) {
+            url += `?${queryString}`;
+        }
+        return await fetch(url);
     }
 }
 
@@ -78,12 +102,12 @@ function loadLatestValues(data) {
 }
 
 /**
- * Load the country chart.
+ * Load the daily country data chart.
  *
- * @param data The country daily data.
- * @returns {*} The country daily data.
+ * @param data The daily country data.
+ * @returns {*} The daily country data.
  */
-function loadCountryChart(data) {
+function loadDailyCountryChart(data) {
     const prices = {};
     for (const fuelType in FuelType) {
         prices[fuelType] = [];
@@ -120,6 +144,41 @@ function loadCountryChart(data) {
 }
 
 /**
+ * Initialize the date range picker from the date range API response.
+ *
+ * @param dateRange The date range API response.
+ */
+function initializeDatePicker(dateRange) {
+    let minDate = luxon.DateTime.fromISO(dateRange.start_date);
+    let maxDate = luxon.DateTime.fromISO(dateRange.end_date);
+    let endDate = maxDate;
+    let startDate = endDate.minus({'month': 6});
+    // Initialize the date picker
+    new easepick.create({
+        element: document.getElementById('datepicker'),
+        css: [
+            'https://cdn.jsdelivr.net/npm/@easepick/bundle@1.2.0/dist/index.css',
+        ],
+        plugins: ['RangePlugin', 'LockPlugin'],
+        RangePlugin: {
+            startDate: startDate.toISODate(),
+            endDate: endDate.toISODate()
+        },
+        LockPlugin: {
+            minDate: minDate.toISODate(),
+            maxDate: maxDate.toISODate()
+        }
+    });
+    API.dailyCountryData(startDate, endDate).then(response => {
+        if (response.ok) {
+            response.json().then(loadLatestValues).then(loadDailyCountryChart);
+        } else {
+            console.error("Could not fetch country data");
+        }
+    });
+}
+
+/**
  * Called when the DOM has been loaded.
  */
 document.addEventListener("DOMContentLoaded", function() {
@@ -127,20 +186,12 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('latest-prices').querySelectorAll('tr').forEach(elem => {
         elem.style.display = 'none';
     })
-    // Initialize the date picker
-    new easepick.create({
-        element: document.getElementById('datepicker'),
-        css: [
-            'https://cdn.jsdelivr.net/npm/@easepick/bundle@1.2.0/dist/index.css',
-        ],
-        plugins: ['RangePlugin'],
-    });
-    // Fetch country data on load.
-    API.fetchCountryData().then(response => {
+    // Fetch date range on load.
+    API.dateRage('daily_country').then(response => {
         if (response.ok) {
-            response.json().then(loadLatestValues).then(loadCountryChart);
+            response.json().then(initializeDatePicker);
         } else {
-            console.error("Could not fetch country data");
+            console.error("Could not fetch date range");
         }
     });
 });
