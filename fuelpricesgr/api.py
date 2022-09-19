@@ -32,7 +32,7 @@ app.add_middleware(fastapi.middleware.cors.CORSMiddleware, allow_origins=setting
 
 @app.get(
     path="/",
-    summary="Return the status of the application",
+    summary="Application status",
     description="Return the status of the application",
     response_model=models.StatusModel
 )
@@ -48,7 +48,7 @@ async def index() -> models.StatusModel:
 
 @app.get(
     path="/prefectures",
-    summary="Return all prefectures",
+    summary="Prefectures",
     description="Return all prefectures",
     response_model=list[models.PrefectureModel]
 )
@@ -64,7 +64,7 @@ async def prefectures() -> list[models.PrefectureModel]:
 
 @app.get(
     path="/dateRange/{data_type}",
-    summary="Get the available data date range for a data type",
+    summary="Date range",
     description="Get the available data date range for a data type",
     response_model=models.DateRangeModel
 )
@@ -82,7 +82,7 @@ async def date_range(data_type: enums.DataType) -> models.DateRangeModel:
 
 @app.get(
     path="/data/daily/country",
-    summary="Returns the daily country data",
+    summary="Daily country data",
     description="Returns the daily country data",
     response_model=list[models.DailyCountryModel]
 )
@@ -119,7 +119,7 @@ async def daily_country_data(
 
 @app.get(
     path="/data/daily/prefectures/{prefecture}",
-    summary="Return the daily prefecture data",
+    summary="Daily prefecture data",
     description="Return the daily prefecture data",
     response_model=list[models.DailyPrefectureModel]
 )
@@ -156,7 +156,7 @@ async def daily_prefecture_data(
 
 @app.get(
     path="/data/weekly/country",
-    summary="Return the weekly country data",
+    summary="Weekly country data",
     description="Return the weekly country data",
     response_model=list[models.WeeklyModel]
 )
@@ -194,7 +194,7 @@ async def weekly_country_data(
 
 @app.get(
     path="/data/weekly/prefectures/{prefecture}",
-    summary="Return the weekly prefecture data",
+    summary="Weekly prefecture data",
     description="Return the weekly prefecture data",
     response_model=list[models.WeeklyModel]
 )
@@ -239,7 +239,7 @@ async def weekly_prefecture_data(
 
 @app.get(
     path="/data/country/{date}",
-    summary="Return the country data for a date",
+    summary="Country data",
     description="Return country data for a date for all prefectures along with the country averages",
     response_model=models.CountryModel
 )
