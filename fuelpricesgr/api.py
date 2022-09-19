@@ -5,6 +5,7 @@ import itertools
 
 import fastapi
 import fastapi.middleware.cors
+import fastapi.openapi.docs
 
 from fuelpricesgr import database, enums, models, settings
 
@@ -23,6 +24,8 @@ app = fastapi.FastAPI(
         "name": "The MIT License (MIT)",
         "url": "https://opensource.org/licenses/MIT",
     },
+    docs_url=None,
+    redoc_url='/docs'
 )
 app.add_middleware(fastapi.middleware.cors.CORSMiddleware, allow_origins=settings.CORS_ALLOW_ORIGINS)
 
