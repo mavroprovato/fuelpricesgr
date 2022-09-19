@@ -105,6 +105,14 @@ function initializeDatePicker(dateRange) {
             'https://cdn.jsdelivr.net/npm/@easepick/bundle@1.2.0/dist/index.css',
             'https://cdn.jsdelivr.net/npm/@easepick/lock-plugin@1.2.0/dist/index.css',
         ],
+        setup(picker) {
+            picker.on('select', event => {
+                loadPage(
+                    luxon.DateTime.fromJSDate(event.detail.start).toISODate(),
+                    luxon.DateTime.fromJSDate(event.detail.end).toISODate())
+                ;
+            });
+        },
         plugins: ['RangePlugin', 'LockPlugin'],
         RangePlugin: {
             startDate: startDate.toISODate(),
@@ -113,7 +121,7 @@ function initializeDatePicker(dateRange) {
         LockPlugin: {
             minDate: minDate.toISODate(),
             maxDate: maxDate.toISODate()
-        }
+        },
     });
 }
 
