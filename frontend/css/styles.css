@@ -6,6 +6,10 @@
     width: 800px;
 }
 
+#latest-prices tr {
+    display: none;
+}
+
 .fuel-type-label {
     font-weight: bold;
 }

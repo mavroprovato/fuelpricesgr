@@ -27,7 +27,22 @@ const FuelType = {
         borderColor: 'rgb(181, 29, 20)',
         hidden: true
     }
-}
+};
+
+/**
+ * The date picker.
+ */
+let datePicker = null;
+
+/**
+ * The latest prices.
+ */
+let latestPrices = null;
+
+/**
+ * The daily country chart.
+ */
+let dailyCountryChart = null;
 
 /**
  * The API object.
@@ -37,7 +52,7 @@ const API = {
     baseApiUrl: 'http://localhost:8000',
 
     /**
-     * Return the date range for the data type.
+     * Fetch the date range for the data type.
      *
      * @param dataType The data type.
      * @returns {Promise<Response>}
@@ -47,100 +62,30 @@ const API = {
     },
 
     /**
-     * Fetch the country data.
+     * Fetch the daily country data.
      *
+     * @param startDate The start date of the data to fetch, as an ISO date string.
+     * @param endDate The end date of the data to fetch, as an ISO date string.
      * @returns {Promise<Response>}
      */
     async dailyCountryData(startDate, endDate) {
         let url = `${this.baseApiUrl}/data/daily/country`;
         let queryString = '';
         if (startDate) {
-            queryString += `start_date=${startDate.toISODate()}`
+            queryString += `start_date=${startDate}`
         }
         if (endDate) {
             if (queryString) {
                 queryString += '&';
             }
-            queryString += `end_date=${endDate.toISODate()}`
+            queryString += `end_date=${endDate}`
         }
         if (queryString) {
             url += `?${queryString}`;
         }
+
         return await fetch(url);
     }
-}
-
-/**
- * Load the latest country values.
- *
- * @param data The country daily data.
- * @returns {*} The country daily data.
- */
-function loadLatestValues(data) {
-    if (data) {
-        document.getElementById('latest-prices-heading').innerHTML += ' ' + data[data.length - 1]['date'];
-        const table = document.getElementById('latest-prices');
-        data[data.length - 1].data.forEach(latestData => {
-            const tableRow = table.querySelector(`#${latestData['fuel_type'].toLowerCase().replace('_', '-')}`);
-            if (tableRow) {
-                tableRow.style.display = 'table-row';
-                tableRow.querySelector('.fuel-price').innerHTML = latestData['price'];
-                if (data.length > 1) {
-                    data[data.length - 2].data.forEach(previousData => {
-                        if (previousData['fuel_type'] === latestData['fuel_type']) {
-                            const evolution = (latestData['price'] - previousData['price']) / latestData['price'];
-                            tableRow.querySelector('.fuel-price-evolution').innerHTML =
-                                (evolution > 0 ? '+' : '') + (evolution * 100).toFixed(2) + '%';
-                        }
-                    })
-                }
-            }
-        });
-    }
-
-    return data
-}
-
-/**
- * Load the daily country data chart.
- *
- * @param data The daily country data.
- * @returns {*} The daily country data.
- */
-function loadDailyCountryChart(data) {
-    const prices = {};
-    for (const fuelType in FuelType) {
-        prices[fuelType] = [];
-    }
-    const dates = [];
-    for (const row of data) {
-        dates.push(row['date']);
-        for (const fuelType in FuelType) {
-            prices[fuelType].push(null);
-        }
-        for (const result of row['data']) {
-            prices[result['fuel_type']][prices[result['fuel_type']].length - 1] = result['price'];
-        }
-    }
-    const datasets = []
-    for (const fuelType in FuelType) {
-        datasets.push({
-            label: FuelType[fuelType].label,
-            borderColor: FuelType[fuelType].borderColor,
-            hidden: FuelType[fuelType].hidden,
-            data: prices[fuelType],
-        })
-    }
-    const ctx = document.getElementById('chart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: dates,
-            datasets: datasets
-        }
-    });
-
-    return data
 }
 
 /**
@@ -153,11 +98,12 @@ function initializeDatePicker(dateRange) {
     let maxDate = luxon.DateTime.fromISO(dateRange.end_date);
     let endDate = maxDate;
     let startDate = endDate.minus({'month': 6});
-    // Initialize the date picker
-    new easepick.create({
+
+    return new easepick.create({
         element: document.getElementById('datepicker'),
         css: [
             'https://cdn.jsdelivr.net/npm/@easepick/bundle@1.2.0/dist/index.css',
+            'https://cdn.jsdelivr.net/npm/@easepick/lock-plugin@1.2.0/dist/index.css',
         ],
         plugins: ['RangePlugin', 'LockPlugin'],
         RangePlugin: {
@@ -169,12 +115,87 @@ function initializeDatePicker(dateRange) {
             maxDate: maxDate.toISODate()
         }
     });
-    API.dailyCountryData(startDate, endDate).then(response => {
-        if (response.ok) {
-            response.json().then(loadLatestValues).then(loadDailyCountryChart);
-        } else {
-            console.error("Could not fetch country data");
+}
+
+/**
+ * Load the latest country values.
+ */
+function displayLatestValues(latestData, previousData) {
+    if (latestData) {
+        latestPrices.querySelector('h2').innerHTML = `Τιμές Καυσίμων ${latestData.date}`;
+        const table = latestPrices.querySelector('table');
+        Object.keys(FuelType).forEach(fuelType => {
+            const tableRow = table.querySelector(`#${fuelType.toLowerCase().replace('_', '-')}`);
+            const fuelData = latestData.data.find(e => e.fuel_type === fuelType);
+            if (fuelData) {
+                tableRow.style.display = 'table-row';
+                tableRow.querySelector('.fuel-price').innerHTML = fuelData.price;
+                if (previousData) {
+                    const evolutionElem = tableRow.querySelector('.fuel-price-evolution');
+                    const previousFuelData = previousData.data.find(e => e.fuel_type === fuelType);
+                    if (previousFuelData) {
+                        const evolution = (fuelData.price - previousFuelData.price) / fuelData.price;
+                        evolutionElem.innerHTML = (evolution > 0 ? '+' : '') + (evolution * 100).toFixed(2) + '%';
+                    } else {
+                        evolutionElem.innerHTML = '';
+                    }
+                }
+            } else {
+                tableRow.style.display = 'none';
+            }
+        })
+    }
+}
+
+/**
+ * Display the daily country data in a graph.
+ *
+ * @param data The daily country data response from the API.
+ */
+function displayDailyCountryChart(data) {
+    const prices = {};
+    for (const fuelType in FuelType) {
+        prices[fuelType] = [];
+    }
+    const labels = [];
+    for (const row of data) {
+        labels.push(row.date);
+        for (const fuelType in FuelType) {
+            prices[fuelType].push(null);
         }
+        for (const result of row.data) {
+            prices[result.fuel_type][prices[result.fuel_type].length - 1] = result.price;
+        }
+    }
+    const datasets = []
+    for (const fuelType in FuelType) {
+        datasets.push({
+            label: FuelType[fuelType].label,
+            borderColor: FuelType[fuelType].borderColor,
+            hidden: FuelType[fuelType].hidden,
+            data: prices[fuelType],
+        })
+    }
+
+    dailyCountryChart.data = {
+        labels: labels,
+        datasets: datasets
+    };
+    dailyCountryChart.update();
+}
+
+/**
+ * Load the page for the specified date range.
+ *
+ * @param startDate The start date.
+ * @param endDate The end date.
+ */
+function loadPage(startDate, endDate) {
+    API.dailyCountryData(startDate, endDate).then(response => {
+        response.json().then(data => {
+            displayLatestValues(...data.slice(-2).reverse());
+            displayDailyCountryChart(data);
+        });
     });
 }
 
@@ -188,10 +209,13 @@ document.addEventListener("DOMContentLoaded", function() {
     })
     // Fetch date range on load.
     API.dateRage('daily_country').then(response => {
-        if (response.ok) {
-            response.json().then(initializeDatePicker);
-        } else {
-            console.error("Could not fetch date range");
-        }
+        response.json().then(dateRange => {
+            datePicker = initializeDatePicker(dateRange);
+            latestPrices = document.getElementById('latest-prices');
+            dailyCountryChart = new Chart(document.getElementById('chart').getContext('2d'), {
+                type: 'line'
+            });
+            loadPage(dateRange.start_date, dateRange.end_date);
+        });
     });
 });
