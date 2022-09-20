@@ -10,9 +10,9 @@ client = fastapi.testclient.TestClient(api.app)
 def test_index():
     """Test the index of the API.
     """
-    response = client.get("/")
+    response = client.get('/')
     assert response.status_code == 200
-    assert response.json() == {"status": "OK"}
+    assert response.json() == {'status': 'OK', 'error': None}
 
 
 def test_prefectures():
@@ -21,5 +21,5 @@ def test_prefectures():
     response = client.get("/prefectures")
     assert response.status_code == 200
     for index, prefecture in enumerate(enums.Prefecture):
-        assert response.json()[index]["name"] == prefecture.name
-        assert response.json()[index]["description"] == prefecture.value
+        assert response.json()[index]['name'] == prefecture.name
+        assert response.json()[index]['description'] == prefecture.value
