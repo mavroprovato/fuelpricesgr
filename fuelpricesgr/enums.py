@@ -7,6 +7,13 @@ import enum
 from fuelpricesgr import settings
 
 
+class ApplicationStatus(enum.Enum):
+    """Enumeration for the application status.
+    """
+    OK = 'ok'
+    ERROR = 'error'
+
+
 class DataType(enum.Enum):
     """Enumeration for the different types of data contained in the data
     """

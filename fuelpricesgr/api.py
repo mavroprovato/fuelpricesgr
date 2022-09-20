@@ -41,9 +41,9 @@ async def index() -> models.StatusModel:
     """
     try:
         with database.Database(read_only=True):
-            return models.StatusModel(status="OK")
+            return models.StatusModel(status=enums.ApplicationStatus.OK)
     except Exception as ex:
-        return models.StatusModel(status="ERROR", error=str(ex))
+        return models.StatusModel(status=enums.ApplicationStatus.ERROR, error=str(ex))
 
 
 @app.get(
