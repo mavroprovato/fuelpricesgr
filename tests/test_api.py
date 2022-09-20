@@ -12,7 +12,7 @@ def test_index():
     """
     response = client.get('/')
     assert response.status_code == 200
-    assert response.json() == {'status': 'OK', 'error': None}
+    assert response.json() == {'status': 'ok', 'error': None}
 
 
 def test_prefectures():
