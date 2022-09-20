@@ -3,8 +3,17 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Unit tests
+.pytest_cache/
+
 # Pycharm files
 .idea/
 
 # Data directory
 var/
+
+# Node modules
+node_modules/
+
+# Distribution front end
+frontend/dist/

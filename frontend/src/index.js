@@ -1,3 +1,9 @@
+import { DateTime } from 'luxon';
+import { easepick } from '@easepick/core';
+import { LockPlugin } from '@easepick/lock-plugin';
+import { RangePlugin } from '@easepick/range-plugin';
+import Chart from 'chart.js/auto';
+
 /**
  * The fuel types enumeration.
  */
@@ -94,8 +100,8 @@ const API = {
  * @param dateRange The date range API response.
  */
 function initializeDatePicker(dateRange) {
-    let minDate = luxon.DateTime.fromISO(dateRange.start_date);
-    let maxDate = luxon.DateTime.fromISO(dateRange.end_date);
+    let minDate = DateTime.fromISO(dateRange.start_date);
+    let maxDate = DateTime.fromISO(dateRange.end_date);
     let endDate = maxDate;
     let startDate = endDate.minus({'month': 6});
 
@@ -108,12 +114,12 @@ function initializeDatePicker(dateRange) {
         setup(picker) {
             picker.on('select', event => {
                 loadPage(
-                    luxon.DateTime.fromJSDate(event.detail.start).toISODate(),
-                    luxon.DateTime.fromJSDate(event.detail.end).toISODate())
+                    DateTime.fromJSDate(event.detail.start).toISODate(),
+                    DateTime.fromJSDate(event.detail.end).toISODate())
                 ;
             });
         },
-        plugins: ['RangePlugin', 'LockPlugin'],
+        plugins: [LockPlugin, RangePlugin],
         RangePlugin: {
             startDate: startDate.toISODate(),
             endDate: endDate.toISODate()
