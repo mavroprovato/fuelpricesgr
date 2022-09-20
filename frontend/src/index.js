@@ -4,6 +4,8 @@ import { LockPlugin } from '@easepick/lock-plugin';
 import { RangePlugin } from '@easepick/range-plugin';
 import Chart from 'chart.js/auto';
 
+import './style.css';
+
 /**
  * The fuel types enumeration.
  */
