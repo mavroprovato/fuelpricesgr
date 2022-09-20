@@ -5,16 +5,17 @@ are regularly uploaded at the [Παρατηρητήριο Τιμών Υγρών 
 Government, but the data are published as PDF files. In order to process the data more easily, this project fetches
 those PDF files, extracts the data from them, inserts them in a database, and exposes them in an API.
 
-## Installation
+## Running the API
 
-This is a Python based project that uses Poetry in order to manage its dependencies. In order to install its
-dependencies, you need to run
+The backend API is a [Python](https://www.python.org/) based project, built with
+[FastAPI](https://fastapi.tiangolo.com/), that uses [Poetry](https://python-poetry.org/) for dependency management. In
+order to install the dependencies, you need to run:
 
 ```
 poetry install
 ```
 
-The data are stored in a SQLite database. In order to fetch them run
+The data are stored in an [SQLite](https://www.sqlite.org/) database. In order to fetch the data you need to run:
 
 ```
 python -m fuelpricesgr.fetch
@@ -29,7 +30,22 @@ Now you can launch the API by running the command:
 uvicorn fuelpricesgr.api:app
 ```
 
-The API is now available at http://localhost:8000. The documentation of the API is available at
+The API is now available at http://localhost:8000. The documentation for the API is available at
 http://localhost:8000/docs.
 
-A simple fronted for the API is available in the `frontend` directory.
+## Running the frontend
+
+A simple front end has been developed. The project dependencies are manages by [npm](https://www.npmjs.com/), so you
+need to change to the `frontend` directory and run:
+
+```
+npm install
+```
+
+Then you can launch the frontend with:
+
+```
+npm start
+```
+
+This command will launch the frontend at http://localhost:8080/.
