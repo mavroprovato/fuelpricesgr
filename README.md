@@ -1,21 +1,21 @@
 # Fuel Prices
 
 The purpose of this project is to create a database of fuel prices in Greece. Daily and weekly data about fuel prices
-are regularly uploaded at the [Παρατηρητήριο Τιμών Υγρών Καυσίμων](http://www.fuelprices.gr/) website by the Greek
+are regularly uploaded at the [Παρατηρητήριο Τιμών Υγρών Καυσίμων](http://www.fuelprices.gr) website by the Greek
 Government, but the data are published as PDF files. In order to process the data more easily, this project fetches
 those PDF files, extracts the data from them, inserts them in a database, and exposes them in an API.
 
 ## Running the API
 
-The backend API is a [Python](https://www.python.org/) based project, built with
-[FastAPI](https://fastapi.tiangolo.com/), that uses [Poetry](https://python-poetry.org/) for dependency management. In
+The backend API is a [Python](https://www.python.org) based project, built with
+[FastAPI](https://fastapi.tiangolo.com), that uses [Poetry](https://python-poetry.org) for dependency management. In
 order to install the dependencies, you need to run:
 
 ```
 poetry install
 ```
 
-The data are stored in an [SQLite](https://www.sqlite.org/) database. In order to fetch the data you need to run:
+The data are stored in an [SQLite](https://www.sqlite.org) database. In order to fetch the data you need to run:
 
 ```
 python -m fuelpricesgr.fetch
@@ -35,7 +35,7 @@ http://localhost:8000/docs.
 
 ## Running the frontend
 
-A simple front end has been developed. The project dependencies are manages by [npm](https://www.npmjs.com/), so you
+A simple front end has been developed. The project dependencies are manages by [npm](https://www.npmjs.com), so you
 need to change to the `frontend` directory and run:
 
 ```
@@ -48,4 +48,4 @@ Then you can launch the frontend with:
 npm start
 ```
 
-This command will launch the frontend at http://localhost:8080/.
+This command will launch the frontend at http://localhost:8080.
