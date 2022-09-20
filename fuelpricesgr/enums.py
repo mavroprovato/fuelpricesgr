@@ -63,12 +63,23 @@ class DataFileType(enum.Enum):
 class FuelType(enum.Enum):
     """Enumeration for the different fuel types
     """
-    UNLEADED_95 = "Αμόλυβδη 95"
-    UNLEADED_100 = "Αμόλυβδη 100"
-    SUPER = "Super"
-    DIESEL = "Diesel"
-    DIESEL_HEATING = "Diesel Θέρμανσης"
-    GAS = "Υγραέριο"
+    UNLEADED_95 = "UNLEADED_95", "Αμόλυβδη 95"
+    UNLEADED_100 = "UNLEADED_100",  "Αμόλυβδη 100"
+    SUPER = "SUPER",  "Super"
+    DIESEL = "DIESEL",  "Diesel"
+    DIESEL_HEATING = "DIESEL_HEATING",  "Diesel Θέρμανσης"
+    GAS = "GAS", "Υγραέριο"
+
+    def __new__(cls, value: str, description: str):
+        """Creates the enum.
+
+        :param value: The enum value.
+        :param description: The description.
+        """
+        obj = object.__new__(cls)
+        obj._value_ = value
+
+        return obj
 
 
 class Prefecture(enum.Enum):
