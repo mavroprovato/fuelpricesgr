@@ -126,7 +126,7 @@ def extract_daily_country_data(text: str) -> dict[enums.DataType, list[dict]]:
             matches = re.match(
                 r'(\d? ?\.?\d ?\d ?\d|\d? ?\d? ?\d?|-) +(\d?[,.] ?\d ?\d ?\d|-|#ΔΙΑΙΡ\./0!)', fuel_type_text)
             if not matches or len(matches.groups()) != 2:
-                logger.warning(f"Could not parse data for fuel type %s", fuel_type)
+                logger.warning("Could not parse data for fuel type %s", fuel_type)
                 continue
             number_of_stations = None
             if matches.group(1) != '-':
