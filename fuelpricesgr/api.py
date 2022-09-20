@@ -199,7 +199,7 @@ async def weekly_country_data(
     response_model=list[models.WeeklyModel]
 )
 async def weekly_prefecture_data(
-        prefecture: str = fastapi.Path(title="The prefecture"),
+        prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
 ) -> list[models.WeeklyModel]:
@@ -211,10 +211,6 @@ async def weekly_prefecture_data(
     :return: The weekly prefecture data.
     """
     start_date, end_date = get_date_range(start_date, end_date)
-    try:
-        prefecture = enums.Prefecture[prefecture]
-    except KeyError as exc:
-        raise fastapi.HTTPException(status_code=400, detail=f"Invalid prefecture {prefecture}") from exc
 
     with database.Database(read_only=True) as db:
         return [
