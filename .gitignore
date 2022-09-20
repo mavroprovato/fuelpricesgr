@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 # Unit tests
+.coverage
 .pytest_cache/
 
 # Pycharm files
