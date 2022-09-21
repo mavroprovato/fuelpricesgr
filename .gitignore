@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Environments
+.env
+
 # Unit tests
 .coverage
 .pytest_cache/
