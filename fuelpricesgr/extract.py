@@ -106,7 +106,7 @@ def extract_daily_country_data(text: str) -> dict[enums.DataType, list[dict]]:
         matches[enums.FuelType.SUPER] = match[1]
     else:
         logger.warning("Cannot find data for %s in daily country data", enums.FuelType.SUPER)
-    if match := re.search(r'Die ?s ?el +Κ ?ί ?ν ?[ηθ] ?[σζς] ?[ηθ] ?[ςσ] +([\d.,\- ]+)', text):
+    if match := re.search(r'Die ?s ?e ?l +Κ ?ί ?ν ?[ηθ] ?[σζς] ?[ηθ] ?[ςσ] +([\d.,\- ]+)', text):
         matches[enums.FuelType.DIESEL] = match[1]
     else:
         logger.warning("Cannot find data for %s in daily country data", enums.FuelType.DIESEL)
