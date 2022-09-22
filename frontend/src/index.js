@@ -56,9 +56,6 @@ let dailyCountryChart = null;
  * The API object.
  */
 const API = {
-    /** The base API URL. */
-    baseApiUrl: 'http://localhost:8000',
-
     /**
      * Fetch the date range for the data type.
      *
@@ -66,7 +63,7 @@ const API = {
      * @returns {Promise<Response>}
      */
     async dateRage(dataType) {
-        return await fetch(`${this.baseApiUrl}/dateRange/${dataType}`);
+        return await fetch(`${API_URL}/dateRange/${dataType}`);
     },
 
     /**
@@ -77,7 +74,7 @@ const API = {
      * @returns {Promise<Response>}
      */
     async dailyCountryData(startDate, endDate) {
-        let url = `${this.baseApiUrl}/data/daily/country`;
+        let url = `${API_URL}/data/daily/country`;
         let queryString = '';
         if (startDate) {
             queryString += `start_date=${startDate}`
