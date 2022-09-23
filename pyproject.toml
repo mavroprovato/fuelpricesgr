@@ -17,6 +17,8 @@ uvicorn = {extras = ["standard"], version = "^0.18.2"}
 
 [tool.poetry.dev-dependencies]
 coverage = "^6.4.4"
+fabric = "^2.7.1"
+patchwork = "^1.0.1"
 pytest = "^7.1"
 pylint = "^2.15.0"
 
