@@ -3,9 +3,9 @@
 import os
 import pathlib
 
-from dotenv import load_dotenv
+import dotenv
 
-load_dotenv()
+dotenv.load_dotenv()
 
 # The base data path
 DATA_PATH = pathlib.Path(__file__).parent.parent / 'var'
