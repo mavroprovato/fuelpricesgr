@@ -64,6 +64,7 @@ async def index() -> models.StatusModel:
     description="Return all prefectures",
     response_model=list[models.PrefectureModel]
 )
+@cache(expire=60)
 async def prefectures() -> list[models.PrefectureModel]:
     """Returns all prefectures.
 
