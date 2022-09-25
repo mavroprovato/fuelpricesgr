@@ -16,47 +16,48 @@ GIT_REPOSITORY = 'https://github.com/mavroprovato/fuelpricesgr.git'
 
 
 @fabric.task
-def deploy(c):
+def deploy(context):
     """Perform the deployment.
 
-    :param c: The fabric connection.
+    :param context: The context.
     """
-    deploy_api(c)
-    deploy_frontend()
+    deploy_api(context)
+    deploy_frontend(context)
 
 
 @fabric.task
-def deploy_api(c):
+def deploy_api(context):
     """Deploy the API.
 
-    :param c: The fabric connection.
+    :param context: The context.
     """
-    print(f"Performing deployment on host {c.host} as user {c.user}")
+    print(f"Performing deployment on host {context.host} as user {context.user}")
     # Create the application directory if it does not exist
-    if patchwork.files.exists(c, APPLICATION_DIRECTORY):
+    if patchwork.files.exists(context, APPLICATION_DIRECTORY):
         print("Application directory exists")
     else:
-        c.run(f'mkdir {APPLICATION_DIRECTORY}')
-    with c.cd(APPLICATION_DIRECTORY):
+        context.run(f'mkdir {APPLICATION_DIRECTORY}')
+    with context.cd(APPLICATION_DIRECTORY):
         # Update the git repository
-        if patchwork.files.exists(c, '~/fuelpricesgr/.git'):
+        if patchwork.files.exists(context, '~/fuelpricesgr/.git'):
             print("Git repository exists, updating code")
-            c.run(f'git pull origin master')
+            context.run(f'git pull origin master')
         else:
             print("Does not exist, cloning the repository")
-            c.run(f'git clone -b {GIT_REPOSITORY}')
+            context.run(f'git clone -b {GIT_REPOSITORY}')
         # Install the python dependencies
         print("Installing python dependencies")
-        c.run('~/.local/bin/poetry install --no-dev')
+        context.run('~/.local/bin/poetry install --no-dev')
     # Restart the server
     print("Restarting the server")
-    c.run('sudo systemctl restart fuelpricesgr.service')
+    context.run('sudo systemctl restart fuelpricesgr.service')
 
 
 @fabric.task
-def deploy_frontend():
+def deploy_frontend(context):
     """Deploy the frontend.
 
+    :param context: The context.
     """
     print("Building the frontend")
     invoke.run('npm run build --prefix frontend')
