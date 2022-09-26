@@ -72,7 +72,8 @@ async def prefectures() -> list[models.PrefectureModel]:
     :return: The prefectures.
     """
     return [
-        models.PrefectureModel(name=prefecture.name, description=prefecture.value) for prefecture in enums.Prefecture
+        models.PrefectureModel(name=prefecture.name, description=prefecture.display_name)
+        for prefecture in enums.Prefecture
     ]
 
 
