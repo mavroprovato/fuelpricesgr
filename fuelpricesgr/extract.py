@@ -163,7 +163,7 @@ def extract_fuel_types(text: str) -> tuple[list[enums.FuelType], int]:
     if match := re.search(r'Super', text):
         fuel_types.append((enums.FuelType.SUPER, match.span()))
     else:
-        raise ValueError(f"Cannot find data for {enums.FuelType.SUPER} in daily prefecture data")
+        logger.warning(f"Cannot find data for {enums.FuelType.SUPER} in daily prefecture data")
 
     if match := re.search(r'Diesel\s+Κίν ?η[σς] ?η ?[ςσ]', text):
         fuel_types.append((enums.FuelType.DIESEL, match.span()))
