@@ -3,13 +3,14 @@
 import datetime
 import itertools
 
-import aioredis
 import fastapi
 import fastapi_cache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache.decorator import cache
 import fastapi.middleware.cors
 import fastapi.openapi.docs
+import redis
+
 
 from fuelpricesgr import database, enums, models, settings
 
@@ -38,8 +39,8 @@ app.add_middleware(fastapi.middleware.cors.CORSMiddleware, allow_origins=setting
 async def startup():
     """Called upon the application startup.
     """
-    redis = aioredis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
-    fastapi_cache.FastAPICache.init(RedisBackend(redis), prefix="fuelpricesgr-cache")
+    conn = redis.asyncio.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
+    fastapi_cache.FastAPICache.init(RedisBackend(conn), prefix="fuelpricesgr-cache")
 
 
 @app.get(
