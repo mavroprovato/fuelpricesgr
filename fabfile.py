@@ -47,7 +47,7 @@ def deploy_api(context):
             context.run(f'git clone -b {GIT_REPOSITORY}')
         # Install the python dependencies
         print("Installing python dependencies")
-        context.run('~/.local/bin/poetry install --no-dev')
+        context.run('~/.local/bin/poetry install --no-dev --remove-untracked')
     # Restart the server
     print("Restarting the server")
     context.run('sudo systemctl restart fuelpricesgr.service')
