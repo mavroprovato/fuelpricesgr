@@ -11,8 +11,8 @@ from fuelpricesgr import enums
 class StatusModel(pydantic.BaseModel):
     """The application status model.
     """
-    status: enums.ApplicationStatus = pydantic.Field(title="The application status")
-    error: str | None = pydantic.Field(title="If there is an error this field holds the error detail")
+    db_status: enums.ApplicationStatus = pydantic.Field(title="The database status")
+    cache_status: enums.ApplicationStatus = pydantic.Field(title="The cache status")
 
 
 class PrefectureModel(pydantic.BaseModel):

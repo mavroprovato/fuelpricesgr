@@ -89,6 +89,12 @@ class Database:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
+    def ping(self):
+        """Ping the database.
+        """
+        with contextlib.closing(self.conn.cursor()) as _:
+            pass
+
     def save(self):
         """Save pending changes to the database.
         """

@@ -2,6 +2,7 @@
 """
 import datetime
 import itertools
+import logging
 
 import fastapi
 import fastapi_cache
@@ -10,6 +11,7 @@ from fastapi_cache.decorator import cache
 import fastapi.middleware.cors
 import fastapi.openapi.docs
 import redis
+import sqlite3
 
 
 from fuelpricesgr import database, enums, models, settings
@@ -52,11 +54,24 @@ async def startup():
 async def index() -> models.StatusModel:
     """Return the status of the application.
     """
+    # Check the database status
+    db_status = enums.ApplicationStatus.OK
     try:
-        with database.Database(read_only=True):
-            return models.StatusModel(status=enums.ApplicationStatus.OK)
-    except Exception as ex:
-        return models.StatusModel(status=enums.ApplicationStatus.ERROR, error=str(ex))
+        with database.Database(read_only=True) as db:
+            db.ping()
+    except sqlite3.Error as ex:
+        logging.error("Could not connect to the database", exc_info=ex)
+        db_status = enums.ApplicationStatus.ERROR
+    # Check the cache status
+    cache_status = enums.ApplicationStatus.OK
+    try:
+        conn = redis.asyncio.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
+        await conn.ping()
+    except redis.exceptions.RedisError as ex:
+        logging.error("Could not connect to the cache", exc_info=ex)
+        cache_status = enums.ApplicationStatus.ERROR
+
+    return models.StatusModel(db_status=db_status, cache_status=cache_status)
 
 
 @app.get(
