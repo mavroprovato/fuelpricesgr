@@ -10,6 +10,14 @@
     display: none;
 }
 
+#latest-prices td:nth-child(2) {
+    text-align: right;
+}
+
+#latest-prices td:nth-child(3) {
+    text-align: right;
+}
+
 .fuel-type-label {
     font-weight: bold;
 }
