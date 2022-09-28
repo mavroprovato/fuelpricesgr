@@ -64,4 +64,4 @@ def deploy_frontend(context):
     if 'FRONTEND_BUCKET' not in os.environ:
         sys.exit("'FRONTEND_BUCKET' is not defined, cannot deploy frontend")
 
-    invoke.run(f"aws s3 sync frontend/dist/ s3://{os.environ['FRONTEND_BUCKET']} --acl public-read")
+    invoke.run(f"aws s3 sync frontend/dist/ s3://{os.environ['FRONTEND_BUCKET']} --delete --acl public-read")
