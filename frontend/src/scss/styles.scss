@@ -1,1 +1,13 @@
 @import "~bootstrap/scss/bootstrap";
+
+table td:first-child {
+  @extend strong;
+}
+
+table th:nth-child(n+1):nth-child(n+2) {
+  @extend .text-end;
+}
+
+table td:nth-child(n+1):nth-child(n+2) {
+  @extend .text-end;
+}

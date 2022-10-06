@@ -216,8 +216,8 @@ function loadPage(startDate, endDate) {
  * Called when the DOM has been loaded.
  */
 document.addEventListener("DOMContentLoaded", function() {
-    // Hide all latest prices elements initially, because they can be missing.
-    document.getElementById('latest-prices').querySelectorAll('tr').forEach(elem => {
+    // // Hide all latest prices elements initially, because they can be missing.
+    document.getElementById('latest-prices').querySelectorAll('tbody tr').forEach(elem => {
         elem.style.display = 'none';
     })
     // Fetch date range on load.
