@@ -142,7 +142,7 @@ function displayLatestValues(latestData, previousData) {
             const fuelData = latestData.data.find(e => e.fuel_type === fuelType);
             if (fuelData) {
                 tableRow.style.display = 'table-row';
-                tableRow.querySelector('.fuel-price').innerHTML = fuelData.price;
+                tableRow.querySelector('.fuel-price').innerHTML = fuelData.price.toFixed(3);
                 if (previousData) {
                     const evolutionElem = tableRow.querySelector('.fuel-price-evolution');
                     const previousFuelData = previousData.data.find(e => e.fuel_type === fuelType);
