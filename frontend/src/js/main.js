@@ -135,7 +135,7 @@ function initializeDatePicker(dateRange) {
  */
 function displayLatestValues(latestData, previousData) {
     if (latestData) {
-        latestPrices.querySelector('h2').innerHTML = `Τιμές Καυσίμων ${latestData.date}`;
+        latestPrices.querySelector('h2 #latest-prices-date').innerHTML = `${latestData.date}`;
         const table = latestPrices.querySelector('table');
         Object.keys(FuelType).forEach(fuelType => {
             const tableRow = table.querySelector(`#${fuelType.toLowerCase().replace('_', '-')}`);
