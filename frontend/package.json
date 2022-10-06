@@ -1,12 +1,11 @@
 {
-  "name": "fuelpricesgr-frontend",
+  "name": "fuelpricesgr",
   "version": "0.1.0",
   "description": "Frontend for the fuelpricesgr API",
   "private": true,
   "scripts": {
+    "start": "webpack serve --config webpack.dev.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "webpack --watch",
-    "start": "webpack serve --open --config webpack.dev.js",
     "build": "webpack --config webpack.prod.js"
   },
   "author": "Kostas Kokkoros",
@@ -15,13 +14,19 @@
     "@easepick/core": "^1.2.0",
     "@easepick/lock-plugin": "^1.2.0",
     "@easepick/range-plugin": "^1.2.0",
+    "@popperjs/core": "^2.11.6",
+    "bootstrap": "^5.2.2",
     "chart.js": "^3.9.1",
-    "luxon": "^3.0.3"
+    "luxon": "^3.0.4"
   },
   "devDependencies": {
+    "autoprefixer": "^10.4.12",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.1",
     "html-webpack-plugin": "^5.5.0",
+    "postcss-loader": "^7.0.1",
+    "sass": "^1.55.0",
+    "sass-loader": "^13.0.2",
     "style-loader": "^3.3.1",
     "webpack": "^5.74.0",
     "webpack-cli": "^4.10.0",

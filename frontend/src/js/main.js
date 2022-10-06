@@ -4,7 +4,7 @@ import { LockPlugin } from '@easepick/lock-plugin';
 import { RangePlugin } from '@easepick/range-plugin';
 import Chart from 'chart.js/auto';
 
-import './style.css';
+import '../scss/styles.scss';
 
 /**
  * The fuel types enumeration.
@@ -102,7 +102,7 @@ function initializeDatePicker(dateRange) {
     let minDate = DateTime.fromISO(dateRange.start_date);
     let maxDate = DateTime.fromISO(dateRange.end_date);
     let endDate = maxDate;
-    let startDate = endDate.minus({'month': 6});
+    let startDate = endDate.minus({'month': 3});
 
     return new easepick.create({
         element: document.getElementById('datepicker'),
