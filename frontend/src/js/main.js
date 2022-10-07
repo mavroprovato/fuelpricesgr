@@ -136,25 +136,22 @@ function initializeDatePicker(dateRange) {
 function displayLatestValues(latestData, previousData) {
     if (latestData) {
         latestPrices.querySelector('h2 #latest-prices-date').innerHTML = `${latestData.date}`;
-        const table = latestPrices.querySelector('table');
+        const tableBody = latestPrices.querySelector('table tbody');
+        tableBody.innerHTML = '';
         Object.keys(FuelType).forEach(fuelType => {
-            const tableRow = table.querySelector(`#${fuelType.toLowerCase().replace('_', '-')}`);
             const fuelData = latestData.data.find(e => e.fuel_type === fuelType);
             if (fuelData) {
-                tableRow.style.display = 'table-row';
-                tableRow.getElementsByTagName('td')[1].innerHTML = fuelData.price.toFixed(3) + "€";
+                const rowElement = document.createElement('tr');
+                let evolution = '';
                 if (previousData) {
-                    const evolutionElem = tableRow.getElementsByTagName('td')[2];
                     const previousFuelData = previousData.data.find(e => e.fuel_type === fuelType);
-                    if (previousFuelData) {
-                        const evolution = (fuelData.price - previousFuelData.price) / fuelData.price;
-                        evolutionElem.innerHTML = (evolution > 0 ? '+' : '') + (evolution * 100).toFixed(2) + '%';
-                    } else {
-                        evolutionElem.innerHTML = '';
-                    }
+                    evolution = (fuelData.price - previousFuelData.price) / fuelData.price;
+                    evolution = (evolution > 0 ? '+' : '') + (evolution * 100).toFixed(2) + '%';
                 }
-            } else {
-                tableRow.style.display = 'none';
+                rowElement.innerHTML = `
+                    <td>${FuelType[fuelType].label}</td><td>${fuelData.price.toFixed(3) + "€"}</td><td>${evolution}</td>
+                `;
+                tableBody.append(rowElement)
             }
         })
     }
@@ -216,10 +213,6 @@ function loadPage(startDate, endDate) {
  * Called when the DOM has been loaded.
  */
 document.addEventListener("DOMContentLoaded", function() {
-    // // Hide all latest prices elements initially, because they can be missing.
-    document.getElementById('latest-prices').querySelectorAll('tbody tr').forEach(elem => {
-        elem.style.display = 'none';
-    })
     // Fetch date range on load.
     API.dateRage('daily_country').then(response => {
         response.json().then(dateRange => {
