@@ -272,7 +272,7 @@ async def weekly_prefecture_data(
     path="/data/country/{date}",
     summary="Country data",
     description="Return country data for a date for all prefectures along with the country averages",
-    response_model=models.CountryModel
+    response_model=models.CountryDataModel
 )
 @cache(expire=60)
 async def country_data(date: datetime.date = fastapi.Path(title="The date")):
@@ -282,18 +282,23 @@ async def country_data(date: datetime.date = fastapi.Path(title="The date")):
     :return: The country data.
     """
     with database.Database(read_only=True) as db:
-        return {
-            'prefectures': [
-                models.FuelTypePricePrefectureModel(
-                    fuel_type=row['fuel_type'].name, price=row['price'], prefecture=row['prefecture'].name
-                ) for row in db.prefecture_data(date=date)
+        return models.CountryDataModel(
+            prefectures=[
+                models.PrefectureDailyDataModel(
+                    prefecture=prefecture, data=[
+                        models.FuelTypePriceModel(fuel_type=row['fuel_type'].name, price=row['price'])
+                        for row in list(prefecture_group)
+                    ]
+                ) for prefecture, prefecture_group in itertools.groupby(
+                    db.prefecture_data(date=date), lambda x: x['prefecture']
+                )
             ],
-            'country': [
+            country=[
                 models.FuelTypePriceStationsModel(
                     fuel_type=row['fuel_type'].name, price=row['price'], number_of_stations=row['number_of_stations']
                 ) for row in db.country_data(date=date)
             ]
-        }
+        )
 
 
 def get_date_range(start_date: datetime.date, end_date: datetime.date) -> tuple[datetime.date, datetime.date]:

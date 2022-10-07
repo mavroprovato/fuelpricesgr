@@ -61,12 +61,6 @@ class FuelTypePriceModel(PriceModel):
     fuel_type: enums.FuelType = pydantic.Field(title="The fuel type")
 
 
-class FuelTypePricePrefectureModel(FuelTypePriceModel):
-    """The fuel type, price & prefecture model.
-    """
-    prefecture: enums.Prefecture = pydantic.Field(title="The prefecture")
-
-
 class FuelTypePriceStationsModel(PriceStationModel):
     """The fuel type, price & number of stations model.
     """
@@ -97,8 +91,15 @@ class WeeklyModel(pydantic.BaseModel):
     data: list[FuelTypeWeeklyPriceModel] = pydantic.Field(title="The weekly data")
 
 
-class CountryModel(pydantic.BaseModel):
-    """The country model.
+class PrefectureDailyDataModel(pydantic.BaseModel):
+    """The prefecture daily data model.
     """
-    prefectures: list[FuelTypePricePrefectureModel] = pydantic.Field(title="The prefecture data")
+    prefecture: enums.Prefecture = pydantic.Field(title="The prefecture")
+    data: list[FuelTypePriceModel] = pydantic.Field(title="The prefecture data")
+
+
+class CountryDataModel(pydantic.BaseModel):
+    """The country data model.
+    """
+    prefectures: list[PrefectureDailyDataModel] = pydantic.Field(title="The prefecture data")
     country: list[FuelTypePriceStationsModel] = pydantic.Field(title="The country data")

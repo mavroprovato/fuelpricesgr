@@ -406,13 +406,13 @@ class Database:
             ]
 
     def prefecture_data(self, date: datetime.date) -> list[dict]:
-        """Return the data for all prefectures for a date.
+        """Return the data for all prefectures for a date. The data are ordered by prefecture.
 
         :param date: The date.
         :return: The prefecture data.
         """
         with contextlib.closing(self.conn.cursor()) as cursor:
-            sql = "SELECT prefecture, fuel_type, price FROM daily_prefecture WHERE date = :date"
+            sql = "SELECT prefecture, fuel_type, price FROM daily_prefecture WHERE date = :date ORDER BY prefecture"
             cursor.execute(sql, {'date': date})
 
             return [
