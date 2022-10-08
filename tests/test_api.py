@@ -14,7 +14,7 @@ def test_index():
     """
     response = client.get('/')
     assert response.status_code == 200
-    assert response.json() == {'status': 'ok', 'error': None}
+    assert response.json() == {'cache_status': 'ok', 'db_status': 'ok'}
 
 
 def test_prefectures():
@@ -23,8 +23,8 @@ def test_prefectures():
     response = client.get("/prefectures")
     assert response.status_code == 200
     for index, prefecture in enumerate(enums.Prefecture):
-        assert response.json()[index]['name'] == prefecture.name
-        assert response.json()[index]['description'] == prefecture.value
+        assert response.json()[index]['name'] == prefecture.value
+        assert response.json()[index]['description'] == prefecture.description
 
 
 def test_date_rage():
