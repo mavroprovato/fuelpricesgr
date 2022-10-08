@@ -174,7 +174,7 @@ class Database:
             """, {
                 'date': date,
                 'fuel_type': fuel_type.name,
-                'number_of_stations': number_of_stations if number_of_stations else None,
+                'number_of_stations': number_of_stations,
                 'price': str(price) if price else None
             })
 
@@ -287,11 +287,11 @@ class Database:
 
             return [
                 {
-                    'date': dateutil.parser.parse(row[0]).date(),
-                    'fuel_type': enums.FuelType[row[1]],
-                    'number_of_stations': int(row[2]),
-                    'price': decimal.Decimal(row[3]),
-                } for row in cursor.fetchall()
+                    'date': dateutil.parser.parse(date).date(),
+                    'fuel_type': enums.FuelType[fuel_type],
+                    'number_of_stations': int(number_of_stations),
+                    'price': decimal.Decimal(price),
+                } for date, fuel_type, number_of_stations, price in cursor.fetchall()
             ]
 
     def daily_prefecture_data(
@@ -318,10 +318,10 @@ class Database:
 
             return [
                 {
-                    'date': dateutil.parser.parse(row[0]).date(),
-                    'fuel_type': enums.FuelType[row[1]],
-                    'price': decimal.Decimal(row[2]),
-                } for row in cursor.fetchall()
+                    'date': dateutil.parser.parse(date).date(),
+                    'fuel_type': enums.FuelType[fuel_type],
+                    'price': decimal.Decimal(price),
+                } for date, fuel_type, price in cursor.fetchall()
             ]
 
     def weekly_country_data(
@@ -346,12 +346,12 @@ class Database:
 
             return [
                 {
-                    'date': dateutil.parser.parse(row[0]).date(),
-                    'fuel_type': enums.FuelType[row[1]],
-                    'lowest_price': decimal.Decimal(row[2]),
-                    'highest_price': decimal.Decimal(row[3]),
-                    'median_price': decimal.Decimal(row[4]),
-                } for row in cursor.fetchall()
+                    'date': dateutil.parser.parse(date).date(),
+                    'fuel_type': enums.FuelType[fuel_type],
+                    'lowest_price': decimal.Decimal(lowest_price),
+                    'highest_price': decimal.Decimal(highest_price),
+                    'median_price': decimal.Decimal(median_price),
+                } for date, fuel_type, lowest_price, highest_price, median_price in cursor.fetchall()
             ]
 
     def weekly_prefecture_data(
@@ -379,12 +379,12 @@ class Database:
 
             return [
                 {
-                    'date': dateutil.parser.parse(row[0]).date(),
-                    'fuel_type': enums.FuelType[row[1]],
-                    'lowest_price': decimal.Decimal(row[2]),
-                    'highest_price': decimal.Decimal(row[3]),
-                    'median_price': decimal.Decimal(row[4]),
-                } for row in cursor.fetchall()
+                    'date': dateutil.parser.parse(date).date(),
+                    'fuel_type': enums.FuelType[fuel_type],
+                    'lowest_price': decimal.Decimal(lowest_price),
+                    'highest_price': decimal.Decimal(highest_price),
+                    'median_price': decimal.Decimal(median_price),
+                } for date, fuel_type, lowest_price, highest_price, median_price in cursor.fetchall()
             ]
 
     def country_data(self, date: datetime.date) -> list[dict]:
@@ -399,10 +399,10 @@ class Database:
 
             return [
                 {
-                    'fuel_type': enums.FuelType[row[0]],
-                    'number_of_stations': int(row[1]) if row[1] else None,
-                    'price': decimal.Decimal(row[2]),
-                } for row in cursor.fetchall()
+                    'fuel_type': enums.FuelType[fuel_type],
+                    'number_of_stations': int(number_of_stations),
+                    'price': decimal.Decimal(price),
+                } for fuel_type, number_of_stations, price in cursor.fetchall()
             ]
 
     def prefecture_data(self, date: datetime.date) -> list[dict]:
@@ -417,10 +417,10 @@ class Database:
 
             return [
                 {
-                    'prefecture': enums.Prefecture[row[0]],
-                    'fuel_type': enums.FuelType[row[1]],
-                    'price': decimal.Decimal(row[2]),
-                } for row in cursor.fetchall()
+                    'prefecture': enums.Prefecture[prefecture],
+                    'fuel_type': enums.FuelType[fuel_type],
+                    'price': decimal.Decimal(price),
+                } for prefecture, fuel_type, price in cursor.fetchall()
             ]
 
     @staticmethod
