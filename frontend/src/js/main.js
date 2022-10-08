@@ -53,6 +53,11 @@ let latestPrices = null;
 let dailyCountryChart = null;
 
 /**
+ * The prices per prefecture data.
+ */
+let pricesPerPrefecture = null;
+
+/**
  * The API object.
  */
 const API = {
@@ -88,6 +93,18 @@ const API = {
         if (queryString) {
             url += `?${queryString}`;
         }
+
+        return await fetch(url);
+    },
+
+    /**
+     * Fetch the country data per prefecture.
+     *
+     * @param date The date.
+     * @returns {Promise<Response>}
+     */
+    async countryData(date) {
+        let url = `${API_URL}/data/country/${date}`;
 
         return await fetch(url);
     }
@@ -135,7 +152,6 @@ function initializeDatePicker(dateRange) {
  */
 function displayLatestValues(latestData, previousData) {
     if (latestData) {
-        latestPrices.querySelector('h2 #latest-prices-date').innerHTML = `${latestData.date}`;
         const tableBody = latestPrices.querySelector('table tbody');
         tableBody.innerHTML = '';
         Object.keys(FuelType).forEach(fuelType => {
@@ -195,18 +211,44 @@ function displayDailyCountryChart(data) {
 }
 
 /**
+ * Display the per prefecture data in a table.
+ *
+ * @param data The prefecture data.
+ */
+function displayPrefectureTable(data) {
+    if (data) {
+        const tableBody = pricesPerPrefecture.querySelector('table tbody');
+        tableBody.innerHTML = '';
+        data.prefectures.forEach(prefecture => {
+            console.log(prefecture);
+            const rowElement = document.createElement('tr');
+            rowElement.innerHTML = `<td>${prefecture.prefecture}</td>`
+            tableBody.append(rowElement)
+        });
+    }
+}
+
+/**
  * Load the page for the specified date range.
  *
  * @param startDate The start date.
  * @param endDate The end date.
  */
 function loadPage(startDate, endDate) {
+    document.querySelectorAll('.latest-date').forEach(span => {
+        span.innerHTML = endDate;
+    });
     API.dailyCountryData(startDate, endDate).then(response => {
         response.json().then(data => {
             displayLatestValues(...data.slice(-2).reverse());
             displayDailyCountryChart(data);
         });
     });
+    API.countryData(endDate).then(response => {
+        response.json().then(data => {
+            displayPrefectureTable(data);
+        });
+    })
 }
 
 /**
@@ -218,6 +260,7 @@ document.addEventListener("DOMContentLoaded", function() {
         response.json().then(dateRange => {
             datePicker = initializeDatePicker(dateRange);
             latestPrices = document.getElementById('latest-prices');
+            pricesPerPrefecture = document.getElementById('prices-per-prefecture');
             dailyCountryChart = new Chart(document.getElementById('chart').getContext('2d'), {
                 type: 'line'
             });
