@@ -63,12 +63,12 @@ class DataFileType(enum.Enum):
 class FuelType(enum.Enum):
     """Enumeration for the different fuel types
     """
-    UNLEADED_95 = "UNLEADED_95", "Αμόλυβδη 95"
-    UNLEADED_100 = "UNLEADED_100",  "Αμόλυβδη 100"
-    SUPER = "SUPER",  "Super"
-    DIESEL = "DIESEL",  "Diesel"
-    DIESEL_HEATING = "DIESEL_HEATING",  "Diesel Θέρμανσης"
-    GAS = "GAS", "Υγραέριο"
+    UNLEADED_95 = 'UNLEADED_95', "Αμόλυβδη 95"
+    UNLEADED_100 = 'UNLEADED_100',  "Αμόλυβδη 100"
+    SUPER = 'SUPER', "Super"
+    DIESEL = 'DIESEL', "Diesel"
+    DIESEL_HEATING = 'DIESEL_HEATING', "Diesel Θέρμανσης"
+    GAS = 'GAS', "Υγραέριο"
 
     def __new__(cls, value: str, description: str):
         """Creates the enum.
@@ -78,6 +78,7 @@ class FuelType(enum.Enum):
         """
         obj = object.__new__(cls)
         obj._value_ = value
+        obj.description = description
 
         return obj
 
@@ -85,67 +86,66 @@ class FuelType(enum.Enum):
 class Prefecture(enum.Enum):
     """Enumeration for greek prefectures
     """
-    ATTICA = "ATTICA", "ΑΤΤΙΚΗΣ"
-    AETOLIA_ACARNANIA = "AETOLIA_ACARNANIA", "ΑΙΤΩΛΙΑΣ ΚΑΙ ΑΚΑΡΝΑΝΙΑΣ"
-    ARGOLIS = "ARGOLIS", "ΑΡΓΟΛΙΔΟΣ"
-    ARKADIAS = "ARKADIAS", "ΑΡΚΑΔΙΑΣ"
-    ARTA = "ARTA", "ΑΡΤΗΣ"
-    ACHAEA = "ACHAEA", "ΑΧΑΪΑΣ"
-    BOEOTIA = "BOEOTIA", "ΒΟΙΩΤΙΑΣ"
-    GREVENA = "GREVENA", "ΓΡΕΒΕΝΩΝ"
-    DRAMA = "DRAMA", "ΔΡΑΜΑΣ"
-    DODECANESE = "DODECANESE", "ΔΩΔΕΚΑΝΗΣΟΥ"
-    EVROS = "EVROS", "ΕΒΡΟΥ"
-    EUBOEA = "EUBOEA", "ΕΥΒΟΙΑΣ"
-    EVRYTANIA = "EVRYTANIA", "ΕΥΡΥΤΑΝΙΑΣ"
-    ZAKYNTHOS = "ZAKYNTHOS", "ΖΑΚΥΝΘΟΥ"
-    ELIS = "ELIS", "ΗΛΕΙΑΣ"
-    IMATHIA = "IMATHIA", "ΗΜΑΘΙΑΣ"
-    HERAKLION = "HERAKLION", "ΗΡΑΚΛΕΙΟΥ"
-    THESPROTIA = "THESPROTIA", "ΘΕΣΠΡΩΤΙΑΣ"
-    THESSALONIKI = "THESSALONIKI", "ΘΕΣΣΑΛΟΝΙΚΗΣ"
-    IOANNINA = "IOANNINA", "ΙΩΑΝΝΙΝΩΝ"
-    KAVALA = "KAVALA", "ΚΑΒΑΛΑΣ"
-    KARDITSA = "KARDITSA", "ΚΑΡΔΙΤΣΗΣ"
-    KASTORIA = "KASTORIA", "ΚΑΣΤΟΡΙΑΣ"
-    KERKYRA = "KERKYRA", "ΚΕΡΚΥΡΑΣ"
-    CEPHALONIA = "CEPHALONIA", "ΚΕΦΑΛΛΗΝΙΑΣ"
-    KILKIS = "KILKIS", "ΚΙΛΚΙΣ"
-    KOZANI = "KOZANI", "ΚΟΖΑΝΗΣ"
-    CORINTHIA = "CORINTHIA", "ΚΟΡΙΝΘΙΑΣ"
-    CYCLADES = "CYCLADES", "ΚΥΚΛΑΔΩΝ"
-    LACONIA = "LACONIA", "ΛΑΚΩΝΙΑΣ"
-    LARISSA = "LARISSA", "ΛΑΡΙΣΗΣ"
-    LASITHI = "LASITHI", "ΛΑΣΙΘΙΟΥ"
-    LESBOS = "LESBOS", "ΛΕΣΒΟΥ"
-    LEFKADA = "LEFKADA", "ΛΕΥΚΑΔΟΣ"
-    MAGNESIA = "MAGNESIA", "ΜΑΓΝΗΣΙΑΣ"
-    MESSENIA = "MESSENIA", "ΜΕΣΣΗΝΙΑΣ"
-    XANTHI = "XANTHI", "ΞΑΝΘΗΣ"
-    PELLA = "PELLA", "ΠΕΛΛΗΣ"
-    PIERIA = "PIERIA", "ΠΙΕΡΙΑΣ"
-    PREVEZA = "PREVEZA", "ΠΡΕΒΕΖΗΣ"
-    RETHYMNO = "RETHYMNO", "ΡΕΘΥΜΝΗΣ"
-    RHODOPE = "RHODOPE", "ΡΟΔΟΠΗΣ"
-    SAMOS = "SAMOS", "ΣΑΜΟΥ"
-    SERRES = "SERRES", "ΣΕΡΡΩΝ"
-    TRIKALA = "TRIKALA", "ΤΡΙΚΑΛΩΝ"
-    PHTHIOTIS = "PHTHIOTIS", "ΦΘΙΩΤΙΔΟΣ"
-    FLORINA = "FLORINA", "ΦΛΩΡΙΝΗΣ"
-    PHOCIS = "PHOCIS", "ΦΩΚΙΔΟΣ"
-    CHALKIDIKI = "CHALKIDIKI", "ΧΑΛΚΙΔΙΚΗΣ"
-    CHANIA = "CHANIA", "ΧΑΝΙΩΝ"
-    CHIOS = "CHIOS", "ΧΙΟΥ"
+    ATTICA = 'ATTICA', "ΑΤΤΙΚΗΣ"
+    AETOLIA_ACARNANIA = 'AETOLIA_ACARNANIA', "ΑΙΤΩΛΙΑΣ ΚΑΙ ΑΚΑΡΝΑΝΙΑΣ"
+    ARGOLIS = 'ARGOLIS', "ΑΡΓΟΛΙΔΟΣ"
+    ARKADIAS = 'ARKADIAS', "ΑΡΚΑΔΙΑΣ"
+    ARTA = 'ARTA', "ΑΡΤΗΣ"
+    ACHAEA = 'ACHAEA', "ΑΧΑΪΑΣ"
+    BOEOTIA = 'BOEOTIA', "ΒΟΙΩΤΙΑΣ"
+    GREVENA = 'GREVENA', "ΓΡΕΒΕΝΩΝ"
+    DRAMA = 'DRAMA', "ΔΡΑΜΑΣ"
+    DODECANESE = 'DODECANESE', "ΔΩΔΕΚΑΝΗΣΟΥ"
+    EVROS = 'EVROS', "ΕΒΡΟΥ"
+    EUBOEA = 'EUBOEA', "ΕΥΒΟΙΑΣ"
+    EVRYTANIA = 'EVRYTANIA', "ΕΥΡΥΤΑΝΙΑΣ"
+    ZAKYNTHOS = 'ZAKYNTHOS', "ΖΑΚΥΝΘΟΥ"
+    ELIS = 'ELIS', "ΗΛΕΙΑΣ"
+    IMATHIA = 'IMATHIA', "ΗΜΑΘΙΑΣ"
+    HERAKLION = 'HERAKLION', "ΗΡΑΚΛΕΙΟΥ"
+    THESPROTIA = 'THESPROTIA', "ΘΕΣΠΡΩΤΙΑΣ"
+    THESSALONIKI = 'THESSALONIKI', "ΘΕΣΣΑΛΟΝΙΚΗΣ"
+    IOANNINA = 'IOANNINA', "ΙΩΑΝΝΙΝΩΝ"
+    KAVALA = 'KAVALA', "ΚΑΒΑΛΑΣ"
+    KARDITSA = 'KARDITSA', "ΚΑΡΔΙΤΣΗΣ"
+    KASTORIA = 'KASTORIA', "ΚΑΣΤΟΡΙΑΣ"
+    KERKYRA = 'KERKYRA', "ΚΕΡΚΥΡΑΣ"
+    CEPHALONIA = 'CEPHALONIA', "ΚΕΦΑΛΛΗΝΙΑΣ"
+    KILKIS = 'KILKIS', "ΚΙΛΚΙΣ"
+    KOZANI = 'KOZANI', "ΚΟΖΑΝΗΣ"
+    CORINTHIA = 'CORINTHIA', "ΚΟΡΙΝΘΙΑΣ"
+    CYCLADES = 'CYCLADES', "ΚΥΚΛΑΔΩΝ"
+    LACONIA = 'LACONIA', "ΛΑΚΩΝΙΑΣ"
+    LARISSA = 'LARISSA', "ΛΑΡΙΣΗΣ"
+    LASITHI = 'LASITHI', "ΛΑΣΙΘΙΟΥ"
+    LESBOS = 'LESBOS', "ΛΕΣΒΟΥ"
+    LEFKADA = 'LEFKADA', "ΛΕΥΚΑΔΟΣ"
+    MAGNESIA = 'MAGNESIA', "ΜΑΓΝΗΣΙΑΣ"
+    MESSENIA = 'MESSENIA', "ΜΕΣΣΗΝΙΑΣ"
+    XANTHI = 'XANTHI', "ΞΑΝΘΗΣ"
+    PELLA = 'PELLA', "ΠΕΛΛΗΣ"
+    PIERIA = 'PIERIA', "ΠΙΕΡΙΑΣ"
+    PREVEZA = 'PREVEZA', "ΠΡΕΒΕΖΗΣ"
+    RETHYMNO = 'RETHYMNO', "ΡΕΘΥΜΝΗΣ"
+    RHODOPE = 'RHODOPE', "ΡΟΔΟΠΗΣ"
+    SAMOS = 'SAMOS', "ΣΑΜΟΥ"
+    SERRES = 'SERRES', "ΣΕΡΡΩΝ"
+    TRIKALA = 'TRIKALA', "ΤΡΙΚΑΛΩΝ"
+    PHTHIOTIS = 'PHTHIOTIS', "ΦΘΙΩΤΙΔΟΣ"
+    FLORINA = 'FLORINA', "ΦΛΩΡΙΝΗΣ"
+    PHOCIS = 'PHOCIS', "ΦΩΚΙΔΟΣ"
+    CHALKIDIKI = 'CHALKIDIKI', "ΧΑΛΚΙΔΙΚΗΣ"
+    CHANIA = 'CHANIA', "ΧΑΝΙΩΝ"
+    CHIOS = 'CHIOS', "ΧΙΟΥ"
 
-    def __new__(cls, value: str, display_name: str):
-        """Creates the enum.
+    def __new__(cls, value: str, description: str):
+        """Creates the prefecture enum.
 
         :param value: The enum value.
-        :param page: The path, relative to the base URL, from which we will fetch the data.
-        :param data_types: The data types that this page contains.
+        :param description: The prefecture description.
         """
         obj = object.__new__(cls)
         obj._value_ = value
-        obj.display_name = display_name
+        obj.description = description
 
         return obj

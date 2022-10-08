@@ -75,19 +75,37 @@ async def index() -> models.StatusModel:
 
 
 @app.get(
+    path="/fuelTypes",
+    summary="Fuel Types",
+    description="Return all fuel types",
+    response_model=list[models.NameDescriptionModel]
+)
+@cache(expire=60)
+async def fuel_types() -> list[models.NameDescriptionModel]:
+    """Returns all fuel types.
+
+    :return: The fuel types.
+    """
+    return [
+        models.NameDescriptionModel(name=fuel_type.name, description=fuel_type.description)
+        for fuel_type in enums.FuelType
+    ]
+
+
+@app.get(
     path="/prefectures",
     summary="Prefectures",
     description="Return all prefectures",
-    response_model=list[models.PrefectureModel]
+    response_model=list[models.NameDescriptionModel]
 )
 @cache(expire=60)
-async def prefectures() -> list[models.PrefectureModel]:
+async def prefectures() -> list[models.NameDescriptionModel]:
     """Returns all prefectures.
 
     :return: The prefectures.
     """
     return [
-        models.PrefectureModel(name=prefecture.name, description=prefecture.display_name)
+        models.NameDescriptionModel(name=prefecture.name, description=prefecture.description)
         for prefecture in enums.Prefecture
     ]
 
