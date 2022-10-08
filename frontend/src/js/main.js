@@ -4,7 +4,7 @@ import { LockPlugin } from '@easepick/lock-plugin';
 import { RangePlugin } from '@easepick/range-plugin';
 import Chart from 'chart.js/auto';
 
-import { FuelType } from './enums';
+import { FuelType, Prefecture } from './enums';
 import { API } from './api';
 
 import '../scss/styles.scss';
@@ -139,9 +139,8 @@ function displayPrefectureTable(data) {
         const tableBody = pricesPerPrefecture.querySelector('table tbody');
         tableBody.innerHTML = '';
         data.prefectures.forEach(prefecture => {
-            console.log(prefecture);
             const rowElement = document.createElement('tr');
-            rowElement.innerHTML = `<td>${prefecture.prefecture}</td>`
+            rowElement.innerHTML = `<td>${Prefecture[prefecture.prefecture]}</td>`
             tableBody.append(rowElement)
         });
     }
