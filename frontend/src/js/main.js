@@ -30,6 +30,33 @@ let dailyCountryChart = null;
 let pricesPerPrefecture = null;
 
 /**
+ * Initialize the prices per prefecture table.
+ *
+ * @returns {HTMLElement} The prices per prefecture table.
+ */
+function initializePricesPerPrefecture() {
+    let table = document.getElementById('prices-per-prefecture');
+    let header = table.querySelector('thead tr');
+    Object.keys(FuelType).forEach(fuelType => {
+        const rowElement = document.createElement('th');
+        rowElement.innerHTML = `${FuelType[fuelType].label}`
+        header.append(rowElement);
+    });
+    let body = table.querySelector('tbody');
+    Object.keys(Prefecture).forEach(prefecture => {
+        const rowElement = document.createElement('tr');
+        let row = `<td>${Prefecture[prefecture]}</td>`;
+        Object.keys(FuelType).forEach(fuelType => {
+            row += `<td class="${fuelType}">-</td>`;
+        })
+        rowElement.innerHTML = row;
+        body.append(rowElement);
+    });
+
+    return table;
+}
+
+/**
  * Initialize the date range picker from the date range API response.
  *
  * @param dateRange The date range API response.
@@ -136,13 +163,7 @@ function displayDailyCountryChart(data) {
  */
 function displayPrefectureTable(data) {
     if (data) {
-        const tableBody = pricesPerPrefecture.querySelector('table tbody');
-        tableBody.innerHTML = '';
-        data.prefectures.forEach(prefecture => {
-            const rowElement = document.createElement('tr');
-            rowElement.innerHTML = `<td>${Prefecture[prefecture.prefecture]}</td>`
-            tableBody.append(rowElement)
-        });
+
     }
 }
 
@@ -178,7 +199,7 @@ document.addEventListener("DOMContentLoaded", function() {
         response.json().then(dateRange => {
             datePicker = initializeDatePicker(dateRange);
             latestPrices = document.getElementById('latest-prices');
-            pricesPerPrefecture = document.getElementById('prices-per-prefecture');
+            pricesPerPrefecture = initializePricesPerPrefecture();
             dailyCountryChart = new Chart(document.getElementById('chart').getContext('2d'), {
                 type: 'line'
             });
