@@ -4,38 +4,10 @@ import { LockPlugin } from '@easepick/lock-plugin';
 import { RangePlugin } from '@easepick/range-plugin';
 import Chart from 'chart.js/auto';
 
-import '../scss/styles.scss';
+import { FuelType } from './enums';
+import { API } from './api';
 
-/**
- * The fuel types enumeration.
- */
-const FuelType = {
-    UNLEADED_95: {
-        label: "Αμόλυβδη 95",
-        borderColor: 'rgb(64, 83, 211)'
-    },
-    UNLEADED_100: {
-        label: 'Αμόλυβδη 100',
-        borderColor: 'rgb(211, 179, 16)'
-    },
-    GAS: {
-        label: "Υγραέριο",
-        borderColor: 'rgb(0, 178, 93)'
-    },
-    DIESEL: {
-        label: "Diesel",
-        borderColor: 'rgb(0, 190, 255)'
-    },
-    DIESEL_HEATING: {
-        label: "Diesel Θέρμανσης",
-        borderColor: 'rgb(251, 73, 176)'
-    },
-    SUPER: {
-        label: "Super",
-        borderColor: 'rgb(181, 29, 20)',
-        hidden: true
-    }
-};
+import '../scss/styles.scss';
 
 /**
  * The date picker.
@@ -56,59 +28,6 @@ let dailyCountryChart = null;
  * The prices per prefecture data.
  */
 let pricesPerPrefecture = null;
-
-/**
- * The API object.
- */
-const API = {
-    /**
-     * Fetch the date range for the data type.
-     *
-     * @param dataType The data type.
-     * @returns {Promise<Response>}
-     */
-    async dateRage(dataType) {
-        return await fetch(`${API_URL}/dateRange/${dataType}`);
-    },
-
-    /**
-     * Fetch the daily country data.
-     *
-     * @param startDate The start date of the data to fetch, as an ISO date string.
-     * @param endDate The end date of the data to fetch, as an ISO date string.
-     * @returns {Promise<Response>}
-     */
-    async dailyCountryData(startDate, endDate) {
-        let url = `${API_URL}/data/daily/country`;
-        let queryString = '';
-        if (startDate) {
-            queryString += `start_date=${startDate}`
-        }
-        if (endDate) {
-            if (queryString) {
-                queryString += '&';
-            }
-            queryString += `end_date=${endDate}`
-        }
-        if (queryString) {
-            url += `?${queryString}`;
-        }
-
-        return await fetch(url);
-    },
-
-    /**
-     * Fetch the country data per prefecture.
-     *
-     * @param date The date.
-     * @returns {Promise<Response>}
-     */
-    async countryData(date) {
-        let url = `${API_URL}/data/country/${date}`;
-
-        return await fetch(url);
-    }
-}
 
 /**
  * Initialize the date range picker from the date range API response.
