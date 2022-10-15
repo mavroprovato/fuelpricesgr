@@ -70,26 +70,30 @@ function initializeDatePicker(dateRange) {
  * Load the latest country values.
  */
 function displayLatestValues(latestData, previousData) {
-    if (latestData) {
-        const tableBody = latestPrices.querySelector('table tbody');
-        tableBody.innerHTML = '';
-        Object.keys(FuelType).forEach(fuelType => {
-            const fuelData = latestData.data.find(e => e.fuel_type === fuelType);
-            if (fuelData) {
-                const rowElement = document.createElement('tr');
-                let evolution = '';
-                if (previousData) {
-                    const previousFuelData = previousData.data.find(e => e.fuel_type === fuelType);
-                    evolution = (fuelData.price - previousFuelData.price) / fuelData.price;
-                    evolution = (evolution > 0 ? '+' : '') + (evolution * 100).toFixed(2) + '%';
-                }
-                rowElement.innerHTML = `
-                    <td>${FuelType[fuelType].label}</td><td>${fuelData.price.toFixed(3) + "€"}</td><td>${evolution}</td>
-                `;
-                tableBody.append(rowElement)
-            }
-        })
+    if (!latestData) {
+        return;
     }
+    const tableBody = latestPrices.querySelector('table tbody');
+    tableBody.innerHTML = '';
+    Object.keys(FuelType).forEach(fuelType => {
+        const fuelData = latestData.data.find(e => e['fuel_type'] === fuelType);
+        if (!fuelData) {
+            return;
+        }
+        const rowElement = document.createElement('tr');
+        let evolution = '';
+        if (previousData) {
+            const previousFuelData = previousData.data.find(e => e['fuel_type'] === fuelType);
+            if (previousFuelData) {
+                evolution = (fuelData.price - previousFuelData.price) / fuelData.price;
+                evolution = (evolution > 0 ? '+' : '') + (evolution * 100).toFixed(2) + '%';
+            }
+        }
+        rowElement.innerHTML = `
+            <td>${FuelType[fuelType].label}</td><td>${fuelData.price.toFixed(3) + "€"}</td><td>${evolution}</td>
+        `;
+        tableBody.append(rowElement)
+    })
 }
 
 /**
