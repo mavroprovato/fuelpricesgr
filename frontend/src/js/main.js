@@ -30,33 +30,6 @@ let dailyCountryChart = null;
 let pricesPerPrefecture = null;
 
 /**
- * Initialize the prices per prefecture table.
- *
- * @returns {HTMLElement} The prices per prefecture table.
- */
-function initializePricesPerPrefecture() {
-    let table = document.getElementById('prices-per-prefecture');
-    let header = table.querySelector('thead tr');
-    Object.keys(FuelType).forEach(fuelType => {
-        const rowElement = document.createElement('th');
-        rowElement.innerHTML = `${FuelType[fuelType].label}`
-        header.append(rowElement);
-    });
-    let body = table.querySelector('tbody');
-    Object.keys(Prefecture).forEach(prefecture => {
-        const rowElement = document.createElement('tr');
-        let row = `<td>${Prefecture[prefecture]}</td>`;
-        Object.keys(FuelType).forEach(fuelType => {
-            row += `<td class="${fuelType}">-</td>`;
-        })
-        rowElement.innerHTML = row;
-        body.append(rowElement);
-    });
-
-    return table;
-}
-
-/**
  * Initialize the date range picker from the date range API response.
  *
  * @param dateRange The date range API response.
@@ -162,8 +135,39 @@ function displayDailyCountryChart(data) {
  * @param data The prefecture data.
  */
 function displayPrefectureTable(data) {
-    if (data) {
+    const tableHeader = pricesPerPrefecture.querySelector('thead tr');
+    tableHeader.innerHTML = '';
+    const tableBody = pricesPerPrefecture.querySelector('tbody');
+    tableBody.innerHTML = '';
 
+    if (data) {
+        // Create the table header
+        const countryData = {}
+        data['country'].forEach(countryRow => {
+            countryData[countryRow['fuel_type']] = {
+                price: countryRow['price'],
+                number_of_stations: countryRow['number_of_stations'],
+            }
+        });
+        const header = document.createElement('th')
+        header.innerHTML = 'Νομός';
+        tableHeader.append(header);
+        Object.keys(FuelType).filter(fuelType => countryData.hasOwnProperty(fuelType)).forEach(fuelType => {
+            const header = document.createElement('th')
+            header.innerHTML = FuelType[fuelType].label;
+            tableHeader.append(header);
+        });
+        // Add the prefecture data
+        data['prefectures'].forEach(prefectureRow => {
+            const row = document.createElement('tr')
+            let rowHtml = `<td>${Prefecture[prefectureRow['prefecture']]}</td>`;
+            Object.keys(FuelType).filter(fuelType => countryData.hasOwnProperty(fuelType)).forEach(fuelType => {
+                const fuelTypeData = prefectureRow['data'].find(e => e['fuel_type'] === fuelType);
+                rowHtml += `<td>${fuelTypeData['price'].toFixed(3) + "€"}</td>`;
+            });
+            row.innerHTML = rowHtml;
+            tableBody.append(row);
+        });
     }
 }
 
@@ -199,7 +203,7 @@ document.addEventListener("DOMContentLoaded", function() {
         response.json().then(dateRange => {
             datePicker = initializeDatePicker(dateRange);
             latestPrices = document.getElementById('latest-prices');
-            pricesPerPrefecture = initializePricesPerPrefecture();
+            pricesPerPrefecture = document.getElementById('prices-per-prefecture');;
             dailyCountryChart = new Chart(document.getElementById('chart').getContext('2d'), {
                 type: 'line'
             });
