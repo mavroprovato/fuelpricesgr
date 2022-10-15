@@ -54,10 +54,8 @@ def deploy_api(context):
 
 
 @fabric.task
-def deploy_frontend(context):
+def deploy_frontend(_):
     """Deploy the frontend.
-
-    :param context: The context.
     """
     print("Building the frontend")
     invoke.run('npm run build --prefix frontend')
