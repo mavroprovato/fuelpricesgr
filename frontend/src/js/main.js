@@ -144,35 +144,40 @@ function displayPrefectureTable(data) {
     const tableBody = pricesPerPrefecture.querySelector('tbody');
     tableBody.innerHTML = '';
 
-    if (data) {
-        // Create the table header
-        const countryData = {}
-        data['country'].forEach(countryRow => {
-            countryData[countryRow['fuel_type']] = {
-                price: countryRow['price'],
-                number_of_stations: countryRow['number_of_stations'],
+    if (!data) {
+        return;
+    }
+    // Create the table header
+    const countryData = {}
+    data['country'].forEach(countryRow => {
+        countryData[countryRow['fuel_type']] = {
+            price: countryRow['price'],
+            number_of_stations: countryRow['number_of_stations'],
+        }
+    });
+    const header = document.createElement('th')
+    header.innerHTML = 'Νομός';
+    tableHeader.append(header);
+    Object.keys(FuelType).filter(fuelType => countryData.hasOwnProperty(fuelType)).forEach(fuelType => {
+        const header = document.createElement('th')
+        header.innerHTML = FuelType[fuelType].label;
+        tableHeader.append(header);
+    });
+    // Add the prefecture data
+    data['prefectures'].forEach(prefectureRow => {
+        const row = document.createElement('tr')
+        let rowHtml = `<td>${Prefecture[prefectureRow['prefecture']]}</td>`;
+        Object.keys(FuelType).filter(fuelType => countryData.hasOwnProperty(fuelType)).forEach(fuelType => {
+            const fuelTypeData = prefectureRow['data'].find(e => e['fuel_type'] === fuelType);
+            if (fuelTypeData) {
+                rowHtml += `<td>${fuelTypeData['price'].toFixed(3) + "€"}</td>`;
+            } else {
+                rowHtml += `<td></td>`;
             }
         });
-        const header = document.createElement('th')
-        header.innerHTML = 'Νομός';
-        tableHeader.append(header);
-        Object.keys(FuelType).filter(fuelType => countryData.hasOwnProperty(fuelType)).forEach(fuelType => {
-            const header = document.createElement('th')
-            header.innerHTML = FuelType[fuelType].label;
-            tableHeader.append(header);
-        });
-        // Add the prefecture data
-        data['prefectures'].forEach(prefectureRow => {
-            const row = document.createElement('tr')
-            let rowHtml = `<td>${Prefecture[prefectureRow['prefecture']]}</td>`;
-            Object.keys(FuelType).filter(fuelType => countryData.hasOwnProperty(fuelType)).forEach(fuelType => {
-                const fuelTypeData = prefectureRow['data'].find(e => e['fuel_type'] === fuelType);
-                rowHtml += `<td>${fuelTypeData['price'].toFixed(3) + "€"}</td>`;
-            });
-            row.innerHTML = rowHtml;
-            tableBody.append(row);
-        });
-    }
+        row.innerHTML = rowHtml;
+        tableBody.append(row);
+    });
 }
 
 /**
