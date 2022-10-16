@@ -225,19 +225,18 @@ def extract_daily_prefecture_data(text: str) -> dict[enums.DataType, list[dict]]
 
         prices = re.findall(r'(\d[,.]\d ?\d ?\d)|-|\n', result[1].strip(), re.MULTILINE)
         if len(fuel_types) - len(prices) == 1 and enums.FuelType.SUPER in fuel_types:
-            pass
+            prices.insert(fuel_types.index(enums.FuelType.SUPER), '-')
         elif len(fuel_types) != len(prices):
             raise ValueError("Could not parse prices")
-
         data += [
             {
-                'fuel_type': fuel_types[index], 'prefecture': prefecture, 'price': price
-            } for index, price in enumerate([
-                decimal.Decimal(price.replace(' ', '').replace(',', '.'))
-                for price in prices if (
-                    price and price != '-' and decimal.Decimal(price.replace(' ', '').replace(',', '.'))
-                )
-            ])
+                'fuel_type': fuel_types[index],
+                'prefecture': prefecture,
+                'price': decimal.Decimal(prices[index].replace(' ', '').replace(',', '.'))
+            }
+            for index, fuel_type in enumerate(fuel_types)
+            if prices[index] and prices[index] != '-' and
+            decimal.Decimal(prices[index].replace(' ', '').replace(',', '.'))
         ]
 
     return {enums.DataType.DAILY_PREFECTURE: data}
