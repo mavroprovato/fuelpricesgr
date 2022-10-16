@@ -59,8 +59,21 @@ def extract_data(
     return extractor(text)
 
 
-def process_link(file_link: str, data_file_type: enums.DataFileType, use_file_cache: bool = True, update: bool = False,
-                 start_date: datetime.date = None, end_date: datetime.date = None):
+def get_date_from_file_name(file_name: str) -> datetime.date | None:
+    """Return the date from a file name.
+
+    :param file_name: The file name.
+    :return: The date if found.
+    """
+    result = re.search(r'(\d{2})_(\d{2})_(\d{4})', file_name)
+    if not result:
+        logger.error("Could not find date in file name")
+        return
+
+    return datetime.date(day=int(result[1]), month=int(result[2]), year=int(result[3]))
+
+
+def process_link(file_link: str, data_file_type: enums.DataFileType, use_file_cache: bool = True, update: bool = False):
     """Process a file link. This function downloads the PDF file if needed, extracts the data from it, and inserts the
     data to the database.
 
@@ -68,20 +81,9 @@ def process_link(file_link: str, data_file_type: enums.DataFileType, use_file_ca
     :param data_file_type: The data file type.
     :param use_file_cache: True if we are to save the data file to the local storage
     :param update: True if we want to update existing data from the database.
-    :param start_date: The start date for the data to process. Can be None.
-    :param end_date: The end date for the data to process. Can be None.
     """
     file_name = file_link[file_link.rfind('/') + 1:]
-    result = re.search(r'(\d{2})_(\d{2})_(\d{4})', file_name)
-    if not result:
-        logger.error("Could not find date in file name")
-        return
-    date = datetime.date(day=int(result[1]), month=int(result[2]), year=int(result[3]))
-    if start_date is not None and date > start_date:
-        return
-    if end_date is not None and date < end_date:
-        return
-
+    date = get_date_from_file_name(file_name)
     try:
         if use_file_cache:
             file_path = settings.DATA_PATH / data_file_type.name / file_name
@@ -137,10 +139,15 @@ def fetch(data_file_types: list[enums.DataFileType] = None, use_file_cache: bool
                 file_link = re.sub(r'\(\d\)', '', file_link)
                 file_link = re.sub(r'-\?+', '', file_link)
                 file_link = urllib.parse.urljoin(settings.FETCH_URL, file_link)
+                file_name = file_link[file_link.rfind('/') + 1:]
+                date = get_date_from_file_name(file_name)
+
+                if start_date is not None and date < start_date:
+                    continue
+                if end_date is not None and date > end_date:
+                    continue
                 process_link(
-                    file_link=file_link, data_file_type=data_file_type, use_file_cache=use_file_cache, update=update,
-                    start_date=start_date, end_date=end_date
-                )
+                    file_link=file_link, data_file_type=data_file_type, use_file_cache=use_file_cache, update=update)
 
 
 def parse_data_file_type(data_file_types: str) -> list[enums.DataFileType] | None:
