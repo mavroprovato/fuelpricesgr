@@ -30,13 +30,13 @@ let dailyCountryChart = null;
 let pricesPerPrefecture = null;
 
 /**
- * Initialize the date range picker from the date range API response.
+ * Initialize the date picker.
  *
- * @param dateRange The date range API response.
+ * @param minDate The minimum date that can be selected.
+ * @param maxDate The maximum date that can be selected.
+ * @returns The date picker.
  */
-function initializeDatePicker(dateRange) {
-    let minDate = DateTime.fromISO(dateRange.start_date);
-    let maxDate = DateTime.fromISO(dateRange.end_date);
+function initializeDatePicker(minDate, maxDate) {
     let endDate = maxDate;
     let startDate = endDate.minus({'month': 3});
 
@@ -212,13 +212,17 @@ document.addEventListener("DOMContentLoaded", function() {
     // Fetch date range on load.
     API.dateRage('daily_country').then(response => {
         response.json().then(dateRange => {
-            datePicker = initializeDatePicker(dateRange);
+            // Initialize the page components
+            const minDate = DateTime.fromISO(dateRange['start_date']);
+            const maxDate = DateTime.fromISO(dateRange['end_date']);
+            datePicker = initializeDatePicker(minDate, maxDate);
             latestPrices = document.getElementById('latest-prices');
             pricesPerPrefecture = document.getElementById('prices-per-prefecture');
             dailyCountryChart = new Chart(document.getElementById('chart').getContext('2d'), {
                 type: 'line'
             });
-            loadPage(dateRange.start_date, dateRange.end_date);
+            // Load the page
+            loadPage(minDate, maxDate);
         });
     });
 });
