@@ -164,7 +164,9 @@ function displayPrefectureTable(data) {
         tableHeader.append(header);
     });
     // Add the prefecture data
-    data['prefectures'].forEach(prefectureRow => {
+    data['prefectures'].sort((a, b) => {
+        return Prefecture[a['prefecture']].localeCompare(Prefecture[b['prefecture']]);
+    }).forEach(prefectureRow => {
         const row = document.createElement('tr')
         let rowHtml = `<td>${Prefecture[prefectureRow['prefecture']]}</td>`;
         Object.keys(FuelType).filter(fuelType => countryData.hasOwnProperty(fuelType)).forEach(fuelType => {
@@ -212,7 +214,7 @@ document.addEventListener("DOMContentLoaded", function() {
         response.json().then(dateRange => {
             datePicker = initializeDatePicker(dateRange);
             latestPrices = document.getElementById('latest-prices');
-            pricesPerPrefecture = document.getElementById('prices-per-prefecture');;
+            pricesPerPrefecture = document.getElementById('prices-per-prefecture');
             dailyCountryChart = new Chart(document.getElementById('chart').getContext('2d'), {
                 type: 'line'
             });
