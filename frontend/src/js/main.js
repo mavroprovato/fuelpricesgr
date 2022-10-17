@@ -187,32 +187,21 @@ class Main {
      * @param data The daily country data response from the API.
      */
     displayDailyCountryChart(data) {
-        const prices = {};
-        for (const fuelType in FuelType) {
-            prices[fuelType] = [];
-        }
-        const labels = [];
-        for (const row of data) {
-            labels.push(row.date);
-            for (const fuelType in FuelType) {
-                prices[fuelType].push(null);
-            }
-            for (const result of row.data) {
-                prices[result['fuel_type']][prices[result['fuel_type']].length - 1] = result.price;
-            }
-        }
         const datasets = []
-        for (const fuelType in FuelType) {
+        Object.keys(FuelType).forEach(fuelType => {
+            const fuelTypeData = [];
+            data.forEach(row => {
+                fuelTypeData.push(row['data'].find(e => e['fuel_type'] === fuelType)?.price);
+            });
             datasets.push({
                 label: FuelType[fuelType].label,
                 borderColor: FuelType[fuelType].borderColor,
                 hidden: FuelType[fuelType].hidden,
-                data: prices[fuelType],
-            })
-        }
-
+                data: fuelTypeData,
+            });
+        });
         this.dailyCountryChart.data = {
-            labels: labels,
+            labels: data.map(e => e['date']),
             datasets: datasets
         };
         this.dailyCountryChart.update();
