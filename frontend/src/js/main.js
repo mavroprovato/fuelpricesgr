@@ -32,8 +32,8 @@ let pricesPerPrefecture = null;
 /**
  * Initialize the date picker.
  *
- * @param minDate The minimum date that can be selected.
- * @param maxDate The maximum date that can be selected.
+ * @param minDate {DateTime} The minimum date that can be selected.
+ * @param maxDate {DateTime} The maximum date that can be selected.
  * @returns The date picker.
  */
 function initializeDatePicker(minDate, maxDate) {
@@ -185,12 +185,12 @@ function displayPrefectureTable(data) {
 /**
  * Load the page for the specified date range.
  *
- * @param startDate The start date.
- * @param endDate The end date.
+ * @param startDate {DateTime} The start date.
+ * @param endDate {DateTime} The end date.
  */
 function loadPage(startDate, endDate) {
     document.querySelectorAll('.latest-date').forEach(span => {
-        span.innerHTML = endDate;
+        span.innerHTML = endDate.toISODate();
     });
     API.dailyCountryData(startDate, endDate).then(response => {
         response.json().then(data => {
@@ -205,24 +205,28 @@ function loadPage(startDate, endDate) {
     })
 }
 
-/**
- * Called when the DOM has been loaded.
- */
-document.addEventListener("DOMContentLoaded", function() {
-    // Fetch date range on load.
-    API.dateRage('daily_country').then(response => {
-        response.json().then(dateRange => {
-            // Initialize the page components
-            const minDate = DateTime.fromISO(dateRange['start_date']);
-            const maxDate = DateTime.fromISO(dateRange['end_date']);
-            datePicker = initializeDatePicker(minDate, maxDate);
-            latestPrices = document.getElementById('latest-prices');
-            pricesPerPrefecture = document.getElementById('prices-per-prefecture');
-            dailyCountryChart = new Chart(document.getElementById('chart').getContext('2d'), {
-                type: 'line'
+class Main {
+    constructor() {
+        // Called when the DOM has been loaded
+        document.addEventListener("DOMContentLoaded", function() {
+            // Fetch date range on load
+            API.dateRage('daily_country').then(response => {
+                response.json().then(dateRange => {
+                    // Initialize the page components
+                    const minDate = DateTime.fromISO(dateRange['start_date']);
+                    const maxDate = DateTime.fromISO(dateRange['end_date']);
+                    datePicker = initializeDatePicker(minDate, maxDate);
+                    latestPrices = document.getElementById('latest-prices');
+                    pricesPerPrefecture = document.getElementById('prices-per-prefecture');
+                    dailyCountryChart = new Chart(document.getElementById('chart').getContext('2d'), {
+                        type: 'line'
+                    });
+                    // Load the page
+                    loadPage(minDate, maxDate);
+                });
             });
-            // Load the page
-            loadPage(minDate, maxDate);
         });
-    });
-});
+    }
+}
+
+new Main();
