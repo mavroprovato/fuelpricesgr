@@ -10,6 +10,20 @@ import { API } from './api';
 import '../scss/styles.scss';
 
 /**
+ * Formats a number as a price.
+ *
+ * @param price The price as a number.
+ * @returns {string} The formatted price.
+ */
+function formatPrice(price) {
+    if (price) {
+        return price.toFixed(3) + "€";
+    }
+
+    return '-';
+}
+
+/**
  * The main page
  */
 class Main {
@@ -144,7 +158,7 @@ class Main {
                 }
             }
             rowElement.innerHTML = `
-                <td>${FuelType[fuelType].label}</td><td>${fuelData['price'].toFixed(3) + "€"}</td><td>${evolution}</td>
+                <td>${FuelType[fuelType].label}</td><td>${formatPrice(fuelData['price'])}</td><td>${evolution}</td>
             `;
             tableBody.append(rowElement)
         })
@@ -193,14 +207,13 @@ class Main {
      * @param data The prefecture data.
      */
     displayPrefectureTable(data) {
+        if (!data) {
+            return;
+        }
         const tableHeader = this.pricesPerPrefecture.querySelector('thead tr');
         tableHeader.innerHTML = '';
         const tableBody = this.pricesPerPrefecture.querySelector('tbody');
         tableBody.innerHTML = '';
-
-        if (!data) {
-            return;
-        }
         // Create the table header
         const countryData = {}
         data['country'].forEach(countryRow => {
@@ -224,12 +237,7 @@ class Main {
             const row = document.createElement('tr')
             let rowHtml = `<td>${Prefecture[prefectureRow['prefecture']]}</td>`;
             Object.keys(FuelType).filter(fuelType => countryData.hasOwnProperty(fuelType)).forEach(fuelType => {
-                const fuelTypeData = prefectureRow['data'].find(e => e['fuel_type'] === fuelType);
-                if (fuelTypeData) {
-                    rowHtml += `<td>${fuelTypeData['price'].toFixed(3) + "€"}</td>`;
-                } else {
-                    rowHtml += `<td></td>`;
-                }
+                rowHtml += `<td>${formatPrice(prefectureRow['data'].find(e => e['fuel_type'] === fuelType)?.price)}</td>`;
             });
             row.innerHTML = rowHtml;
             tableBody.append(row);
