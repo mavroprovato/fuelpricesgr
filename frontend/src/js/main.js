@@ -28,16 +28,22 @@ function formatPrice(price) {
  *
  * @param {number} value The reference value.
  * @param {number} previousValue The previous value.
- * @returns {string} The formatted evolution.
+ * @returns The formatted evolution.
  */
 function formatEvolution(value, previousValue) {
-    let evolution = '';
+    let evolution = document.createElement('span');
     if (value && previousValue) {
-        evolution = (value - previousValue) / value;
-        evolution = (evolution > 0 ? '+' : '') + (evolution * 100).toFixed(2) + '%';
+        let evolutionValue = (value - previousValue) / value;
+        if (evolutionValue > 0) {
+            evolution.classList.add('text-danger');
+        }
+        else if (evolutionValue < 0) {
+            evolution.classList.add('text-success');
+        }
+        evolution.innerHTML = (evolutionValue > 0 ? '+' : '') + (evolutionValue * 100).toFixed(2) + '%';
     }
 
-    return evolution;
+    return evolution.outerHTML;
 }
 
 /**
