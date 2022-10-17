@@ -24,6 +24,23 @@ function formatPrice(price) {
 }
 
 /**
+ * Formats the evolution of a value as a percentage.
+ *
+ * @param {number} value The reference value.
+ * @param {number} previousValue The previous value.
+ * @returns {string} The formatted evolution.
+ */
+function formatEvolution(value, previousValue) {
+    let evolution = '';
+    if (value && previousValue) {
+        evolution = (value - previousValue) / value;
+        evolution = (evolution > 0 ? '+' : '') + (evolution * 100).toFixed(2) + '%';
+    }
+
+    return evolution;
+}
+
+/**
  * The main page
  */
 class Main {
@@ -149,16 +166,10 @@ class Main {
                 return;
             }
             const rowElement = document.createElement('tr');
-            let evolution = '';
-            if (previousData) {
-                const previousFuelData = previousData.data.find(e => e['fuel_type'] === fuelType);
-                if (previousFuelData) {
-                    evolution = (fuelData['price'] - previousFuelData['price']) / fuelData['price'];
-                    evolution = (evolution > 0 ? '+' : '') + (evolution * 100).toFixed(2) + '%';
-                }
-            }
             rowElement.innerHTML = `
-                <td>${FuelType[fuelType].label}</td><td>${formatPrice(fuelData['price'])}</td><td>${evolution}</td>
+                <td>${FuelType[fuelType].label}</td>
+                <td>${formatPrice(fuelData['price'])}</td>
+                <td>${formatEvolution(fuelData['price'], previousData?.data.find(e => e['fuel_type'] === fuelType)?.price)}</td>
             `;
             tableBody.append(rowElement)
         })
