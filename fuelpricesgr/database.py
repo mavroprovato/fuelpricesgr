@@ -261,7 +261,7 @@ class Database:
             cursor.execute(f"SELECT MIN(date), MAX(date) FROM {self._table_for_data_type(data_type)}")
             data = cursor.fetchone()
             if data:
-                return data
+                return dateutil.parser.parse(data[0]).date(), dateutil.parser.parse(data[1]).date()
 
         return None, None
 
