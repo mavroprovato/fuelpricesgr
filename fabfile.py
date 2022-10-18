@@ -63,3 +63,14 @@ def deploy_frontend(_):
         sys.exit("'FRONTEND_BUCKET' is not defined, cannot deploy frontend")
 
     invoke.run(f"aws s3 sync frontend/dist/ s3://{os.environ['FRONTEND_BUCKET']} --delete --acl public-read")
+
+
+@fabric.task
+def invalidate(_, distribution_id):
+    """Invalidate the front end caches.
+
+    :param _: Not used.
+    :param distribution_id: The distribution identifier.
+    """
+    print("Invalidating frontend caches")
+    invoke.run(f"aws cloudfront create-invalidation --distribution-id {distribution_id} --paths /*")
