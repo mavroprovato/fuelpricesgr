@@ -260,10 +260,11 @@ class Database:
         with contextlib.closing(self.conn.cursor()) as cursor:
             cursor.execute(f"SELECT MIN(date), MAX(date) FROM {self._table_for_data_type(data_type)}")
             data = cursor.fetchone()
-            if data:
-                return dateutil.parser.parse(data[0]).date(), dateutil.parser.parse(data[1]).date()
 
-        return None, None
+            return (
+                dateutil.parser.parse(data[0]).date() if data[0] else None,
+                dateutil.parser.parse(data[1]).date() if data[1] else None,
+            )
 
     def daily_country_data(
             self, start_date: datetime.date | None = None, end_date: datetime.date | None = None) -> list[dict]:

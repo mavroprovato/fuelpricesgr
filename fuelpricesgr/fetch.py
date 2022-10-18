@@ -128,6 +128,15 @@ def fetch(data_file_types: list[enums.DataFileType] = None, use_file_cache: bool
     :param end_date: The end date for the data to process. Can be None.
     """
     logger.info("Fetching missing data from the site")
+    if start_date is None and end_date is None:
+        with database.Database() as db:
+            dates = [
+                date_range[1] for date_range in [db.date_range(data_type) for data_type in enums.DataType]
+                if date_range[1]
+            ]
+            if dates:
+                start_date = min(dates)
+
     for data_file_type in enums.DataFileType if data_file_types is None else data_file_types:
         page_url = urllib.parse.urljoin(settings.FETCH_URL, data_file_type.page)
         logger.info("Processing page %s", page_url)
@@ -184,10 +193,8 @@ def main():
     parser.add_argument('--update', default=False, action=argparse.BooleanOptionalAction,
                         help="Update existing data. By default existing data are not updated.")
     args = parser.parse_args()
-    fetch(
-        data_file_types=args.types, use_file_cache=args.use_file_cache, update=args.update,
-        start_date=args.start_date, end_date=args.end_date
-    )
+    fetch(data_file_types=args.types, use_file_cache=args.use_file_cache, update=args.update,
+          start_date=args.start_date, end_date=args.end_date)
 
 
 if __name__ == '__main__':
