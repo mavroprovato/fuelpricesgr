@@ -1,5 +1,9 @@
 @import "~bootstrap/scss/bootstrap";
 
+th {
+  white-space: nowrap;
+}
+
 table td:first-child {
   @extend strong;
 }
@@ -10,4 +14,8 @@ table th:nth-child(n+1):nth-child(n+2) {
 
 table td:nth-child(n+1):nth-child(n+2) {
   @extend .text-end;
+}
+
+#prices-per-prefecture th:first-child {
+  width: 99%;
 }
