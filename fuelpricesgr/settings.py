@@ -24,3 +24,9 @@ MAX_DAYS = 365
 
 # The Redis URL used for caching
 REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost')
+
+# AWS configuration
+AWS_REGION = os.getenv('AWS_REGION')
+
+# Mail configuration
+MAIL_SENDER = os.getenv('MAIL_SENDER')

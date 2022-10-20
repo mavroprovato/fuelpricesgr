@@ -13,7 +13,7 @@ import PyPDF2
 import PyPDF2.errors
 import requests
 
-from fuelpricesgr import database, enums, extract, settings
+from fuelpricesgr import database, enums, extract, mail, settings
 
 
 # The module logger
@@ -73,19 +73,24 @@ def get_date_from_file_name(file_name: str) -> datetime.date | None:
     return datetime.date(day=int(result[1]), month=int(result[2]), year=int(result[3]))
 
 
-def process_link(file_link: str, data_file_type: enums.DataFileType, use_file_cache: bool = True, update: bool = False):
+def process_link(file_link: str, data_file_type: enums.DataFileType, skip_file_cache: bool = False, update: bool = False):
     """Process a file link. This function downloads the PDF file if needed, extracts the data from it, and inserts the
     data to the database.
 
     :param file_link: The file link.
     :param data_file_type: The data file type.
-    :param use_file_cache: True if we are to save the data file to the local storage
+    :param skip_file_cache: True if we are going to skip the local storage for
     :param update: True if we want to update existing data from the database.
     """
     file_name = file_link[file_link.rfind('/') + 1:]
     date = get_date_from_file_name(file_name)
     try:
-        if use_file_cache:
+        if skip_file_cache:
+            logger.info("Fetching file %s", file_link)
+            response = requests.get(file_link, stream=True, timeout=settings.REQUESTS_TIMEOUT)
+            response.raise_for_status()
+            file_data = response.raw.read()
+        else:
             file_path = settings.DATA_PATH / data_file_type.name / file_name
             if file_path.exists():
                 logger.debug("Loading from local cache")
@@ -99,11 +104,7 @@ def process_link(file_link: str, data_file_type: enums.DataFileType, use_file_ca
                 file_data = response.raw.read()
                 with file_path.open('wb') as file:
                     file.write(file_data)
-        else:
-            logger.info("Fetching file %s", file_link)
-            response = requests.get(file_link, stream=True, timeout=settings.REQUESTS_TIMEOUT)
-            response.raise_for_status()
-            file_data = response.raw.read()
+
     except requests.HTTPError:
         logger.error("Could not fetch link %s", file_link, exc_info=True)
         return
@@ -117,12 +118,12 @@ def process_link(file_link: str, data_file_type: enums.DataFileType, use_file_ca
                 db.save()
 
 
-def fetch(data_file_types: list[enums.DataFileType] = None, use_file_cache: bool = True, update: bool = True,
+def fetch(data_file_types: list[enums.DataFileType] = None, skip_file_cache: bool = False, update: bool = True,
           start_date: datetime.date = None, end_date: datetime.date = None):
     """Fetch the data from the site and insert to the database.
 
     :param data_file_types: The data file types to parse.
-    :param use_file_cache: True to use the local file cache.
+    :param skip_file_cache: True to skip the local file cache.
     :param update: True to update the existing data.
     :param start_date: The start date for the data to process. Can be None.
     :param end_date: The end date for the data to process. Can be None.
@@ -156,7 +157,7 @@ def fetch(data_file_types: list[enums.DataFileType] = None, use_file_cache: bool
                 if end_date is not None and date > end_date:
                     continue
                 process_link(
-                    file_link=file_link, data_file_type=data_file_type, use_file_cache=use_file_cache, update=update)
+                    file_link=file_link, data_file_type=data_file_type, skip_file_cache=skip_file_cache, update=update)
 
 
 def parse_data_file_type(data_file_types: str) -> list[enums.DataFileType] | None:
@@ -177,24 +178,53 @@ def parse_data_file_type(data_file_types: str) -> list[enums.DataFileType] | Non
 def main():
     """Entry point of the script.
     """
+    # Configure logging
+    log_stream = io.StringIO()
     logging.basicConfig(
-        stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s %(message)s'
+        handlers=[logging.StreamHandler(stream=sys.stdout), logging.StreamHandler(stream=log_stream)],
+        level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s %(message)s'
     )
-    parser = argparse.ArgumentParser(description='Fetch the data from the site and insert them to the database.')
-    parser.add_argument('--types', type=parse_data_file_type,
-                        help=f"Comma separated data files to fetch. Available types are "
-                             f"{','.join(fdt.name for fdt in enums.DataFileType)}")
-    parser.add_argument('--start-date', type=datetime.date.fromisoformat,
-                        help="The start date for the data to fetch. The date must be in ISO date format (YYYY-MM-DD)")
-    parser.add_argument('--end-date', type=datetime.date.fromisoformat,
-                        help="The end date for the data to fetch. The date must be in ISO date format (YYYY-MM-DD)")
-    parser.add_argument('--use_file_cache', default=True, action=argparse.BooleanOptionalAction,
-                        help="Use the file cache. By default, the file cache is used.")
-    parser.add_argument('--update', default=False, action=argparse.BooleanOptionalAction,
-                        help="Update existing data. By default existing data are not updated.")
-    args = parser.parse_args()
-    fetch(data_file_types=args.types, use_file_cache=args.use_file_cache, update=args.update,
-          start_date=args.start_date, end_date=args.end_date)
+
+    error = False
+    try:
+        # Configure the argument parser
+        parser = argparse.ArgumentParser(description='Fetch the data from the site and insert them to the database.')
+        parser.add_argument(
+            '--types', type=parse_data_file_type,
+            help=f"Comma separated data files to fetch. Available types are "
+                 f"{','.join(fdt.name for fdt in enums.DataFileType)}")
+        parser.add_argument(
+            '--start-date', type=datetime.date.fromisoformat,
+            help="The start date for the data to fetch. The date must be in ISO date format (YYYY-MM-DD)")
+        parser.add_argument(
+            '--end-date', type=datetime.date.fromisoformat,
+            help="The end date for the data to fetch. The date must be in ISO date format (YYYY-MM-DD)")
+        parser.add_argument(
+            '--skip-file-cache', default=False, action="store_true",
+            help="Skip the file cache. By default, the file cache is used.")
+        parser.add_argument(
+            '--update', default=False, action="store_true",
+            help="Update existing data. By default existing data are not updated.")
+        # Fetch the data
+        args = parser.parse_args()
+        fetch(data_file_types=args.types, skip_file_cache=args.skip_file_cache, update=args.update,
+              start_date=args.start_date, end_date=args.end_date)
+    except Exception as ex:
+        logger.exception("", exc_info=ex)
+        error = True
+
+    content = f'''
+        <!DOCTYPE html>
+        <html>
+            <p>Fetching of data completed at {datetime.datetime.now().isoformat()} {"with" if error else "without"}
+            errors. The output of the command was:</p>
+            <p><pre>{log_stream.getvalue()}</pre></p>
+        </html>
+    '''
+    mail_sender = mail.MailSender()
+    mail_sender.send(
+        to_recipients=['mavroprovato@gmail.com'], subject='[fuelpricesgr] Fetching data completed',
+        html_content=content)
 
 
 if __name__ == '__main__':
