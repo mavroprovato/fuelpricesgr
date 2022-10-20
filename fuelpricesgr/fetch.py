@@ -68,12 +68,13 @@ def get_date_from_file_name(file_name: str) -> datetime.date | None:
     result = re.search(r'(\d{2})_(\d{2})_(\d{4})', file_name)
     if not result:
         logger.error("Could not find date in file name")
-        return
+        return None
 
     return datetime.date(day=int(result[1]), month=int(result[2]), year=int(result[3]))
 
 
-def process_link(file_link: str, data_file_type: enums.DataFileType, skip_file_cache: bool = False, update: bool = False):
+def process_link(
+        file_link: str, data_file_type: enums.DataFileType, skip_file_cache: bool = False, update: bool = False):
     """Process a file link. This function downloads the PDF file if needed, extracts the data from it, and inserts the
     data to the database.
 

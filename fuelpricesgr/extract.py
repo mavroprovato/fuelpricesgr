@@ -163,7 +163,7 @@ def extract_fuel_types(text: str) -> tuple[list[enums.FuelType], int]:
     if match := re.search(r'Super', text):
         fuel_types.append((enums.FuelType.SUPER, match.span()))
     else:
-        logger.warning(f"Cannot find data for {enums.FuelType.SUPER} in daily prefecture data")
+        logger.warning("Cannot find data for %s in daily prefecture data", enums.FuelType.SUPER)
 
     if match := re.search(r'Diesel\s+Κίν ?η ?[σς] ?η ?[ςσ]', text):
         fuel_types.append((enums.FuelType.DIESEL, match.span()))
@@ -230,7 +230,7 @@ def extract_daily_prefecture_data(text: str) -> dict[enums.DataType, list[dict]]
             raise ValueError("Could not parse prices")
         data += [
             {
-                'fuel_type': fuel_types[index],
+                'fuel_type': fuel_type,
                 'prefecture': prefecture,
                 'price': decimal.Decimal(prices[index].replace(' ', '').replace(',', '.'))
             }

@@ -3,15 +3,15 @@
 import datetime
 import itertools
 import logging
+import sqlite3
 
 import fastapi
+import fastapi.middleware.cors
+import fastapi.openapi.docs
 import fastapi_cache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache.decorator import cache
-import fastapi.middleware.cors
-import fastapi.openapi.docs
 import redis
-import sqlite3
 
 
 from fuelpricesgr import database, enums, models, settings

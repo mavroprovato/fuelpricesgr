@@ -1,7 +1,8 @@
 [FORMAT]
-
 # Maximum number of characters on a single line.
 max-line-length=120
+# Whitelisted variable names
+good-names=db,ex
 
 [MASTER]
 extension-pkg-whitelist=pydantic
