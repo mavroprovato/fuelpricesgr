@@ -100,10 +100,10 @@ class Main {
     };
 
     /**
-     * Called when the data
+     * Called when the date range is loaded.
      *
-     * @param minDate
-     * @param maxDate
+     * @param minDate {DateTime} The minimum date that can be selected.
+     * @param maxDate {DateTime} The maximum date that can be selected.
      */
     dateRangeLoaded(minDate, maxDate) {
         // Initialize the page components
