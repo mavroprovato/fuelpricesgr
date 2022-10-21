@@ -50,6 +50,8 @@ function formatEvolution(value, previousValue) {
  * The main page
  */
 class Main {
+    /** The fuel type selector */
+    fuelTypes = null;
     /** The latest prices table */
     latestPrices = null;
     /** The daily country chart */
@@ -64,12 +66,28 @@ class Main {
         const instance = this;
         // Called when the DOM has been loaded
         document.addEventListener("DOMContentLoaded", function() {
+            instance.fuelTypes = document.getElementById('fuel-types');
             instance.latestPrices = document.getElementById('latest-prices');
             instance.dailyCountryChart = new Chart(document.getElementById('chart').getContext('2d'), {
                 type: 'line'
             });
             instance.pricesPerPrefecture = document.getElementById('prices-per-prefecture');
 
+            // Initialize the fuel types selector
+            Object.keys(FuelType).forEach(fuelType => {
+                const fuelTypeInput = document.createElement('input');
+                fuelTypeInput.id = `${fuelType}-select`;
+                fuelTypeInput.className = 'btn-check';
+                fuelTypeInput.type = 'checkbox';
+                fuelTypeInput.checked = true;
+                instance.fuelTypes.append(fuelTypeInput);
+
+                const fuelTypeLabel = document.createElement('label');
+                fuelTypeLabel.className = 'btn btn-outline-primary';
+                fuelTypeLabel.htmlFor = `${fuelType}-select`;
+                fuelTypeLabel.innerHTML = FuelType[fuelType].label;
+                instance.fuelTypes.append(fuelTypeLabel);
+            })
             // Fetch date range on load
             API.dateRage('daily_country').then(response => {
                 response.json().then(dateRange => {
