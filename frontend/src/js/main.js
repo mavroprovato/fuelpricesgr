@@ -97,7 +97,7 @@ class Main {
             fuelTypeInput.id = `${fuelType}-select`;
             fuelTypeInput.className = 'btn-check';
             fuelTypeInput.type = 'checkbox';
-            fuelTypeInput.checked = true;
+            fuelTypeInput.checked = !FuelType[fuelType].unchecked;
             fuelTypesSelector.append(fuelTypeInput);
 
             const fuelTypeLabel = document.createElement('label');
