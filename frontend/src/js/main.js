@@ -66,28 +66,13 @@ class Main {
         const instance = this;
         // Called when the DOM has been loaded
         document.addEventListener("DOMContentLoaded", function() {
-            instance.fuelTypes = document.getElementById('fuel-types');
+            instance.fuelTypes = instance.createFuelTypesSelector();
             instance.latestPrices = document.getElementById('latest-prices');
             instance.dailyCountryChart = new Chart(document.getElementById('chart').getContext('2d'), {
                 type: 'line'
             });
             instance.pricesPerPrefecture = document.getElementById('prices-per-prefecture');
 
-            // Initialize the fuel types selector
-            Object.keys(FuelType).forEach(fuelType => {
-                const fuelTypeInput = document.createElement('input');
-                fuelTypeInput.id = `${fuelType}-select`;
-                fuelTypeInput.className = 'btn-check';
-                fuelTypeInput.type = 'checkbox';
-                fuelTypeInput.checked = true;
-                instance.fuelTypes.append(fuelTypeInput);
-
-                const fuelTypeLabel = document.createElement('label');
-                fuelTypeLabel.className = 'btn btn-outline-primary';
-                fuelTypeLabel.htmlFor = `${fuelType}-select`;
-                fuelTypeLabel.innerHTML = FuelType[fuelType].label;
-                instance.fuelTypes.append(fuelTypeLabel);
-            })
             // Fetch date range on load
             API.dateRage('daily_country').then(response => {
                 response.json().then(dateRange => {
@@ -98,6 +83,32 @@ class Main {
             });
         });
     };
+
+    /**
+     * Create the fuel types selector element.
+     *
+     * @returns {HTMLElement} The fuel types selector element.
+     */
+    createFuelTypesSelector() {
+        // Initialize the fuel types selector
+        const fuelTypesSelector = document.getElementById('fuel-types');
+        Object.keys(FuelType).forEach(fuelType => {
+            const fuelTypeInput = document.createElement('input');
+            fuelTypeInput.id = `${fuelType}-select`;
+            fuelTypeInput.className = 'btn-check';
+            fuelTypeInput.type = 'checkbox';
+            fuelTypeInput.checked = true;
+            fuelTypesSelector.append(fuelTypeInput);
+
+            const fuelTypeLabel = document.createElement('label');
+            fuelTypeLabel.className = 'btn btn-outline-primary';
+            fuelTypeLabel.htmlFor = `${fuelType}-select`;
+            fuelTypeLabel.innerHTML = FuelType[fuelType].label;
+            fuelTypesSelector.append(fuelTypeLabel);
+        });
+
+        return fuelTypesSelector;
+    }
 
     /**
      * Called when the date range is loaded.
