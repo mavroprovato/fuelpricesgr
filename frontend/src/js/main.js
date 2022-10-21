@@ -51,7 +51,7 @@ function formatEvolution(value, previousValue) {
  */
 class Main {
     /** The fuel type selector */
-    fuelTypes = null;
+    fuelTypesSelector = null;
     /** The latest prices table */
     latestPrices = null;
     /** The daily country chart */
@@ -66,7 +66,7 @@ class Main {
         const instance = this;
         // Called when the DOM has been loaded
         document.addEventListener("DOMContentLoaded", function() {
-            instance.fuelTypes = instance.createFuelTypesSelector();
+            instance.fuelTypesSelector = instance.createFuelTypesSelector();
             instance.latestPrices = document.getElementById('latest-prices');
             instance.dailyCountryChart = new Chart(document.getElementById('chart').getContext('2d'), {
                 type: 'line'
@@ -117,7 +117,7 @@ class Main {
      * @param maxDate {DateTime} The maximum date that can be selected.
      */
     dateRangeLoaded(minDate, maxDate) {
-        // Initialize the page components
+        // Initialize the date picker
         this.initializeDatePicker(minDate, maxDate);
         // Load the page
         this.loadPage(minDate, maxDate);
@@ -171,6 +171,7 @@ class Main {
                 span.innerHTML = endDate.toISODate();
             });
             response.json().then(data => {
+                instance.setFuelTypeSelector(data);
                 instance.displayLatestValues(endDate, ...data.slice(-2).reverse());
                 instance.displayDailyCountryChart(data);
             });
@@ -180,6 +181,25 @@ class Main {
                 instance.displayPrefectureTable(data);
             });
         })
+    };
+
+    setFuelTypeSelector(data) {
+        const fuelTypes = new Set();
+        data.forEach(dataRow => {
+            dataRow.data.forEach(dataDateRow => {
+                fuelTypes.add(dataDateRow['fuel_type']);
+            });
+        });
+        const instance = this;
+        Object.keys(FuelType).forEach(fuelType => {
+            const fuelTypesSelect = instance.fuelTypesSelector.querySelector(`#${fuelType}-select`);
+            if (fuelTypes.has(fuelType)) {
+                fuelTypesSelect.disabled = false;
+            } else {
+                fuelTypesSelect.disabled = true;
+                fuelTypesSelect.checked = false;
+            }
+        });
     };
 
     /**
