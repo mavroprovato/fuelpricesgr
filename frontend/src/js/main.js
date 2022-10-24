@@ -96,7 +96,7 @@ class Main {
             fuelTypeInput.type = 'checkbox';
             fuelTypeInput.checked = !FuelType[fuelType].defaultUnselected;
             fuelTypeInput.addEventListener('input', event => {
-                this.loadLatestCountryDataTable();
+
             });
             fuelTypesSelector.append(fuelTypeInput);
 
@@ -234,10 +234,8 @@ class Main {
 
     /**
      * Load the fuel types selector.
-     *
-     * @param data The daily country data response from the API.
      */
-    loadFuelTypesSelector(data) {
+    loadFuelTypesSelector() {
         // Get the available fuel types
         const fuelTypes = new Set();
         this.dailyCountryData.forEach(dataRow => {
