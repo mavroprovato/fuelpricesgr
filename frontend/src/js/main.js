@@ -96,7 +96,7 @@ class Main {
             fuelTypeInput.type = 'checkbox';
             fuelTypeInput.checked = !FuelType[fuelType].defaultUnselected;
             fuelTypeInput.addEventListener('input', event => {
-                // TODO: listen for selection changes
+                this.loadLatestCountryDataTable();
             });
             fuelTypesSelector.append(fuelTypeInput);
 
@@ -164,7 +164,7 @@ class Main {
         const tableBody = table.querySelector('table tbody');
         Object.keys(FuelType).forEach(fuelType => {
             const rowElement = document.createElement('tr');
-            rowElement.id = `${fuelType}-latest-country-data`;
+            rowElement.classList.add(fuelType);
             rowElement.innerHTML = `
                 <td>${FuelType[fuelType].label}</td>
                 <td class="price">&nbsp;</td>
@@ -267,13 +267,13 @@ class Main {
         document.querySelectorAll('.latest-date').forEach(span => {
             span.innerHTML = latestData.date;
         });
-        this.latestCountryDataTable.querySelectorAll('tbody tr').forEach(tableRow => {
-            const fuelType = tableRow.id.replace('-latest-country-data', '');
+        Object.keys(FuelType).forEach(fuelType => {
+            const fuelDataRow = this.latestCountryDataTable.querySelector(`tr.${fuelType}`);
             const fuelData = latestData.data.find(e => e['fuel_type'] === fuelType);
-            tableRow.querySelector('td.price').innerHTML = formatPrice(fuelData?.price);
-            tableRow.querySelector('td.evolution').innerHTML = formatEvolution(
+            fuelDataRow.querySelector('td.price').innerHTML = formatPrice(fuelData?.price);
+            fuelDataRow.querySelector('td.evolution').innerHTML = formatEvolution(
                 fuelData?.price, previousData?.data.find(e => e['fuel_type'] === fuelType)?.price);
-        })
+        });
     };
 
     /**
