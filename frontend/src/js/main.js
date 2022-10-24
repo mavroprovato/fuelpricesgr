@@ -297,7 +297,6 @@ class Main {
             labels: instance.dailyCountryData.map(e => e['date']),
             datasets: datasets
         };
-        console.log(this.dailyCountryDataChart.data);
         this.dailyCountryDataChart.update();
     };
 
