@@ -8,6 +8,7 @@ import { FuelType, Prefecture } from './enums';
 import { API } from './api';
 
 import '../scss/styles.scss';
+import {end} from "@popperjs/core";
 
 /**
  * Formats a number as a price.
@@ -41,6 +42,8 @@ function formatEvolution(value, previousValue) {
             evolution.classList.add('text-success');
         }
         evolution.innerHTML = (evolutionValue > 0 ? '+' : '') + (evolutionValue * 100).toFixed(2) + '%';
+    } else {
+        evolution.innerHTML = '-';
     }
 
     return evolution.outerHTML;
@@ -50,14 +53,12 @@ function formatEvolution(value, previousValue) {
  * The main page
  */
 class Main {
-    /** The fuel type selector */
-    fuelTypesSelector = null;
-    /** The latest prices table */
-    latestPrices = null;
-    /** The daily country chart */
-    dailyCountryChart = null;
-    /** The prices per prefecture table */
-    pricesPerPrefecture = null;
+    fuelTypeSelector = null;
+    latestCountryDataTable = null;
+    dailyCountryDataChart = null;
+    prefectureDataTable = null;
+    dailyCountryData = null;
+    countryData = null;
 
     /**
      * The class constructor
@@ -66,76 +67,61 @@ class Main {
         const instance = this;
         // Called when the DOM has been loaded
         document.addEventListener("DOMContentLoaded", function() {
-            instance.fuelTypesSelector = instance.createFuelTypesSelector();
-            instance.latestPrices = document.getElementById('latest-prices');
-            instance.dailyCountryChart = new Chart(document.getElementById('chart').getContext('2d'), {
-                type: 'line'
-            });
-            instance.pricesPerPrefecture = document.getElementById('prices-per-prefecture');
-
+            // Initialize elements
+            instance.fuelTypeSelector = instance.initializeFuelTypeSelector();
+            instance.dailyCountryDataChart = instance.initializeDailyCountryDataChart();
+            instance.latestCountryDataTable = instance.initializeLatestCountryDataTable();
+            instance.prefectureDataTable = instance.initializePrefectureDataTable();
             // Fetch date range on load
             API.dateRage('daily_country').then(response => {
                 response.json().then(dateRange => {
-                    const minDate = DateTime.fromISO(dateRange['start_date']);
-                    const maxDate = DateTime.fromISO(dateRange['end_date']);
-                    instance.dateRangeLoaded(minDate, maxDate)
+                    const startDate = DateTime.fromISO(dateRange['start_date']);
+                    const endDate = DateTime.fromISO(dateRange['end_date']);
+                    instance.initializeDatePicker(startDate, endDate);
+                    instance.dateRangeSelected(startDate, endDate);
                 });
             });
         });
     };
 
     /**
-     * Create the fuel types selector element.
-     *
-     * @returns {HTMLElement} The fuel types selector element.
+     * Initialize the fuel types selector.
      */
-    createFuelTypesSelector() {
-        // Initialize the fuel types selector
+    initializeFuelTypeSelector() {
         const fuelTypesSelector = document.getElementById('fuel-types');
         Object.keys(FuelType).forEach(fuelType => {
             const fuelTypeInput = document.createElement('input');
-            fuelTypeInput.id = `${fuelType}-select`;
+            fuelTypeInput.id = `${fuelType}-selector`;
             fuelTypeInput.className = 'btn-check';
             fuelTypeInput.type = 'checkbox';
-            fuelTypeInput.checked = !FuelType[fuelType].unchecked;
+            fuelTypeInput.checked = !FuelType[fuelType].defaultUnselected;
+            fuelTypeInput.addEventListener('input', event => {
+                // TODO: listen for selection changes
+            });
             fuelTypesSelector.append(fuelTypeInput);
 
             const fuelTypeLabel = document.createElement('label');
             fuelTypeLabel.className = 'btn btn-outline-primary';
-            fuelTypeLabel.htmlFor = `${fuelType}-select`;
+            fuelTypeLabel.htmlFor = `${fuelType}-selector`;
             fuelTypeLabel.innerHTML = FuelType[fuelType].label;
             fuelTypesSelector.append(fuelTypeLabel);
         });
 
         return fuelTypesSelector;
-    }
-
-    /**
-     * Called when the date range is loaded.
-     *
-     * @param minDate {DateTime} The minimum date that can be selected.
-     * @param maxDate {DateTime} The maximum date that can be selected.
-     */
-    dateRangeLoaded(minDate, maxDate) {
-        // Initialize the date picker
-        this.initializeDatePicker(minDate, maxDate);
-        // Load the page
-        this.loadPage(minDate, maxDate);
     };
+
 
     /**
      * Initialize the date picker.
      *
-     * @param minDate {DateTime} The minimum date that can be selected.
-     * @param maxDate {DateTime} The maximum date that can be selected.
-     * @returns The date picker.
+     * @param minDate {DateTime} The minimum available date.
+     * @param maxDate {DateTime} The maximum available date.
      */
     initializeDatePicker(minDate, maxDate) {
         const instance = this;
-        let endDate = maxDate;
-        let startDate = endDate.minus({'month': 3});
+        const startDate = maxDate.minus({'month': 3});
 
-        return new easepick.create({
+        new easepick.create({
             element: document.getElementById('datepicker'),
             css: [
                 'https://cdn.jsdelivr.net/npm/@easepick/bundle@1.2.0/dist/index.css',
@@ -143,13 +129,14 @@ class Main {
             ],
             setup(picker) {
                 picker.on('select', event => {
-                    instance.loadPage(DateTime.fromJSDate(event.detail.start), DateTime.fromJSDate(event.detail.end));
+                    instance.dateRangeSelected(
+                        DateTime.fromJSDate(event.detail.start), DateTime.fromJSDate(event.detail.end));
                 });
             },
             plugins: [LockPlugin, RangePlugin],
             RangePlugin: {
                 startDate: startDate.toISODate(),
-                endDate: endDate.toISODate()
+                endDate: maxDate.toISODate()
             },
             LockPlugin: {
                 minDate: minDate.toISODate(),
@@ -159,145 +146,175 @@ class Main {
     };
 
     /**
-     * Load the page for the specified date range.
+     * Initialize the daily country chart.
+     *
+     * @returns The chart.
+     */
+    initializeDailyCountryDataChart() {
+        return new Chart(document.getElementById('chart').getContext('2d'), {
+            type: 'line'
+        });
+    };
+
+    /**
+     * Initialize the fuel types selector.
+     */
+    initializeLatestCountryDataTable() {
+        const table = document.getElementById('latest-prices');
+        const tableBody = table.querySelector('table tbody');
+        Object.keys(FuelType).forEach(fuelType => {
+            const rowElement = document.createElement('tr');
+            rowElement.id = `${fuelType}-latest-country-data`;
+            rowElement.innerHTML = `
+                <td>${FuelType[fuelType].label}</td>
+                <td class="price">&nbsp;</td>
+                <td class="evolution">&nbsp;</td>
+            `;
+            tableBody.append(rowElement);
+        });
+
+        return table;
+    };
+
+    /**
+     * Initialize the latest prefecture data table.
+     */
+    initializePrefectureDataTable() {
+        const table = document.getElementById('prices-per-prefecture');
+        const tableHeader = table.querySelector('thead tr');
+        Object.keys(FuelType).forEach(fuelType => {
+            const header = document.createElement('th')
+            header.innerHTML = FuelType[fuelType].label;
+            tableHeader.append(header);
+        });
+        const tableBody = table.querySelector('tbody');
+        Object.keys(Prefecture).sort((a, b) => {
+            return Prefecture[a].localeCompare(Prefecture[b]);
+        }).forEach(prefecture => {
+            const row = document.createElement('tr');
+            row.id = prefecture;
+            let cell = document.createElement('td');
+            cell.innerHTML = Prefecture[prefecture];
+            row.append(cell);
+            Object.keys(FuelType).forEach(fuelType => {
+                let cell = document.createElement('td');
+                cell.classList.add(fuelType);
+                row.append(cell);
+            });
+            tableBody.append(row);
+        });
+
+        return table;
+    };
+
+    /**
+     * Called when a date range is selected.
      *
      * @param startDate {DateTime} The start date.
      * @param endDate {DateTime} The end date.
      */
-    loadPage(startDate, endDate) {
+    dateRangeSelected(startDate, endDate) {
         const instance = this;
         API.dailyCountryData(startDate, endDate).then(response => {
-            document.querySelectorAll('.latest-date').forEach(span => {
-                span.innerHTML = endDate.toISODate();
-            });
             response.json().then(data => {
-                instance.setFuelTypeSelector(data);
-                instance.displayLatestValues(endDate, ...data.slice(-2).reverse());
-                instance.displayDailyCountryChart(data);
+                instance.dailyCountryData = data;
+                this.loadFuelTypesSelector()
+                this.loadLatestCountryDataTable();
+                this.loadDailyCountryDataChart();
+            }).then(() => {
+                API.countryData(endDate).then(response => {
+                    response.json().then(data => {
+                        instance.countryData = data;
+                        instance.loadPrefectureDataTable();
+                    });
+                });
             });
         });
-        API.countryData(endDate).then(response => {
-            response.json().then(data => {
-                instance.displayPrefectureTable(data);
-            });
-        })
-    };
+    }
 
-    setFuelTypeSelector(data) {
+    /**
+     * Load the fuel types selector.
+     *
+     * @param data The daily country data response from the API.
+     */
+    loadFuelTypesSelector(data) {
+        // Get the available fuel types
         const fuelTypes = new Set();
-        data.forEach(dataRow => {
+        this.dailyCountryData.forEach(dataRow => {
             dataRow.data.forEach(dataDateRow => {
                 fuelTypes.add(dataDateRow['fuel_type']);
             });
         });
-        const instance = this;
+        // Set the state of the selector
+        const fuelTypesSelector = document.getElementById('fuel-types');
         Object.keys(FuelType).forEach(fuelType => {
-            const fuelTypesSelect = instance.fuelTypesSelector.querySelector(`#${fuelType}-select`);
+            const fuelTypeInput = fuelTypesSelector.querySelector(`#${fuelType}-selector`);
             if (fuelTypes.has(fuelType)) {
-                fuelTypesSelect.disabled = false;
+                fuelTypeInput.disabled = false;
             } else {
-                fuelTypesSelect.disabled = true;
-                fuelTypesSelect.checked = false;
+                fuelTypeInput.disabled = true;
+                fuelTypeInput.checked = false;
             }
         });
     };
 
     /**
-     * Display the latest country values.
-     *
-     * @param date The selected date.
-     * @param latestData The data for the latest date.
-     * @param previousData The data for the previous available date.
+     * Load the latest country data table.
      */
-    displayLatestValues(date, latestData, previousData) {
-        if (!latestData) {
-            return;
-        }
-        const tableBody = this.latestPrices.querySelector('table tbody');
-        tableBody.innerHTML = '';
-        Object.keys(FuelType).forEach(fuelType => {
+    loadLatestCountryDataTable() {
+        const latestData = this.dailyCountryData.at(-1);
+        const previousData = this.dailyCountryData.at(-2);
+        document.querySelectorAll('.latest-date').forEach(span => {
+            span.innerHTML = latestData.date;
+        });
+        this.latestCountryDataTable.querySelectorAll('tbody tr').forEach(tableRow => {
+            const fuelType = tableRow.id.replace('-latest-country-data', '');
             const fuelData = latestData.data.find(e => e['fuel_type'] === fuelType);
-            if (!fuelData) {
-                return;
-            }
-            const rowElement = document.createElement('tr');
-            rowElement.innerHTML = `
-                <td>${FuelType[fuelType].label}</td>
-                <td>${formatPrice(fuelData['price'])}</td>
-                <td>${formatEvolution(fuelData['price'], previousData?.data.find(e => e['fuel_type'] === fuelType)?.price)}</td>
-            `;
-            tableBody.append(rowElement)
+            tableRow.querySelector('td.price').innerHTML = formatPrice(fuelData?.price);
+            tableRow.querySelector('td.evolution').innerHTML = formatEvolution(
+                fuelData?.price, previousData?.data.find(e => e['fuel_type'] === fuelType)?.price);
         })
     };
 
     /**
-     * Display the daily country data in a graph.
-     *
-     * @param data The daily country data response from the API.
+     * Load the latest country data chart.
      */
-    displayDailyCountryChart(data) {
+    loadDailyCountryDataChart() {
+        const instance = this;
         const datasets = []
         Object.keys(FuelType).forEach(fuelType => {
             const fuelTypeData = [];
-            data.forEach(row => {
+            instance.dailyCountryData.forEach(row => {
                 fuelTypeData.push(row['data'].find(e => e['fuel_type'] === fuelType)?.price);
             });
             datasets.push({
                 label: FuelType[fuelType].label,
                 borderColor: FuelType[fuelType].borderColor,
-                hidden: FuelType[fuelType].hidden,
                 data: fuelTypeData,
             });
         });
-        this.dailyCountryChart.data = {
-            labels: data.map(e => e['date']),
+        this.dailyCountryDataChart.data = {
+            labels: instance.dailyCountryData.map(e => e['date']),
             datasets: datasets
         };
-        this.dailyCountryChart.update();
+        console.log(this.dailyCountryDataChart.data);
+        this.dailyCountryDataChart.update();
     };
 
     /**
-     * Display the per prefecture data in a table.
-     *
-     * @param data The prefecture data.
+     * Load the prefecture data table.
      */
-    displayPrefectureTable(data) {
-        if (!data) {
-            return;
-        }
-        const tableHeader = this.pricesPerPrefecture.querySelector('thead tr');
-        tableHeader.innerHTML = '';
-        const tableBody = this.pricesPerPrefecture.querySelector('tbody');
-        tableBody.innerHTML = '';
-        // Create the table header
-        const countryData = {}
-        data['country'].forEach(countryRow => {
-            countryData[countryRow['fuel_type']] = {
-                price: countryRow['price'],
-                number_of_stations: countryRow['number_of_stations'],
-            }
-        });
-        const header = document.createElement('th')
-        header.innerHTML = 'Νομός';
-        tableHeader.append(header);
-        Object.keys(FuelType).filter(fuelType => countryData.hasOwnProperty(fuelType)).forEach(fuelType => {
-            const header = document.createElement('th')
-            header.innerHTML = FuelType[fuelType].label;
-            tableHeader.append(header);
-        });
-        // Add the prefecture data
-        data['prefectures'].sort((a, b) => {
-            return Prefecture[a['prefecture']].localeCompare(Prefecture[b['prefecture']]);
-        }).forEach(prefectureRow => {
-            const row = document.createElement('tr')
-            let rowHtml = `<td>${Prefecture[prefectureRow['prefecture']]}</td>`;
-            Object.keys(FuelType).filter(fuelType => countryData.hasOwnProperty(fuelType)).forEach(fuelType => {
-                rowHtml += `<td>${formatPrice(prefectureRow['data'].find(e => e['fuel_type'] === fuelType)?.price)}</td>`;
+    loadPrefectureDataTable() {
+        const instance = this;
+        Object.keys(Prefecture).forEach(prefecture => {
+            const prefectureRow = instance.prefectureDataTable.querySelector(`tr#${prefecture}`);
+            const prefectureData = this.countryData['prefectures'].find(e => e['prefecture'] === prefecture)?.data;
+            Object.keys(FuelType).forEach(fuelType => {
+                prefectureRow.querySelector(`.${fuelType}`).textContent = formatPrice(
+                    prefectureData.find(e => e['fuel_type'] === fuelType)?.price);
             });
-            row.innerHTML = rowHtml;
-            tableBody.append(row);
         });
-    }
+    };
 }
 
 new Main();

@@ -25,7 +25,7 @@ export const FuelType = {
     SUPER: {
         label: "Super",
         borderColor: 'rgb(181, 29, 20)',
-        unchecked: true
+        defaultUnselected: true
     }
 };
 
