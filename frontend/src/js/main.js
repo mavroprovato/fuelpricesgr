@@ -290,12 +290,14 @@ class Main {
         const datasets = []
         Object.keys(FuelType).forEach(fuelType => {
             const fuelTypeData = [];
+            const fuelTypeInput = instance.fuelTypeSelector.querySelector(`#${fuelType}-selector`);
             instance.dailyCountryData.forEach(row => {
                 fuelTypeData.push(row['data'].find(e => e['fuel_type'] === fuelType)?.price);
             });
             datasets.push({
                 label: FuelType[fuelType].label,
                 borderColor: FuelType[fuelType].borderColor,
+                hidden: !fuelTypeInput.checked,
                 data: fuelTypeData,
             });
         });
@@ -303,7 +305,6 @@ class Main {
             labels: instance.dailyCountryData.map(e => e['date']),
             datasets: datasets
         };
-        this.dailyCountryDataChart.update();
     };
 
     /**
@@ -333,7 +334,13 @@ class Main {
             instance.prefectureDataTable.querySelectorAll(`.${fuelType}`).forEach(element => {
                 element.style.display = fuelTypeInput.checked ? '' : 'none';
             });
+            const fuelTypeDataset = this.dailyCountryDataChart.data.datasets.find(
+                e => e.label === FuelType[fuelType].label);
+            if (fuelTypeDataset) {
+                fuelTypeDataset.hidden = !fuelTypeInput.checked;
+            }
         });
+        this.dailyCountryDataChart.update();
     };
 }
 
