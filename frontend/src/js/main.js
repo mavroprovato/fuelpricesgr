@@ -8,7 +8,6 @@ import { FuelType, Prefecture } from './enums';
 import { API } from './api';
 
 import '../scss/styles.scss';
-import {end} from "@popperjs/core";
 
 /**
  * Formats a number as a price.
@@ -88,6 +87,7 @@ class Main {
      * Initialize the fuel types selector.
      */
     initializeFuelTypeSelector() {
+        const instance = this;
         const fuelTypesSelector = document.getElementById('fuel-types');
         Object.keys(FuelType).forEach(fuelType => {
             const fuelTypeInput = document.createElement('input');
@@ -95,8 +95,8 @@ class Main {
             fuelTypeInput.className = 'btn-check';
             fuelTypeInput.type = 'checkbox';
             fuelTypeInput.checked = !FuelType[fuelType].defaultUnselected;
-            fuelTypeInput.addEventListener('input', event => {
-
+            fuelTypeInput.addEventListener('input', () => {
+                instance.fuelTypeSelectionChanged();
             });
             fuelTypesSelector.append(fuelTypeInput);
 
@@ -183,7 +183,8 @@ class Main {
         const table = document.getElementById('prices-per-prefecture');
         const tableHeader = table.querySelector('thead tr');
         Object.keys(FuelType).forEach(fuelType => {
-            const header = document.createElement('th')
+            const header = document.createElement('th');
+            header.className = fuelType;
             header.innerHTML = FuelType[fuelType].label;
             tableHeader.append(header);
         });
@@ -221,6 +222,7 @@ class Main {
                 this.loadFuelTypesSelector()
                 this.loadLatestCountryDataTable();
                 this.loadDailyCountryDataChart();
+                this.fuelTypeSelectionChanged();
             }).then(() => {
                 API.countryData(endDate).then(response => {
                     response.json().then(data => {
@@ -309,6 +311,21 @@ class Main {
             Object.keys(FuelType).forEach(fuelType => {
                 prefectureRow.querySelector(`.${fuelType}`).textContent = formatPrice(
                     prefectureData.find(e => e['fuel_type'] === fuelType)?.price);
+            });
+        });
+    };
+
+    /**
+     * Called when the fuel type selection has changed.
+     */
+    fuelTypeSelectionChanged() {
+        const instance = this;
+        Object.keys(FuelType).forEach(fuelType => {
+            const fuelTypeInput = instance.fuelTypeSelector.querySelector(`#${fuelType}-selector`);
+            const latestCountryDataFuelDataRow = this.latestCountryDataTable.querySelector(`tr.${fuelType}`);
+            latestCountryDataFuelDataRow.style.display = fuelTypeInput.checked ? '' : 'none';
+            instance.prefectureDataTable.querySelectorAll(`.${fuelType}`).forEach(element => {
+                element.style.display = fuelTypeInput.checked ? '' : 'none';
             });
         });
     };
