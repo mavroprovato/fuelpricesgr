@@ -52,11 +52,17 @@ function formatEvolution(value, previousValue) {
  * The main page
  */
 class Main {
+    /** The fuel types selector */
     fuelTypeSelector = null;
+    /** The latest country data table */
     latestCountryDataTable = null;
+    /** The daily country data chart */
     dailyCountryDataChart = null;
+    /** The prefecture data table **/
     prefectureDataTable = null;
+    /** The daily country data */
     dailyCountryData = null;
+    /** The latest country data per prefecture */
     countryData = null;
 
     /**
