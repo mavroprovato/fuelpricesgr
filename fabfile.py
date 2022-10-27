@@ -73,4 +73,4 @@ def invalidate(_, distribution_id):
     :param distribution_id: The distribution identifier.
     """
     print("Invalidating frontend caches")
-    invoke.run(f"aws cloudfront create-invalidation --distribution-id {distribution_id} --paths /*")
+    invoke.run(f"aws cloudfront create-invalidation --distribution-id {distribution_id} --paths \"/*\"")
