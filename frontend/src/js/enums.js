@@ -12,7 +12,7 @@ export const FuelType = {
     },
     GAS: {
         label: "Υγραέριο",
-        borderColor: 'rgb(0, 178, 93)'
+        borderColor: 'rgb(181, 29, 20)'
     },
     DIESEL: {
         label: "Diesel",
@@ -24,7 +24,7 @@ export const FuelType = {
     },
     SUPER: {
         label: "Super",
-        borderColor: 'rgb(181, 29, 20)',
+        borderColor: 'rgb(202, 202, 202)',
         defaultUnselected: true
     }
 };
