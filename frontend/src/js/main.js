@@ -1,4 +1,4 @@
-import { DateTime } from 'luxon';
+import { DateTime, Settings } from 'luxon';
 import { easepick } from '@easepick/core';
 import { LockPlugin } from '@easepick/lock-plugin';
 import { RangePlugin } from '@easepick/range-plugin';
@@ -8,6 +8,8 @@ import { FuelType, Prefecture } from './enums';
 import { API } from './api';
 
 import '../scss/styles.scss';
+
+Settings.defaultLocale = 'el-GR';
 
 /**
  * Formats a number as a price.
@@ -139,6 +141,7 @@ class Main {
                         DateTime.fromJSDate(event.detail.start), DateTime.fromJSDate(event.detail.end));
                 });
             },
+            lang: 'el-GR',
             plugins: [LockPlugin, RangePlugin],
             RangePlugin: {
                 startDate: startDate.toISODate(),
@@ -225,6 +228,9 @@ class Main {
         API.dailyCountryData(startDate, endDate).then(response => {
             response.json().then(data => {
                 instance.dailyCountryData = data;
+                document.querySelectorAll('.latest-date').forEach(span => {
+                    span.innerHTML = endDate.toLocaleString();
+                });
                 this.loadFuelTypesSelector()
                 this.loadLatestCountryDataTable();
                 this.loadDailyCountryDataChart();
@@ -270,9 +276,6 @@ class Main {
     loadLatestCountryDataTable() {
         const latestData = this.dailyCountryData.at(-1);
         const previousData = this.dailyCountryData.at(-2);
-        document.querySelectorAll('.latest-date').forEach(span => {
-            span.innerHTML = latestData.date;
-        });
         Object.keys(FuelType).forEach(fuelType => {
             const fuelDataRow = this.latestCountryDataTable.querySelector(`tr.${fuelType}`);
             const fuelData = latestData.data.find(e => e['fuel_type'] === fuelType);
