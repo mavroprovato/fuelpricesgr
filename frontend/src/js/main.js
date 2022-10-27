@@ -233,7 +233,6 @@ class Main {
      */
     dateRangeSelected(startDate, endDate) {
         const instance = this;
-        console.log(startDate.toISODate());
         API.dailyCountryData(startDate, endDate).then(response => {
             response.json().then(data => {
                 instance.dailyCountryData = data;
