@@ -12,14 +12,18 @@
 <div class="container">
     <h1>Τιμές Υγρών Καυσίμων</h1>
     <div class="row">
-        <div class="col-auto">
-            <label for="datepicker" class="col-form-label">Επιλεγμένη περίοδος:</label>
-        </div>
-        <div class="col-auto">
-            <input id="datepicker" class="form-control" />
-        </div>
-        <div class="col-auto mt-auto">
-            <div id="fuel-types" class="btn-group" role="group"></div>
+        <div class="btn-toolbar justify-content-between" role="toolbar">
+            <div class="row">
+                <div class="col-auto">
+                    <label for="datepicker" class="form-label">Επιλεγμένη περίοδος:</label>
+                </div>
+                <div class="col-auto">
+                    <input id="datepicker" type="text" class="form-control">
+                </div>
+            </div>
+            <div class="col-auto mt-auto">
+                <div id="fuel-types" class="btn-group" role="group"></div>
+            </div>
         </div>
     </div>
     <div id="latest-prices">
