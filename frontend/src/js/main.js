@@ -87,7 +87,7 @@ class Main {
                     const endDate = DateTime.fromISO(dateRange['end_date']);
                     instance.initializeDatePicker(startDate, endDate);
                 });
-            });
+            }).catch(error => instance.onError(error));
         });
     };
 
@@ -250,6 +250,7 @@ class Main {
     dateRangeSelected(startDate, endDate) {
         const instance = this;
         API.dailyCountryData(startDate, endDate).then(response => {
+            instance.onSuccess();
             response.json().then(data => {
                 instance.dailyCountryData = data;
                 document.querySelectorAll('.latest-date').forEach(span => {
@@ -261,14 +262,33 @@ class Main {
                 this.fuelTypeSelectionChanged();
             }).then(() => {
                 API.countryData(endDate).then(response => {
+                    instance.onSuccess();
                     response.json().then(data => {
                         instance.countryData = data;
                         instance.loadPrefectureDataTable();
                     });
-                });
+                }).catch(error => instance.onError(error));
             });
-        });
-    }
+        }).catch(error => instance.onError(error));
+    };
+
+    /**
+     * Called when the API returned successfully
+     */
+    onSuccess() {
+        document.querySelector('#main').style.display = '';
+        document.querySelector('#error').style.display = 'none';
+        document.querySelector('#error').innerHTML = '';
+    };
+
+    /**
+     * Called when the API returned an error
+     */
+    onError(error) {
+        document.querySelector('#main').style.display = 'none';
+        document.querySelector('#error').style.display = '';
+        document.querySelector('#error').innerHTML = error;
+    };
 
     /**
      * Load the fuel types selector.

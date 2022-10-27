@@ -11,44 +11,47 @@
 <body>
 <div class="container">
     <h1>Τιμές Υγρών Καυσίμων</h1>
-    <div class="row">
-        <div class="btn-toolbar justify-content-between" role="toolbar">
-            <div class="row">
-                <div class="col-auto">
-                    <label for="datepicker" class="form-label">Επιλεγμένη περίοδος:</label>
+    <div id="main">
+        <div class="row">
+            <div class="btn-toolbar justify-content-between" role="toolbar">
+                <div class="row">
+                    <div class="col-auto">
+                        <label for="datepicker" class="form-label">Επιλεγμένη περίοδος:</label>
+                    </div>
+                    <div class="col-auto">
+                        <input id="datepicker" type="text" class="form-control">
+                    </div>
                 </div>
-                <div class="col-auto">
-                    <input id="datepicker" type="text" class="form-control">
+                <div class="col-auto mt-auto">
+                    <div id="fuel-types" class="btn-group" role="group"></div>
                 </div>
-            </div>
-            <div class="col-auto mt-auto">
-                <div id="fuel-types" class="btn-group" role="group"></div>
             </div>
         </div>
+        <div id="latest-prices">
+            <h2>Πανελλήνιες τιμές για <span class="latest-date"></span></h2>
+            <table class="table table-hover table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">Τιμή</th>
+                        <th scope="col">Μεταβολή</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider"></tbody>
+            </table>
+        </div>
+        <h2>Μέσες Τιμές για την επιλεγμένη περίοδο</h2>
+        <canvas id="chart"></canvas>
+        <div id="prices-per-prefecture">
+            <h2>Tιμές ανά νομό για <span class="latest-date"></span></h2>
+            <table class="table table-hover table-striped">
+                <colgroup><col></colgroup>
+                <thead><tr><th></th></tr></thead>
+                <tbody class="table-group-divider"></tbody>
+            </table>
+        </div>
     </div>
-    <div id="latest-prices">
-        <h2>Πανελλήνιες τιμές για <span class="latest-date"></span></h2>
-        <table class="table table-hover table-striped table-sm">
-            <thead>
-                <tr>
-                    <th scope="col"></th>
-                    <th scope="col">Τιμή</th>
-                    <th scope="col">Μεταβολή</th>
-                </tr>
-            </thead>
-            <tbody class="table-group-divider"></tbody>
-        </table>
-    </div>
-    <h2>Μέσες Τιμές για την επιλεγμένη περίοδο</h2>
-    <canvas id="chart"></canvas>
-    <div id="prices-per-prefecture">
-        <h2>Tιμές ανά νομό για <span class="latest-date"></span></h2>
-        <table class="table table-hover table-striped">
-            <colgroup><col></colgroup>
-            <thead><tr><th></th></tr></thead>
-            <tbody class="table-group-divider"></tbody>
-        </table>
-    </div>
+    <div id="error" class="alert alert-danger" role="alert" style="display: none"></div>
 </div>
 </body>
 </html>
