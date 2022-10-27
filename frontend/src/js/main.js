@@ -1,6 +1,7 @@
 import { DateTime, Settings } from 'luxon';
 import { easepick } from '@easepick/core';
 import { LockPlugin } from '@easepick/lock-plugin';
+import { PresetPlugin } from '@easepick/preset-plugin';
 import { RangePlugin } from '@easepick/range-plugin';
 import Chart from 'chart.js/auto';
 
@@ -141,7 +142,7 @@ class Main {
                 });
             },
             lang: 'el-GR',
-            plugins: [LockPlugin, RangePlugin],
+            plugins: [LockPlugin, RangePlugin, PresetPlugin],
             RangePlugin: {
                 startDate: startDate.toISODate(),
                 endDate: maxDate.toISODate()
@@ -150,6 +151,21 @@ class Main {
                 minDate: minDate.toISODate(),
                 maxDate: maxDate.toISODate()
             },
+            PresetPlugin: {
+                customPreset: {
+                    'Τελευταίες 7 Ημέρες': [maxDate.minus({ days: 7 }).toJSDate(), maxDate.toJSDate()],
+                    'Τελευταίες 30 Ημέρες': [maxDate.minus({ days: 30 }).toJSDate(), maxDate.toJSDate()],
+                    'Τρέχον Μήνας': [maxDate.startOf('month').toJSDate(), maxDate.toJSDate()],
+                    'Προηγούμενος Μήνας': [
+                        maxDate.minus({'month': 1}).startOf('month').toJSDate(),
+                        maxDate.minus({'month': 1}).endOf('month').toJSDate(),
+                    ],
+                    'Τελευταίοι 3 Μήνες': [
+                        maxDate.minus({'month': 3}).toJSDate(),
+                        maxDate.toJSDate(),
+                    ],
+                }
+            }
         });
 
         this.dateRangeSelected(startDate, maxDate);
@@ -323,6 +339,7 @@ class Main {
      */
     loadPrefectureDataTable() {
         const instance = this;
+
         Object.keys(Prefecture).forEach(prefecture => {
             const prefectureRow = instance.prefectureDataTable.querySelector(`tr#${prefecture}`);
             const prefectureData = this.countryData['prefectures'].find(e => e['prefecture'] === prefecture)?.data;

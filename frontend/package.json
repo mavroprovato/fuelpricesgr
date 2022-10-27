@@ -13,6 +13,7 @@
   "dependencies": {
     "@easepick/core": "^1.2.0",
     "@easepick/lock-plugin": "^1.2.0",
+    "@easepick/preset-plugin": "^1.2.0",
     "@easepick/range-plugin": "^1.2.0",
     "@popperjs/core": "^2.11.6",
     "bootstrap": "^5.2.2",
