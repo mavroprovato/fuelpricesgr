@@ -85,7 +85,6 @@ class Main {
                     const startDate = DateTime.fromISO(dateRange['start_date']);
                     const endDate = DateTime.fromISO(dateRange['end_date']);
                     instance.initializeDatePicker(startDate, endDate);
-                    instance.dateRangeSelected(startDate, endDate);
                 });
             });
         });
@@ -152,6 +151,8 @@ class Main {
                 maxDate: maxDate.toISODate()
             },
         });
+
+        this.dateRangeSelected(startDate, maxDate);
     };
 
     /**
@@ -225,6 +226,7 @@ class Main {
      */
     dateRangeSelected(startDate, endDate) {
         const instance = this;
+        console.log(startDate.toISODate());
         API.dailyCountryData(startDate, endDate).then(response => {
             response.json().then(data => {
                 instance.dailyCountryData = data;
