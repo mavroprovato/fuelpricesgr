@@ -162,7 +162,14 @@ class Main {
      */
     initializeDailyCountryDataChart() {
         return new Chart(document.getElementById('chart').getContext('2d'), {
-            type: 'line'
+            type: 'line',
+            options: {
+                plugins: {
+                    legend: {
+                        onClick: null
+                    }
+                }
+            }
         });
     };
 
