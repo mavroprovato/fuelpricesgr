@@ -98,9 +98,12 @@ class Main {
         const instance = this;
         const fuelTypesSelector = document.getElementById('fuel-types');
         Object.keys(FuelType).forEach(fuelType => {
+            const fuelTypeDiv = document.createElement('div');
+            fuelTypeDiv.className = 'form-check form-check-inline';
+
             const fuelTypeInput = document.createElement('input');
             fuelTypeInput.id = `${fuelType}-selector`;
-            fuelTypeInput.className = 'btn-check';
+            fuelTypeInput.className = 'form-check-input';
             fuelTypeInput.type = 'checkbox';
             fuelTypeInput.checked = !FuelType[fuelType].defaultUnselected;
             fuelTypeInput.addEventListener('input', () => {
@@ -109,10 +112,12 @@ class Main {
             fuelTypesSelector.append(fuelTypeInput);
 
             const fuelTypeLabel = document.createElement('label');
-            fuelTypeLabel.className = 'btn btn-outline-primary';
+            fuelTypeLabel.className = 'form-check-label';
             fuelTypeLabel.htmlFor = `${fuelType}-selector`;
             fuelTypeLabel.innerHTML = FuelType[fuelType].label;
-            fuelTypesSelector.append(fuelTypeLabel);
+            fuelTypeDiv.append(fuelTypeLabel);
+
+            fuelTypesSelector.append(fuelTypeDiv);
         });
 
         return fuelTypesSelector;
