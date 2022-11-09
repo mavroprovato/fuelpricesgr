@@ -204,7 +204,7 @@ class Main {
             const rowElement = document.createElement('tr');
             rowElement.classList.add(fuelType);
             rowElement.innerHTML = `
-                <td>${FuelType[fuelType].label}</td>
+                <td class="fw-bold">${FuelType[fuelType].label}</td>
                 <td class="price">&nbsp;</td>
                 <td class="evolution">&nbsp;</td>
             `;
@@ -234,6 +234,7 @@ class Main {
             row.id = prefecture;
             let cell = document.createElement('td');
             cell.innerHTML = Prefecture[prefecture];
+            cell.className = 'fw-bold';
             row.append(cell);
             Object.keys(FuelType).forEach(fuelType => {
                 let cell = document.createElement('td');

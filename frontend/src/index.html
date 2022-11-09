@@ -8,10 +8,16 @@
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <link rel="manifest" href="site.webmanifest">
 </head>
-<body>
-<div class="container">
-    <h1>Τιμές Υγρών Καυσίμων</h1>
-    <div id="main">
+
+<body class="d-flex flex-column h-100">
+    <header>
+        <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="/">Τιμές Υγρών Καυσίμων</a>
+            </div>
+        </nav>
+    </header>
+    <main id="main" class="container my-1">
         <form>
             <div class="row align-items-center">
                 <div class="col-3 col-sm-3">
@@ -21,30 +27,36 @@
             </div>
         </form>
         <div id="latest-prices">
-            <h2>Πανελλήνιες τιμές για <span class="latest-date"></span></h2>
+            <h3>Πανελλήνιες τιμές για <span class="latest-date"></span></h3>
             <table class="table table-hover table-striped table-sm">
                 <thead>
-                    <tr>
-                        <th scope="col"></th>
-                        <th scope="col">Τιμή</th>
-                        <th scope="col">Μεταβολή</th>
-                    </tr>
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Τιμή</th>
+                    <th scope="col">Μεταβολή</th>
+                </tr>
                 </thead>
                 <tbody class="table-group-divider"></tbody>
             </table>
         </div>
-        <h2>Μέσες Τιμές για την επιλεγμένη περίοδο</h2>
+        <h3>Μέσες Τιμές για την επιλεγμένη περίοδο</h3>
         <canvas id="chart"></canvas>
         <div id="prices-per-prefecture">
-            <h2>Tιμές ανά νομό για <span class="latest-date"></span></h2>
+            <h3>Tιμές ανά νομό για <span class="latest-date"></span></h3>
             <table class="table table-hover table-striped">
                 <colgroup><col></colgroup>
-                <thead><tr><th></th></tr></thead>
+                <thead>
+                    <tr><th></th></tr>
+                </thead>
                 <tbody class="table-group-divider"></tbody>
             </table>
         </div>
-    </div>
-    <div id="error" class="alert alert-danger" role="alert" style="display: none"></div>
-</div>
+        <div id="error" class="alert alert-danger" role="alert" style="display: none"></div>
+    </main>
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container">
+            <span class="text-muted">Built by <a href="https://www.mavroprovato.net">mavroprovato</a>, data from <a href="http://www.fuelprices.gr">http://www.fuelprices.gr</a>.</span>
+        </div>
+    </footer>
 </body>
 </html>

@@ -1,11 +1,13 @@
+@import "~bootswatch/dist/flatly/variables";
 @import "~bootstrap/scss/bootstrap";
+@import "~bootswatch/dist/flatly/variables";
+
+main {
+  padding: 80px 15px 0;
+}
 
 th {
   white-space: nowrap;
-}
-
-table td:first-child {
-  @extend strong;
 }
 
 table th:nth-child(n+1):nth-child(n+2) {
@@ -14,6 +16,10 @@ table th:nth-child(n+1):nth-child(n+2) {
 
 table td:nth-child(n+1):nth-child(n+2) {
   @extend .text-end;
+}
+
+#latest-prices th:first-child {
+  width: 80%;
 }
 
 #prices-per-prefecture th:first-child {
