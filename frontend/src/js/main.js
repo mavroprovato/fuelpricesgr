@@ -12,6 +12,8 @@ import '../scss/styles.scss';
 
 Settings.defaultLocale = 'el-GR';
 
+const SHORT_DATE_FORMAT = 'dd/MM/yyyy';
+
 /**
  * Formats a number as a price.
  *
@@ -147,14 +149,15 @@ class Main {
                 });
             },
             lang: 'el-GR',
+            format: 'DD/MM/YYYY',
             plugins: [LockPlugin, RangePlugin, PresetPlugin],
             RangePlugin: {
-                startDate: startDate.toISODate(),
-                endDate: maxDate.toISODate()
+                startDate: startDate.toFormat(SHORT_DATE_FORMAT),
+                endDate: maxDate.toFormat(SHORT_DATE_FORMAT)
             },
             LockPlugin: {
-                minDate: minDate.toISODate(),
-                maxDate: maxDate.toISODate()
+                minDate: minDate.toFormat(SHORT_DATE_FORMAT),
+                maxDate: maxDate.toFormat(SHORT_DATE_FORMAT)
             },
             PresetPlugin: {
                 customPreset: {
