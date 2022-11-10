@@ -12,7 +12,10 @@ import '../scss/styles.scss';
 
 Settings.defaultLocale = 'el-GR';
 
+/** The short date format */
 const SHORT_DATE_FORMAT = 'dd/MM/yyyy';
+/** The long date format */
+const LONG_DATE_FORMAT = 'd MMM yyyy';
 
 /**
  * Formats a number as a price.
@@ -263,7 +266,7 @@ class Main {
             response.json().then(data => {
                 instance.dailyCountryData = data;
                 document.querySelectorAll('.latest-date').forEach(span => {
-                    span.innerHTML = endDate.toLocaleString({day: 'numeric', month: 'long', year: 'numeric'});
+                    span.innerHTML = endDate.toFormat(LONG_DATE_FORMAT);
                 });
                 this.loadFuelTypesSelector()
                 this.loadLatestCountryDataTable();
