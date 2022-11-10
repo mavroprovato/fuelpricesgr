@@ -260,7 +260,7 @@ class Main {
             response.json().then(data => {
                 instance.dailyCountryData = data;
                 document.querySelectorAll('.latest-date').forEach(span => {
-                    span.innerHTML = endDate.toLocaleString();
+                    span.innerHTML = endDate.toLocaleString({day: 'numeric', month: 'long', year: 'numeric'});
                 });
                 this.loadFuelTypesSelector()
                 this.loadLatestCountryDataTable();
