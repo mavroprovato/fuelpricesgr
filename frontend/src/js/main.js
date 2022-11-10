@@ -15,7 +15,7 @@ Settings.defaultLocale = 'el-GR';
 /** The short date format */
 const SHORT_DATE_FORMAT = 'dd/MM/yyyy';
 /** The long date format */
-const LONG_DATE_FORMAT = 'd MMM yyyy';
+const LONG_DATE_FORMAT = 'd MMMM yyyy';
 
 /**
  * Formats a number as a price.
