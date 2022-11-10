@@ -139,7 +139,7 @@ class Main {
         const instance = this;
         const startDate = maxDate.minus({'month': 3});
 
-        new easepick.create({
+        const datePicker = new easepick.create({
             element: document.getElementById('datepicker'),
             css: [
                 'https://cdn.jsdelivr.net/npm/@easepick/bundle@1.2.0/dist/index.css',
@@ -178,6 +178,9 @@ class Main {
                 }
             }
         });
+        document.getElementById('datepicker-button').onclick = () => {
+            datePicker.show();
+        };
 
         this.dateRangeSelected(startDate, maxDate);
     };

@@ -21,7 +21,11 @@
         <form>
             <div class="row align-items-center">
                 <div class="col-xl-3">
-                    <input id="datepicker" type="text" class="form-control">
+                    <div class="input-group mb-3">
+                        <label for="datepicker" class="form-label visually-hidden">Επιλεγμένη Περίοδος</label>
+                        <input id="datepicker" type="text" class="form-control">
+                        <span class="input-group-text" id="datepicker-button"><i class="bi bi-calendar-check"></i></span>
+                    </div>
                 </div>
                 <div id="fuel-types" class="col-xl-9"></div>
             </div>
