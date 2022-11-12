@@ -80,7 +80,7 @@ async def index() -> models.StatusModel:
     description="Return all fuel types",
     response_model=list[models.NameDescriptionModel]
 )
-@cache(expire=60)
+@cache(expire=settings.CACHE_EXPIRE)
 async def fuel_types() -> list[models.NameDescriptionModel]:
     """Returns all fuel types.
 
@@ -98,7 +98,7 @@ async def fuel_types() -> list[models.NameDescriptionModel]:
     description="Return all prefectures",
     response_model=list[models.NameDescriptionModel]
 )
-@cache(expire=60)
+@cache(expire=settings.CACHE_EXPIRE)
 async def prefectures() -> list[models.NameDescriptionModel]:
     """Returns all prefectures.
 
@@ -116,7 +116,7 @@ async def prefectures() -> list[models.NameDescriptionModel]:
     description="Get the available data date range for a data type",
     response_model=models.DateRangeModel
 )
-@cache(expire=60)
+@cache(expire=settings.CACHE_EXPIRE)
 async def date_range(data_type: enums.DataType) -> models.DateRangeModel:
     """Returns the available data date range for a data type.
 
@@ -135,7 +135,7 @@ async def date_range(data_type: enums.DataType) -> models.DateRangeModel:
     description="Returns the daily country data",
     response_model=list[models.DailyCountryModel]
 )
-@cache(expire=60)
+@cache(expire=settings.CACHE_EXPIRE)
 async def daily_country_data(
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
@@ -173,7 +173,7 @@ async def daily_country_data(
     description="Return the daily prefecture data",
     response_model=list[models.DailyPrefectureModel]
 )
-@cache(expire=60)
+@cache(expire=settings.CACHE_EXPIRE)
 async def daily_prefecture_data(
         prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
@@ -211,7 +211,7 @@ async def daily_prefecture_data(
     description="Return the weekly country data",
     response_model=list[models.WeeklyModel]
 )
-@cache(expire=60)
+@cache(expire=settings.CACHE_EXPIRE)
 async def weekly_country_data(
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
@@ -250,7 +250,7 @@ async def weekly_country_data(
     description="Return the weekly prefecture data",
     response_model=list[models.WeeklyModel]
 )
-@cache(expire=60)
+@cache(expire=settings.CACHE_EXPIRE)
 async def weekly_prefecture_data(
         prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
@@ -292,7 +292,7 @@ async def weekly_prefecture_data(
     description="Return country data for a date for all prefectures along with the country averages",
     response_model=models.CountryDataModel
 )
-@cache(expire=60)
+@cache(expire=settings.CACHE_EXPIRE)
 async def country_data(date: datetime.date = fastapi.Path(title="The date")):
     """Return the country data for a date.
 

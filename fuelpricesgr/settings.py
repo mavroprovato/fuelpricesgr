@@ -25,6 +25,12 @@ MAX_DAYS = 365
 # The Redis URL used for caching
 REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost')
 
+# The cache expiration time in seconds
+try:
+    CACHE_EXPIRE = int(os.getenv('CACHE_EXPIRE', 1))
+except ValueError:
+    CACHE_EXPIRE = 1
+
 # AWS configuration
 AWS_REGION = os.getenv('AWS_REGION')
 
