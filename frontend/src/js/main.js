@@ -194,9 +194,20 @@ class Main {
         return new Chart(document.getElementById('chart').getContext('2d'), {
             type: 'line',
             options: {
+                parsing: {
+                    xAxisKey: 'date',
+                    yAxisKey: 'price'
+                },
                 plugins: {
                     legend: {
                         onClick: null
+                    },
+                    tooltip: {
+                        callbacks: {
+                            footer: function(context) {
+                                return `Αρ. Πρατηρίων: ${context[0].raw?.number_of_stations}`;
+                            }
+                        }
                     }
                 }
             }
@@ -354,7 +365,12 @@ class Main {
             const fuelTypeData = [];
             const fuelTypeInput = instance.fuelTypeSelector.querySelector(`#${fuelType}-selector`);
             instance.dailyCountryData.forEach(row => {
-                fuelTypeData.push(row['data'].find(e => e['fuel_type'] === fuelType)?.price);
+                const fuelTypeRow =  row['data'].find(e => e['fuel_type'] === fuelType);
+                fuelTypeData.push({
+                    'date': row['date'],
+                    'price': fuelTypeRow?.price,
+                    'number_of_stations': fuelTypeRow?.number_of_stations
+                });
             });
             datasets.push({
                 label: FuelType[fuelType].label,
@@ -364,7 +380,6 @@ class Main {
             });
         });
         this.dailyCountryDataChart.data = {
-            labels: instance.dailyCountryData.map(e => e['date']),
             datasets: datasets
         };
     };
