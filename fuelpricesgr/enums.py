@@ -22,6 +22,23 @@ class DataType(enum.Enum):
     DAILY_COUNTRY = 'daily_country'
     DAILY_PREFECTURE = 'daily_prefecture'
 
+    def model(self):
+        """Return the database model for the data type.
+
+        :return: The database model for the data type.
+        """
+        from fuelpricesgr import models
+
+        match self:
+            case self.WEEKLY_COUNTRY:
+                return models.WeeklyCountry
+            case self.WEEKLY_PREFECTURE:
+                return models.WeeklyPrefecture
+            case self.DAILY_COUNTRY:
+                return models.DailyCountry
+            case self.DAILY_PREFECTURE:
+                return models.DailyPrefecture
+
 
 class DataFileType(enum.Enum):
     """Enumeration for the different data file types.

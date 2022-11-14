@@ -12,9 +12,10 @@ import bs4
 import PyPDF2
 import PyPDF2.errors
 import requests
+import tortoise
+import tortoise.functions
 
-from fuelpricesgr import database, enums, extract, mail, settings
-
+from fuelpricesgr import enums, extract, mail, settings
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -73,18 +74,14 @@ def get_date_from_file_name(file_name: str) -> datetime.date | None:
     return datetime.date(day=int(result[1]), month=int(result[2]), year=int(result[3]))
 
 
-def process_link(
-        file_link: str, data_file_type: enums.DataFileType, skip_file_cache: bool = False, update: bool = False):
-    """Process a file link. This function downloads the PDF file if needed, extracts the data from it, and inserts the
-    data to the database.
+def fetch_data(file_link: str, data_file_type: enums.DataFileType, skip_file_cache: bool = False):
+    """Fetch data from a file link.
 
     :param file_link: The file link.
     :param data_file_type: The data file type.
     :param skip_file_cache: True if we are going to skip the local storage for
-    :param update: True if we want to update existing data from the database.
     """
     file_name = file_link[file_link.rfind('/') + 1:]
-    date = get_date_from_file_name(file_name)
     try:
         if skip_file_cache:
             logger.info("Fetching file %s", file_link)
@@ -106,21 +103,62 @@ def process_link(
                 with file_path.open('wb') as file:
                     file.write(file_data)
 
+        return file_data
     except requests.HTTPError:
         logger.error("Could not fetch link %s", file_link, exc_info=True)
         return
 
-    with database.Database(read_only=False) as db:
-        if update or not db.data_exists(data_types=data_file_type.data_types, date=date):
-            data = extract_data(data_file_type=data_file_type, date=date, data=file_data)
-            for data_type, data_type_data in data.items():
-                for row in data_type_data:
-                    db.insert_fuel_data(data_type=data_type, date=date, data=row)
-                db.save()
+
+async def get_default_start_date() -> datetime.date | None:
+    """Return the default start date if no date has been provided.
+
+    :return: The default start date if no date has been provided.
+    """
+    dates = [
+        d for d in [
+            next(iter(
+                await data_type.model().annotate(date=tortoise.functions.Max('date')).values('date')
+            ), {}).get('date')
+            for data_type in enums.DataType
+        ] if d is not None
+    ]
+
+    if dates:
+        return min(dates)
 
 
-def fetch(data_file_types: list[enums.DataFileType] = None, skip_file_cache: bool = False, update: bool = True,
-          start_date: datetime.date = None, end_date: datetime.date = None):
+async def data_exists(data_file_type: enums.DataFileType, date: datetime.date) -> bool:
+    """Check if data exists for the data file type for the date.
+
+    :param data_file_type: The data file type.
+    :param date: The data
+    :return: True, if data exists for the date and for all data types for the data file type.
+    """
+    return all([
+        await data_type.model().filter(date=date).exists()
+        for data_type in data_file_type.data_types
+    ])
+
+
+async def update_data(data_file_type: enums.DataFileType, date: datetime.date, file_data: bytes):
+    """Update the data for a file data type and a date.
+
+    :param data_file_type: The file data type.
+    :param date: The date.
+    :param file_data: The file data.
+    """
+    for fuel_type, data in extract_data(
+        data_file_type=data_file_type, date=date, data=file_data
+    ).items():
+        model = fuel_type.model()
+        await model.filter(date=date).delete()
+        for row in data:
+            row['date'] = date
+            await fuel_type.model()(**row).save()
+
+
+async def fetch(data_file_types: list[enums.DataFileType] = None, skip_file_cache: bool = False, update: bool = True,
+                start_date: datetime.date = None, end_date: datetime.date = None):
     """Fetch the data from the site and insert to the database.
 
     :param data_file_types: The data file types to parse.
@@ -131,13 +169,7 @@ def fetch(data_file_types: list[enums.DataFileType] = None, skip_file_cache: boo
     """
     logger.info("Fetching missing data from the site")
     if start_date is None and end_date is None:
-        with database.Database() as db:
-            dates = [
-                date_range[1] for date_range in [db.date_range(data_type) for data_type in enums.DataType]
-                if date_range[1]
-            ]
-            if dates:
-                start_date = min(dates)
+        start_date = await get_default_start_date()
 
     for data_file_type in enums.DataFileType if data_file_types is None else data_file_types:
         page_url = urllib.parse.urljoin(settings.FETCH_URL, data_file_type.page)
@@ -157,8 +189,11 @@ def fetch(data_file_types: list[enums.DataFileType] = None, skip_file_cache: boo
                     continue
                 if end_date is not None and date > end_date:
                     continue
-                process_link(
-                    file_link=file_link, data_file_type=data_file_type, skip_file_cache=skip_file_cache, update=update)
+                file_data = fetch_data(
+                    file_link=file_link, data_file_type=data_file_type, skip_file_cache=skip_file_cache
+                )
+                if update or not await data_exists(data_file_type=data_file_type, date=date):
+                    await update_data(data_file_type, date, file_data)
 
 
 def parse_data_file_type(data_file_types: str) -> list[enums.DataFileType] | None:
@@ -176,7 +211,7 @@ def parse_data_file_type(data_file_types: str) -> list[enums.DataFileType] | Non
     return None
 
 
-def main():
+async def main():
     """Entry point of the script.
     """
     # Configure logging
@@ -187,29 +222,37 @@ def main():
     )
 
     error = False
+    # Configure the argument parser
+    parser = argparse.ArgumentParser(description='Fetch the data from the site and insert them to the database.')
+    parser.add_argument(
+        '--types', type=parse_data_file_type,
+        help=f"Comma separated data files to fetch. Available types are "
+             f"{','.join(fdt.name for fdt in enums.DataFileType)}")
+    parser.add_argument(
+        '--start-date', type=datetime.date.fromisoformat,
+        help="The start date for the data to fetch. The date must be in ISO date format (YYYY-MM-DD)")
+    parser.add_argument(
+        '--end-date', type=datetime.date.fromisoformat,
+        help="The end date for the data to fetch. The date must be in ISO date format (YYYY-MM-DD)")
+    parser.add_argument(
+        '--skip-file-cache', default=False, action="store_true",
+        help="Skip the file cache. By default, the file cache is used.")
+    parser.add_argument(
+        '--update', default=False, action="store_true",
+        help="Update existing data. By default existing data are not updated.")
+    # Parse the arguments
+    args = parser.parse_args()
     try:
-        # Configure the argument parser
-        parser = argparse.ArgumentParser(description='Fetch the data from the site and insert them to the database.')
-        parser.add_argument(
-            '--types', type=parse_data_file_type,
-            help=f"Comma separated data files to fetch. Available types are "
-                 f"{','.join(fdt.name for fdt in enums.DataFileType)}")
-        parser.add_argument(
-            '--start-date', type=datetime.date.fromisoformat,
-            help="The start date for the data to fetch. The date must be in ISO date format (YYYY-MM-DD)")
-        parser.add_argument(
-            '--end-date', type=datetime.date.fromisoformat,
-            help="The end date for the data to fetch. The date must be in ISO date format (YYYY-MM-DD)")
-        parser.add_argument(
-            '--skip-file-cache', default=False, action="store_true",
-            help="Skip the file cache. By default, the file cache is used.")
-        parser.add_argument(
-            '--update', default=False, action="store_true",
-            help="Update existing data. By default existing data are not updated.")
         # Fetch the data
-        args = parser.parse_args()
-        fetch(data_file_types=args.types, skip_file_cache=args.skip_file_cache, update=args.update,
-              start_date=args.start_date, end_date=args.end_date)
+        await tortoise.Tortoise.init(
+            db_url=f"sqlite://{(settings.DATA_PATH / 'db.sqlite')}",
+            modules={"models": ["fuelpricesgr.models"]}
+        )
+        await tortoise.Tortoise.generate_schemas()
+        await fetch(
+            data_file_types=args.types, skip_file_cache=args.skip_file_cache, update=args.update,
+            start_date=args.start_date, end_date=args.end_date
+        )
     except Exception as ex:
         logger.exception("", exc_info=ex)
         error = True
@@ -229,4 +272,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    tortoise.run_async(main())
