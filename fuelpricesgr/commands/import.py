@@ -173,7 +173,7 @@ async def main():
     args = parse_arguments()
     error = await import_data(args)
     if args.send_mail:
-        send_mail(error)
+        send_mail(log_stream=log_stream, error=error)
 
 
 if __name__ == '__main__':
