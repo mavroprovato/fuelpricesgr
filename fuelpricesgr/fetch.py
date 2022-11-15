@@ -102,7 +102,7 @@ def fetch_data(file_link: str, data_file_type: enums.DataFileType, skip_file_cac
         return file_data
     except requests.HTTPError:
         logger.error("Could not fetch link %s", file_link, exc_info=True)
-        return
+        return None
 
 
 def fetch_link(

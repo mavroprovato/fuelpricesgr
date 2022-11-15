@@ -3,6 +3,7 @@
 import collections.abc
 import datetime
 import enum
+import importlib
 
 from fuelpricesgr import settings
 
@@ -27,17 +28,17 @@ class DataType(enum.Enum):
 
         :return: The database model for the data type.
         """
-        from fuelpricesgr import models
+        module = importlib.import_module("fuelpricesgr.models")
 
         match self:
             case self.WEEKLY_COUNTRY:
-                return models.WeeklyCountry
+                return getattr(module, 'WeeklyCountry')
             case self.WEEKLY_PREFECTURE:
-                return models.WeeklyPrefecture
+                return getattr(module, 'WeeklyPrefecture')
             case self.DAILY_COUNTRY:
-                return models.DailyCountry
+                return getattr(module, 'DailyCountry')
             case self.DAILY_PREFECTURE:
-                return models.DailyPrefecture
+                return getattr(module, 'DailyPrefecture')
 
 
 class DataFileType(enum.Enum):

@@ -27,7 +27,7 @@ REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost')
 
 # The cache expiration time in seconds
 try:
-    CACHE_EXPIRE = int(os.getenv('CACHE_EXPIRE', 1))
+    CACHE_EXPIRE = int(os.getenv('CACHE_EXPIRE', '1'))
 except ValueError:
     CACHE_EXPIRE = 1
 

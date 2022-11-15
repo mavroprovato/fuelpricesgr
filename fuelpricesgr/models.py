@@ -15,6 +15,8 @@ class DailyCountry(models.Model):
     price = fields.FloatField()
 
     class Meta:
+        """Metadata for the model.
+        """
         table = 'daily_country'
 
 
@@ -28,6 +30,8 @@ class DailyPrefecture(models.Model):
     price = fields.FloatField()
 
     class Meta:
+        """Metadata for the model.
+        """
         table = 'daily_prefecture'
 
 
@@ -42,6 +46,8 @@ class WeeklyCountry(models.Model):
     median_price = fields.FloatField()
 
     class Meta:
+        """Metadata for the model.
+        """
         table = 'weekly_country'
 
 
@@ -57,4 +63,6 @@ class WeeklyPrefecture(models.Model):
     median_price = fields.FloatField()
 
     class Meta:
+        """Metadata for the model.
+        """
         table = 'weekly_prefecture'

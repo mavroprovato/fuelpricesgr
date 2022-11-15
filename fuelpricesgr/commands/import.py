@@ -91,10 +91,10 @@ async def update_data(data_file_type: enums.DataFileType, date: datetime.date, d
     :param date: The date.
     :param data: The file data.
     """
-    for fuel_type, data in fetch.extract_data(data_file_type=data_file_type, date=date, data=data).items():
+    for fuel_type, fuel_type_data in fetch.extract_data(data_file_type=data_file_type, date=date, data=data).items():
         model = fuel_type.model()
         await model.filter(date=date).delete()
-        for row in data:
+        for row in fuel_type_data:
             row['date'] = date
             await fuel_type.model()(**row).save()
 
@@ -131,7 +131,6 @@ async def import_data(args: argparse.Namespace) -> bool:
                         file_link=file_link, data_file_type=data_file_type, skip_file_cache=args.skip_file_cache
                     )
                     await update_data(data_file_type, date, data)
-
     except Exception as ex:
         logger.exception("", exc_info=ex)
         error = True
