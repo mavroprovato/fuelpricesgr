@@ -172,6 +172,8 @@ async def main():
     # Parse arguments
     args = parse_arguments()
     await import_data(args)
+    if args.send_mail:
+        send_mail()
 
 
 if __name__ == '__main__':
