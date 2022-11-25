@@ -41,7 +41,7 @@ def parse_arguments() -> argparse.Namespace:
                              f"{','.join(fdt.name for fdt in enums.DataFileType)}")
     parser.add_argument('--start-date', type=datetime.date.fromisoformat,
                         help="The start date for the data to fetch. The date must be in ISO date format (YYYY-MM-DD)")
-    parser.add_argument('--end-date', type=datetime.date.fromisoformat,
+    parser.add_argument('--end-date', type=datetime.date.fromisoformat, default=datetime.date.today().isoformat(),
                         help="The end date for the data to fetch. The date must be in ISO date format (YYYY-MM-DD)")
     parser.add_argument('--skip-file-cache', default=False, action="store_true",
                         help="Skip the file cache. By default, the file cache is used.")
@@ -115,10 +115,10 @@ async def import_data(args: argparse.Namespace) -> bool:
         await tortoise.Tortoise.generate_schemas()
 
         start_date, end_date = args.start_date, args.end_date
-        if args.start_date is None and args.end_date is None:
+        if args.start_date is None:
             args.start_date = await get_default_start_date()
         data_file_types = enums.DataFileType if args.types is None else args.types
-        logger.info("Fetching data between %s and %s, and data file types %s", start_date, end_date,
+        logger.info("Fetching data between %s and %s, and data file types %s", args.start_date, args.end_date,
                     ','.join(dft.value for dft in data_file_types))
 
         for data_file_type in data_file_types:
