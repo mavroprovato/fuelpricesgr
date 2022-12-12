@@ -107,13 +107,6 @@ async def import_data(args: argparse.Namespace) -> bool:
     """
     error = False
     try:
-        # Fetch the data
-        await tortoise.Tortoise.init(
-            db_url=f"sqlite://{(settings.DATA_PATH / 'db.sqlite')}",
-            modules={"models": ["fuelpricesgr.models"]}
-        )
-        await tortoise.Tortoise.generate_schemas()
-
         start_date, end_date = args.start_date, args.end_date
         if args.start_date is None:
             args.start_date = await get_default_start_date()
@@ -161,6 +154,12 @@ def send_mail(log_stream: io.StringIO, error: bool):
 async def main():
     """Entry point of the script.
     """
+    # Fetch the data
+    await tortoise.Tortoise.init(
+        db_url=f"sqlite://{(settings.DATA_PATH / 'db.sqlite')}",
+        modules={"models": ["fuelpricesgr.models"]}
+    )
+    await tortoise.Tortoise.generate_schemas()
     # Configure logging
     log_stream = io.StringIO()
     logging.basicConfig(
