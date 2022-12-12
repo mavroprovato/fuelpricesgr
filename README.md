@@ -18,11 +18,14 @@ poetry install
 The data are stored in an [SQLite](https://www.sqlite.org) database. In order to fetch the data you need to run:
 
 ```
-python -m fuelpricesgr.fetch
+python -m fuelpricesgr.commands.import
 ```
 
 This command accepts various parameters to limit the data to be fetched. You can see them by running
-`python -m fuelpricesgr.fetch --help`
+
+```
+python -m fuelpricesgr.commands.import --help
+```
 
 Now you can launch the API by running the command:
 
