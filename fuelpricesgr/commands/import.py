@@ -61,22 +61,20 @@ async def data_exists(data_file_type: enums.DataFileType, date: datetime.date) -
     :return: True, if data exists for the date and for all data types for the data file type.
     """
     return all([
-        await data_type.model().filter(date=date).exists()
-        for data_type in data_file_type.data_types
+        await data_type.model().filter(date=date).exists() for data_type in data_file_type.data_types
     ])
 
 
-async def get_default_start_date() -> datetime.date | None:
+async def get_default_start_date(data_file_type: enums.DataFileType) -> datetime.date | None:
     """Return the default start date if no date has been provided.
 
     :return: The default start date if no date has been provided.
     """
     dates = [
         d for d in [
-            next(iter(
-                await data_type.model().annotate(date=tortoise.functions.Max('date')).values('date')
-            ), {}).get('date')
-            for data_type in enums.DataType
+            next(
+                iter(await data_type.model().annotate(date=tortoise.functions.Max('date')).values('date')), {}
+            ).get('date') for data_type in data_file_type.data_types
         ] if d is not None
     ]
 
@@ -107,14 +105,12 @@ async def import_data(args: argparse.Namespace) -> bool:
     """
     error = False
     try:
-        start_date, end_date = args.start_date, args.end_date
-        if args.start_date is None:
-            args.start_date = await get_default_start_date()
         data_file_types = enums.DataFileType if args.types is None else args.types
-        logger.info("Fetching data between %s and %s, and data file types %s", args.start_date, args.end_date,
-                    ','.join(dft.value for dft in data_file_types))
-
         for data_file_type in data_file_types:
+            if args.start_date is None:
+                args.start_date = await get_default_start_date(data_file_type)
+            logger.info("Fetching data between %s and %s, and data file type %s", args.start_date, args.end_date,
+                        data_file_type)
             for date, file_link in fetch.fetch_link(
                 data_file_type=data_file_type, start_date=args.start_date, end_date=args.end_date
             ):

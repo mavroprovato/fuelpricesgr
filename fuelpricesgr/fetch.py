@@ -118,7 +118,7 @@ def fetch_link(
     logger.info("Processing page %s", page_url)
     response = requests.get(f"{settings.FETCH_URL}/{data_file_type.page}", timeout=settings.REQUESTS_TIMEOUT)
     soup = bs4.BeautifulSoup(response.text, 'html.parser')
-    for link in soup.find_all('a'):
+    for link in reversed(soup.find_all('a')):
         if link.has_attr('href') and link['href'].startswith('./files'):
             file_link = link['href'].replace(' ', '')
             file_link = re.sub(r'\(\d\)', '', file_link)
