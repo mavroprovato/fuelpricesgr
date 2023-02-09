@@ -50,7 +50,7 @@ def deploy_api(context):
         context.run('~/.local/bin/poetry install --no-dev --remove-untracked')
     # Restart the server
     print("Restarting the server")
-    context.run('sudo systemctl restart fuelpricesgr.service')
+    context.run('sudo systemctl restart fuelpricesgr-api.service')
 
 
 @fabric.task
