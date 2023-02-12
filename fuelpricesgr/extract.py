@@ -60,7 +60,7 @@ PREFECTURE_REGEXES = {
     enums.Prefecture.SAMOS: re.compile(r'[Σ\u03a2] ?Α ?Μ ?Ο ?[ΥΤ]', re.MULTILINE),
     enums.Prefecture.SERRES: re.compile(r'[Σ\u03a2] ?[ΕΔ] ?Ρ ?Ρ ?Ω ?Ν', re.MULTILINE),
     enums.Prefecture.TRIKALA: re.compile(r'[ΤΣ] ?Ρ ?[ΙΗ] ?Κ ?Α ?Λ ?Ω ?Ν', re.MULTILINE),
-    enums.Prefecture.PHTHIOTIS: re.compile(r'Φ ?Θ ?[ΙΗ] ?Ω ?[ΤΣ] ?[ΙΗ][ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.PHTHIOTIS: re.compile(r'Φ ?Θ ?[ΙΗ] ?Ω ?[ΤΣ] ?[ΙΗ]? ?[ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.FLORINA: re.compile(r'Φ ?Λ ?Ω ?Ρ ?[ΙΗ] ?Ν ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.PHOCIS: re.compile(r'Φ ?Ω ?Κ ?[ΙΗ] ?[ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.CHALKIDIKI: re.compile(r'[ΧΥ] ?Α ?Λ ?Κ ?[ΙΗ] ?[ΔΓ] ?[ΙΗ] ?Κ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
@@ -253,8 +253,8 @@ def extract_weekly_data(text: str) -> dict[enums.DataType, list[dict]]:
         raise ValueError(f"Could not find weekly data for {enums.FuelType.UNLEADED_95}")
 
     diesel_match = re.search(
-        r'Π ?ε[τη][ρξ] ?[έζ] ?[λι] ?α[ιη] ?[ον] +Κ ?ί ?[νλ] ?[ηθε] ?[σςζ] ?[ηθε] ?[ςσο] +\( ?B ?i ?o ?d ?ies ?e ?l ?\)',
-        text
+        r'Π ?ε[τη][ρξ] ?[έζ] ?[λι] ?α[ιη] ?[ον] +Κ ?ί ?[νλ] ?[ηθε] ?[σςζ] ?[ηθε] ?[ςσο] +'
+        r'\( ?B ?i ?o ?d ?i ?e ?s ?e ?l ?\)', text
     )
     if not diesel_match:
         logger.warning("Could not find weekly data for %s", enums.FuelType.DIESEL)
