@@ -1,68 +1,57 @@
-"""Module containing the database models.
+"""The database models module
 """
-from tortoise import fields, models
+import sqlalchemy
 
 from fuelpricesgr import enums
+from .database import Base
 
 
-class DailyCountry(models.Model):
+class DailyCountry(Base):
     """The daily country database model
     """
-    id = fields.IntField(pk=True)
-    date = fields.DateField(index=True)
-    fuel_type = fields.CharEnumField(enum_type=enums.FuelType)
-    number_of_stations = fields.IntField()
-    price = fields.FloatField()
+    __tablename__ = 'daily_country'
 
-    class Meta:
-        """Metadata for the model.
-        """
-        table = 'daily_country'
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
+    date = sqlalchemy.Column(sqlalchemy.Date, index=True)
+    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType))
+    number_of_stations = sqlalchemy.Column(sqlalchemy.SmallInteger)
+    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 2))
 
 
-class DailyPrefecture(models.Model):
+class DailyPrefecture(Base):
     """The daily prefecture database model
     """
-    id = fields.IntField(pk=True)
-    date = fields.DateField(index=True)
-    prefecture = fields.CharEnumField(enum_type=enums.Prefecture)
-    fuel_type = fields.CharEnumField(enum_type=enums.FuelType)
-    price = fields.FloatField()
+    __tablename__ = 'daily_prefecture'
 
-    class Meta:
-        """Metadata for the model.
-        """
-        table = 'daily_prefecture'
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
+    date = sqlalchemy.Column(sqlalchemy.Date, index=True)
+    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType))
+    prefecture = sqlalchemy.Column(sqlalchemy.Enum(enums.Prefecture))
+    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 2))
 
 
-class WeeklyCountry(models.Model):
+class WeeklyCountry(Base):
     """The weekly country database model
     """
-    id = fields.IntField(pk=True)
-    date = fields.DateField(index=True)
-    fuel_type = fields.CharEnumField(enum_type=enums.FuelType)
-    lowest_price = fields.FloatField()
-    highest_price = fields.FloatField()
-    median_price = fields.FloatField()
+    __tablename__ = 'weekly_country'
 
-    class Meta:
-        """Metadata for the model.
-        """
-        table = 'weekly_country'
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
+    date = sqlalchemy.Column(sqlalchemy.Date, index=True)
+    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType))
+    lowest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 2))
+    highest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 2))
+    median_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 2))
 
 
-class WeeklyPrefecture(models.Model):
+class WeeklyPrefecture(Base):
     """The weekly prefecture database model
     """
-    id = fields.IntField(pk=True)
-    date = fields.DateField(index=True)
-    fuel_type = fields.CharEnumField(enum_type=enums.FuelType)
-    prefecture = fields.CharEnumField(enum_type=enums.Prefecture)
-    lowest_price = fields.FloatField()
-    highest_price = fields.FloatField()
-    median_price = fields.FloatField()
+    __tablename__ = 'weekly_prefecture'
 
-    class Meta:
-        """Metadata for the model.
-        """
-        table = 'weekly_prefecture'
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
+    date = sqlalchemy.Column(sqlalchemy.Date, index=True)
+    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType))
+    prefecture = sqlalchemy.Column(sqlalchemy.Enum(enums.Prefecture))
+    lowest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 2))
+    highest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 2))
+    median_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 2))

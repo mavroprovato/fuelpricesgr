@@ -6,10 +6,12 @@ import io
 import logging
 import sys
 
-import tortoise
-import tortoise.functions
+import sqlalchemy.orm
 
-from fuelpricesgr import enums, fetch, mail, settings
+from fuelpricesgr import database, enums, fetch, mail, models, services
+
+# Auto-create database schema
+models.Base.metadata.create_all(bind=database.engine)
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -53,53 +55,10 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-async def data_exists(data_file_type: enums.DataFileType, date: datetime.date) -> bool:
-    """Check if data exists for the data file type for the date.
-
-    :param data_file_type: The data file type.
-    :param date: The data
-    :return: True, if data exists for the date and for all data types for the data file type.
-    """
-    return all([
-        await data_type.model().filter(date=date).exists() for data_type in data_file_type.data_types
-    ])
-
-
-async def get_default_start_date(data_file_type: enums.DataFileType) -> datetime.date | None:
-    """Return the default start date if no date has been provided.
-
-    :return: The default start date if no date has been provided.
-    """
-    dates = [
-        d for d in [
-            next(
-                iter(await data_type.model().annotate(date=tortoise.functions.Max('date')).values('date')), {}
-            ).get('date') for data_type in data_file_type.data_types
-        ] if d is not None
-    ]
-
-    if dates:
-        return min(dates)
-
-
-async def update_data(data_file_type: enums.DataFileType, date: datetime.date, data: bytes):
-    """Update the data for a file data type and a date.
-
-    :param data_file_type: The file data type.
-    :param date: The date.
-    :param data: The file data.
-    """
-    for fuel_type, fuel_type_data in fetch.extract_data(data_file_type=data_file_type, date=date, data=data).items():
-        model = fuel_type.model()
-        await model.filter(date=date).delete()
-        for row in fuel_type_data:
-            row['date'] = date
-            await fuel_type.model()(**row).save()
-
-
-async def import_data(args: argparse.Namespace) -> bool:
+def import_data(db: sqlalchemy.orm.Session, args: argparse.Namespace) -> bool:
     """Import data based on the command line arguments.
 
+    :param db: The database session.
     :param args: The command line arguments.
     :return: True if an error occurred, False otherwise.
     """
@@ -108,18 +67,20 @@ async def import_data(args: argparse.Namespace) -> bool:
         data_file_types = enums.DataFileType if args.types is None else args.types
         for data_file_type in data_file_types:
             if args.start_date is None:
-                args.start_date = await get_default_start_date(data_file_type)
+                args.start_date = services.min_date(db=db, data_file_type=data_file_type)
             logger.info("Fetching data between %s and %s, and data file type %s", args.start_date, args.end_date,
                         data_file_type)
             for date, file_link in fetch.fetch_link(
                 data_file_type=data_file_type, start_date=args.start_date, end_date=args.end_date
             ):
-                if args.update or not await data_exists(data_file_type=data_file_type, date=date):
+                if args.update or not services.data_exists(db=db, data_file_type=data_file_type, date=date):
                     logging.info("Updating data for data file type %s and date %s", data_file_type, date)
                     data = fetch.fetch_data(
                         file_link=file_link, data_file_type=data_file_type, skip_file_cache=args.skip_file_cache
                     )
-                    await update_data(data_file_type, date, data)
+                    for data_type, fuel_type_data in fetch.extract_data(
+                            data_file_type=data_file_type, date=date, data=data).items():
+                        services.update_data(db=db, date=date, data_type=data_type, data=fuel_type_data)
     except Exception as ex:
         logger.exception("", exc_info=ex)
         error = True
@@ -147,15 +108,9 @@ def send_mail(log_stream: io.StringIO, error: bool):
         html_content=content)
 
 
-async def main():
+def main():
     """Entry point of the script.
     """
-    # Fetch the data
-    await tortoise.Tortoise.init(
-        db_url=f"sqlite://{(settings.DATA_PATH / 'db.sqlite')}",
-        modules={"models": ["fuelpricesgr.models"]}
-    )
-    await tortoise.Tortoise.generate_schemas()
     # Configure logging
     log_stream = io.StringIO()
     logging.basicConfig(
@@ -165,10 +120,15 @@ async def main():
 
     # Parse arguments
     args = parse_arguments()
-    error = await import_data(args)
+    metadata = database.Base.metadata
+    metadata.create_all(database.engine)
+
+    with database.SessionLocal() as db:
+        error = import_data(db=db, args=args)
+
     if args.send_mail:
         send_mail(log_stream=log_stream, error=error)
 
 
 if __name__ == '__main__':
-    tortoise.run_async(main())
+    main()
