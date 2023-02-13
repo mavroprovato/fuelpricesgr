@@ -1,7 +1,6 @@
 """The API main module
 """
 import datetime
-import logging
 
 import fastapi
 import fastapi.middleware
@@ -10,7 +9,6 @@ import fastapi_cache
 import fastapi_cache.backends.redis
 import fastapi_cache.decorator
 import redis.asyncio
-import sqlalchemy.exc
 
 from fuelpricesgr import database, enums, schemas, services, settings
 
@@ -56,32 +54,10 @@ async def startup():
     description="Return the status of the application",
     response_model=schemas.Status
 )
-def index() -> schemas.Status:
+def index() -> dict:
     """Return the status of the application.
     """
-    import sqlalchemy
-    # Check the database status
-    db_status = enums.ApplicationStatus.OK
-    try:
-        with database.SessionLocal() as db:
-            result = db.execute(sqlalchemy.sql.text("SELECT COUNT(*) FROM sqlite_master"))
-            if next(result)[0] == 0:
-                logging.error("Database tables do not exist")
-                db_status = enums.ApplicationStatus.ERROR
-    except sqlalchemy.exc.OperationalError as ex:
-        logging.error("Could not connect to the database", exc_info=ex)
-        db_status = enums.ApplicationStatus.ERROR
-
-    # Check the cache status
-    cache_status = enums.ApplicationStatus.OK
-    try:
-        conn = redis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
-        conn.ping()
-    except redis.exceptions.RedisError as ex:
-        logging.error("Could not connect to the cache", exc_info=ex)
-        cache_status = enums.ApplicationStatus.ERROR
-
-    return schemas.Status(db_status=db_status, cache_status=cache_status)
+    return services.status()
 
 
 @app.get(
@@ -90,14 +66,12 @@ def index() -> schemas.Status:
     description="Return all fuel types",
     response_model=list[schemas.NameDescription]
 )
-async def fuel_types() -> list[schemas.NameDescription]:
+async def fuel_types() -> list[dict]:
     """Returns all fuel types.
 
     :return: The fuel types.
     """
-    return [
-        schemas.NameDescription(name=fuel_type.name, description=fuel_type.description) for fuel_type in enums.FuelType
-    ]
+    return [{'name': fuel_type.name, 'description': fuel_type.description} for fuel_type in enums.FuelType]
 
 
 @app.get(
@@ -106,15 +80,12 @@ async def fuel_types() -> list[schemas.NameDescription]:
     description="Return all prefectures",
     response_model=list[schemas.NameDescription]
 )
-def prefectures() -> list[schemas.NameDescription]:
+def prefectures() -> list[dict]:
     """Returns all prefectures.
 
     :return: The prefectures.
     """
-    return [
-        schemas.NameDescription(name=prefecture.name, description=prefecture.description)
-        for prefecture in enums.Prefecture
-    ]
+    return [{'name': prefecture.name, 'description': prefecture.description} for prefecture in enums.Prefecture]
 
 
 @app.get(
@@ -124,7 +95,7 @@ def prefectures() -> list[schemas.NameDescription]:
     response_model=schemas.DateRange
 )
 @fastapi_cache.decorator.cache(expire=settings.CACHE_EXPIRE)
-def date_range(data_type: enums.DataType) -> schemas.DateRange:
+def date_range(data_type: enums.DataType) -> dict:
     """Returns the available data date range for a data type.
 
     :param data_type: The data type.
@@ -137,7 +108,7 @@ def date_range(data_type: enums.DataType) -> schemas.DateRange:
     with database.SessionLocal() as db:
         start_date, end_date = services.date_range(db=db, data_type=data_type)
 
-        return schemas.DateRange(start_date=start_date, end_date=end_date)
+        return {'start_date': start_date, 'end_date': end_date}
 
 
 @app.get(

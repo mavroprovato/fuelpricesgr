@@ -1,12 +1,43 @@
 """Contains service methods
 """
 import datetime
+import logging
 import itertools
 
+import redis
 import sqlalchemy
+import sqlalchemy.exc
 import sqlalchemy.orm
 
-from fuelpricesgr import enums, models
+from fuelpricesgr import database, enums, models, settings
+
+
+def status() -> dict:
+    """Return the application status.
+
+    :return: The application status.
+    """
+    # Check the database status
+    db_status = enums.ApplicationStatus.OK
+    try:
+        with database.SessionLocal() as db:
+            result = db.execute(sqlalchemy.sql.text("SELECT COUNT(*) FROM sqlite_master"))
+            if next(result)[0] == 0:
+                logging.error("Database tables do not exist")
+                db_status = enums.ApplicationStatus.ERROR
+    except sqlalchemy.exc.OperationalError as ex:
+        logging.error("Could not connect to the database", exc_info=ex)
+        db_status = enums.ApplicationStatus.ERROR
+    # Check the cache status
+    cache_status = enums.ApplicationStatus.OK
+    try:
+        conn = redis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
+        conn.ping()
+    except redis.exceptions.RedisError as ex:
+        logging.error("Could not connect to the cache", exc_info=ex)
+        cache_status = enums.ApplicationStatus.ERROR
+
+    return {'db_status': db_status, 'cache_status': cache_status}
 
 
 def min_date(db: sqlalchemy.orm.Session, data_file_type: enums.DataFileType) -> datetime.date | None:
