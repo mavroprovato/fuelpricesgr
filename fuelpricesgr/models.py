@@ -15,7 +15,7 @@ class DailyCountry(Base):
     date = sqlalchemy.Column(sqlalchemy.Date, index=True)
     fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType))
     number_of_stations = sqlalchemy.Column(sqlalchemy.SmallInteger)
-    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 2))
+    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
 
 
 class DailyPrefecture(Base):
@@ -27,7 +27,7 @@ class DailyPrefecture(Base):
     date = sqlalchemy.Column(sqlalchemy.Date, index=True)
     fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType))
     prefecture = sqlalchemy.Column(sqlalchemy.Enum(enums.Prefecture))
-    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 2))
+    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
 
 
 class WeeklyCountry(Base):
@@ -38,9 +38,9 @@ class WeeklyCountry(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
     date = sqlalchemy.Column(sqlalchemy.Date, index=True)
     fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType))
-    lowest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 2))
-    highest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 2))
-    median_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 2))
+    lowest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
+    highest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
+    median_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
 
 
 class WeeklyPrefecture(Base):
@@ -52,6 +52,6 @@ class WeeklyPrefecture(Base):
     date = sqlalchemy.Column(sqlalchemy.Date, index=True)
     fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType))
     prefecture = sqlalchemy.Column(sqlalchemy.Enum(enums.Prefecture))
-    lowest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 2))
-    highest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 2))
-    median_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 2))
+    lowest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
+    highest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
+    median_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
