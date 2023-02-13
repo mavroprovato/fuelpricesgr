@@ -36,3 +36,4 @@ AWS_REGION = os.getenv('AWS_REGION')
 
 # Mail configuration
 MAIL_SENDER = os.getenv('MAIL_SENDER')
+MAIL_RECIPIENT = os.getenv('MAIL_RECIPIENT')

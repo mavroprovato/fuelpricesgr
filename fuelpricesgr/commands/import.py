@@ -8,7 +8,7 @@ import sys
 
 import sqlalchemy.orm
 
-from fuelpricesgr import database, enums, fetch, mail, models, services
+from fuelpricesgr import database, enums, fetch, mail, models, services, settings
 
 # Auto-create database schema
 models.Base.metadata.create_all(bind=database.engine)
@@ -104,7 +104,7 @@ def send_mail(log_stream: io.StringIO, error: bool):
     '''
     mail_sender = mail.MailSender()
     mail_sender.send(
-        to_recipients=['mavroprovato@gmail.com'], subject='[fuelpricesgr] Fetching data completed',
+        to_recipients=[settings.MAIL_RECIPIENT], subject='[fuelpricesgr] Fetching data completed',
         html_content=content)
 
 
@@ -126,7 +126,7 @@ def main():
     with database.SessionLocal() as db:
         error = import_data(db=db, args=args)
 
-    if args.send_mail:
+    if args.send_mail and settings.MAIL_RECIPIENT:
         send_mail(log_stream=log_stream, error=error)
 
 
