@@ -4,6 +4,8 @@ import datetime
 import logging
 
 import fastapi
+import fastapi.middleware
+import fastapi.middleware.cors
 import fastapi_cache
 import fastapi_cache.backends.redis
 import fastapi_cache.decorator
@@ -29,7 +31,14 @@ app = fastapi.FastAPI(
         "url": "https://opensource.org/licenses/MIT",
     },
     docs_url=None,
-    redoc_url='/docs'
+    redoc_url='/docs',
+    middleware=[
+        fastapi.middleware.Middleware(
+            fastapi.middleware.cors.CORSMiddleware,
+            allow_origins=settings.CORS_ALLOW_ORIGINS,
+            allow_methods=['GET'],
+        )
+    ]
 )
 
 
@@ -81,7 +90,7 @@ def index() -> schemas.Status:
     description="Return all fuel types",
     response_model=list[schemas.NameDescription]
 )
-def fuel_types() -> list[schemas.NameDescription]:
+async def fuel_types() -> list[schemas.NameDescription]:
     """Returns all fuel types.
 
     :return: The fuel types.
