@@ -6,7 +6,7 @@ import fastapi
 import fastapi.middleware
 import fastapi.middleware.cors
 
-from fuelpricesgr import database, enums, schemas, services, settings
+from fuelpricesgr import caching, database, enums, schemas, services, settings
 
 
 app = fastapi.FastAPI(
@@ -82,6 +82,7 @@ def prefectures() -> list[dict]:
     description="Get the available data date range for a data type",
     response_model=schemas.DateRange
 )
+@caching.cache
 def date_range(data_type: enums.DataType) -> dict:
     """Returns the available data date range for a data type.
 
@@ -104,6 +105,7 @@ def date_range(data_type: enums.DataType) -> dict:
     description="Returns the daily country data",
     response_model=list[schemas.DailyCountry]
 )
+@caching.cache
 def daily_country_data(
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
@@ -126,6 +128,7 @@ def daily_country_data(
     description="Return the daily prefecture data",
     response_model=list[schemas.DailyPrefecture]
 )
+@caching.cache
 def daily_prefecture_data(
         prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
@@ -150,6 +153,7 @@ def daily_prefecture_data(
     description="Return the weekly country data",
     response_model=list[schemas.Weekly]
 )
+@caching.cache
 def weekly_country_data(
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
@@ -172,6 +176,7 @@ def weekly_country_data(
     description="Return the weekly prefecture data",
     response_model=list[schemas.Weekly]
 )
+@caching.cache
 def weekly_prefecture_data(
         prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
@@ -196,6 +201,7 @@ def weekly_prefecture_data(
     description="Return country data for a date for all prefectures along with the country averages",
     response_model=schemas.Country
 )
+@caching.cache
 def country_data(date: datetime.date = fastapi.Path(title="The date")) -> dict:
     """Return the country data for a date.
 
