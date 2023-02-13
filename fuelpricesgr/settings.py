@@ -22,7 +22,11 @@ CORS_ALLOW_ORIGINS = os.getenv('CORS_ALLOW_ORIGINS', 'http://127.0.0.1:8080,http
 # The maximum number of days to return from the API
 MAX_DAYS = 365
 
-# The Redis URL used for caching
+# Set the caching parameters
+try:
+    CACHING = os.getenv('CACHING', 'False').lower() == 'true'
+except ValueError:
+    CACHING = False
 REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost')
 
 # The base URL from which to fetch the PDF data

@@ -28,17 +28,20 @@ def cache(func):
         :param kwargs: The keyword arguments.
         :return: Returns the function result.
         """
-        cache_key = CACHE_PREFIX + '_' + hashlib.md5(
-            str(f"{func.__module__}:{func.__name__}:{args}:{kwargs}").encode()).hexdigest()
+        if settings.CACHING:
+            cache_key = CACHE_PREFIX + '_' + hashlib.md5(
+                str(f"{func.__module__}:{func.__name__}:{args}:{kwargs}").encode()).hexdigest()
 
-        if redis_conn.get(cache_key):
-            result = redis_conn.get(cache_key)
+            if redis_conn.get(cache_key):
+                result = redis_conn.get(cache_key)
 
-            return pickle.loads(result)
-        else:
-            result = func(*args, **kwargs)
-            redis_conn.set(cache_key, pickle.dumps(result))
+                return pickle.loads(result)
+            else:
+                result = func(*args, **kwargs)
+                redis_conn.set(cache_key, pickle.dumps(result))
 
-            return result
+                return result
+
+        return func(*args, **kwargs)
 
     return wrapper
