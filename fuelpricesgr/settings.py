@@ -10,11 +10,11 @@ dotenv.load_dotenv()
 # The base data path
 DATA_PATH = pathlib.Path(__file__).parent.parent / 'var'
 
-# The base URL from which to fetch the PDF data
-FETCH_URL = 'http://www.fuelprices.gr'
-
-# The timeout for fetching data in seconds
-REQUESTS_TIMEOUT = 5
+# Flag to show SQL
+try:
+    SHOW_SQL = os.getenv('SHOW_SQL', 'False').lower() == 'true'
+except ValueError:
+    SHOW_SQL = False
 
 # CORS allow origins
 CORS_ALLOW_ORIGINS = os.getenv('CORS_ALLOW_ORIGINS', 'http://127.0.0.1:8080,http://localhost:8080').split(',')
@@ -30,6 +30,12 @@ try:
     CACHE_EXPIRE = int(os.getenv('CACHE_EXPIRE', '1'))
 except ValueError:
     CACHE_EXPIRE = 1
+
+# The base URL from which to fetch the PDF data
+FETCH_URL = 'http://www.fuelprices.gr'
+
+# The timeout for fetching data in seconds
+REQUESTS_TIMEOUT = 5
 
 # AWS configuration
 AWS_REGION = os.getenv('AWS_REGION')
