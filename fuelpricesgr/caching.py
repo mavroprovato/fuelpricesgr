@@ -45,3 +45,10 @@ def cache(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+
+def clear_cache():
+    """Deletes all the cache keys.
+    """
+    for key in redis_conn.scan_iter(CACHE_PREFIX + "*"):
+        redis_conn.delete(key)
