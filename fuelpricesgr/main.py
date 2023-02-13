@@ -66,7 +66,7 @@ def index() -> schemas.Status:
     # Check the cache status
     cache_status = enums.ApplicationStatus.OK
     try:
-        conn = redis.asyncio.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
+        conn = redis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
         conn.ping()
     except redis.exceptions.RedisError as ex:
         logging.error("Could not connect to the cache", exc_info=ex)
