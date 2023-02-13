@@ -11,7 +11,7 @@ from fuelpricesgr import settings
 redis_conn = redis.from_url(settings.REDIS_URL, encoding='utf8')
 
 # The cache prefix
-CACHE_PREFIX = 'fuelpricesgr'
+CACHE_PREFIX = 'fuelpricesgr:'
 
 
 def cache(func):
@@ -29,7 +29,7 @@ def cache(func):
         :return: Returns the function result.
         """
         if settings.CACHING:
-            cache_key = CACHE_PREFIX + '_' + hashlib.md5(
+            cache_key = CACHE_PREFIX + hashlib.md5(
                 str(f"{func.__module__}:{func.__name__}:{args}:{kwargs}").encode()).hexdigest()
 
             if redis_conn.get(cache_key):
