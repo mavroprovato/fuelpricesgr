@@ -1,4 +1,4 @@
-"""The various project enums
+"""The project enums
 """
 import collections.abc
 import datetime
@@ -13,69 +13,6 @@ class ApplicationStatus(enum.Enum):
     """
     OK = 'ok'
     ERROR = 'error'
-
-
-class DataType(enum.Enum):
-    """Enumeration for the different types of data contained in the data
-    """
-    WEEKLY_COUNTRY = 'weekly_country'
-    WEEKLY_PREFECTURE = 'weekly_prefecture'
-    DAILY_COUNTRY = 'daily_country'
-    DAILY_PREFECTURE = 'daily_prefecture'
-
-    def model(self):
-        """Return the database model for the data type.
-
-        :return: The database model for the data type.
-        """
-        module = importlib.import_module("fuelpricesgr.models")
-
-        match self:
-            case self.WEEKLY_COUNTRY:
-                return getattr(module, 'WeeklyCountry')
-            case self.WEEKLY_PREFECTURE:
-                return getattr(module, 'WeeklyPrefecture')
-            case self.DAILY_COUNTRY:
-                return getattr(module, 'DailyCountry')
-            case self.DAILY_PREFECTURE:
-                return getattr(module, 'DailyPrefecture')
-
-
-class DataFileType(enum.Enum):
-    """Enumeration for the different data file types.
-    """
-    WEEKLY = 'weekly', 'deltia.view', (DataType.WEEKLY_COUNTRY, DataType.WEEKLY_PREFECTURE)
-    DAILY_COUNTRY = 'daily_country', 'deltia_d.view', (DataType.DAILY_COUNTRY, )
-    DAILY_PREFECTURE = 'daily_prefecture', 'deltia_dn.view', (DataType.DAILY_PREFECTURE, )
-
-    def __new__(cls, value: str, page: str, data_types: collections.abc.Iterable[DataType]):
-        """Creates the enum.
-
-        :param value: The enum value.
-        :param page: The path, relative to the base URL, from which we will fetch the data.
-        :param data_types: The data types that this page contains.
-        """
-        obj = object.__new__(cls)
-        obj._value_ = value
-        obj.page = page
-        obj.data_types = data_types
-
-        return obj
-
-    def link(self, date: datetime.date) -> str | None:
-        """Return the link of the file from which we got the data for the specified date.
-
-        :param date: The date.
-        :return: The file link.
-        """
-        if self == self.WEEKLY:
-            return f'{settings.FETCH_URL}/files/deltia/EBDOM_DELTIO_{date:%d_%m_%Y}.pdf'
-        if self == self.DAILY_COUNTRY:
-            return f'{settings.FETCH_URL}/files/deltia/IMERISIO_DELTIO_PANELLINIO_{date:%d_%m_%Y}.pdf'
-        if self == self.DAILY_PREFECTURE:
-            return f'{settings.FETCH_URL}/files/deltia/IMERISIO_DELTIO_ANA_NOMO_{date:%d_%m_%Y}.pdf'
-
-        return None
 
 
 class FuelType(enum.Enum):
@@ -167,3 +104,66 @@ class Prefecture(enum.Enum):
         obj.description = description
 
         return obj
+
+
+class DataType(enum.Enum):
+    """Enumeration for the different types of data contained in the data
+    """
+    WEEKLY_COUNTRY = 'weekly_country'
+    WEEKLY_PREFECTURE = 'weekly_prefecture'
+    DAILY_COUNTRY = 'daily_country'
+    DAILY_PREFECTURE = 'daily_prefecture'
+
+    def model(self):
+        """Return the database model for the data type.
+
+        :return: The database model for the data type.
+        """
+        module = importlib.import_module("fuelpricesgr.models")
+
+        match self:
+            case self.WEEKLY_COUNTRY:
+                return getattr(module, 'WeeklyCountry')
+            case self.WEEKLY_PREFECTURE:
+                return getattr(module, 'WeeklyPrefecture')
+            case self.DAILY_COUNTRY:
+                return getattr(module, 'DailyCountry')
+            case self.DAILY_PREFECTURE:
+                return getattr(module, 'DailyPrefecture')
+
+
+class DataFileType(enum.Enum):
+    """Enumeration for the different data file types.
+    """
+    WEEKLY = 'weekly', 'deltia.view', (DataType.WEEKLY_COUNTRY, DataType.WEEKLY_PREFECTURE)
+    DAILY_COUNTRY = 'daily_country', 'deltia_d.view', (DataType.DAILY_COUNTRY, )
+    DAILY_PREFECTURE = 'daily_prefecture', 'deltia_dn.view', (DataType.DAILY_PREFECTURE, )
+
+    def __new__(cls, value: str, page: str, data_types: collections.abc.Iterable[DataType]):
+        """Creates the enum.
+
+        :param value: The enum value.
+        :param page: The path, relative to the base URL, from which we will fetch the data.
+        :param data_types: The data types that this page contains.
+        """
+        obj = object.__new__(cls)
+        obj._value_ = value
+        obj.page = page
+        obj.data_types = data_types
+
+        return obj
+
+    def link(self, date: datetime.date) -> str | None:
+        """Return the link of the file from which we got the data for the specified date.
+
+        :param date: The date.
+        :return: The file link.
+        """
+        if self == self.WEEKLY:
+            return f'{settings.FETCH_URL}/files/deltia/EBDOM_DELTIO_{date:%d_%m_%Y}.pdf'
+        if self == self.DAILY_COUNTRY:
+            return f'{settings.FETCH_URL}/files/deltia/IMERISIO_DELTIO_PANELLINIO_{date:%d_%m_%Y}.pdf'
+        if self == self.DAILY_PREFECTURE:
+            return f'{settings.FETCH_URL}/files/deltia/IMERISIO_DELTIO_ANA_NOMO_{date:%d_%m_%Y}.pdf'
+
+        return None

@@ -1,21 +1,17 @@
-"""The FastAPI main module
+"""The API main module
 """
 import datetime
-import itertools
 import logging
 
 import fastapi
-import fastapi.middleware.cors
-import fastapi.openapi.docs
 import fastapi_cache
-from fastapi_cache.backends.redis import RedisBackend
-from fastapi_cache.decorator import cache
-import redis
-import tortoise.contrib.fastapi
-import tortoise.functions
+import fastapi_cache.backends.redis
+import fastapi_cache.decorator
+import redis.asyncio
+import sqlalchemy.exc
 
+from fuelpricesgr import database, enums, schemas, services, settings
 
-from fuelpricesgr import models, enums, response, settings
 
 app = fastapi.FastAPI(
     title="Fuel Prices in Greece",
@@ -35,61 +31,63 @@ app = fastapi.FastAPI(
     docs_url=None,
     redoc_url='/docs'
 )
-app.add_middleware(fastapi.middleware.cors.CORSMiddleware, allow_origins=settings.CORS_ALLOW_ORIGINS)
-
-tortoise.contrib.fastapi.register_tortoise(
-    app,
-    db_url=f"sqlite://{(settings.DATA_PATH / 'db.sqlite')}?mode=ro",
-    modules={"models": ["fuelpricesgr.models"]}
-)
 
 
 @app.on_event("startup")
 async def startup():
-    """Called upon the application startup.
+    """Called on application startup.
     """
-    conn = redis.asyncio.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
-    fastapi_cache.FastAPICache.init(RedisBackend(conn), prefix="fuelpricesgr-cache")
+    redis_conn = redis.asyncio.from_url(settings.REDIS_URL, encoding='utf8', decode_responses=True)
+    fastapi_cache.FastAPICache.init(fastapi_cache.backends.redis.RedisBackend(redis_conn), prefix='fuelpricesgr-cache')
 
 
 @app.get(
     path="/",
     summary="Application status",
     description="Return the status of the application",
-    response_model=response.Status
+    response_model=schemas.Status
 )
-async def index() -> response.Status:
+def index() -> schemas.Status:
     """Return the status of the application.
     """
+    import sqlalchemy
     # Check the database status
     db_status = enums.ApplicationStatus.OK
+    try:
+        with database.SessionLocal() as db:
+            result = db.execute(sqlalchemy.sql.text("SELECT COUNT(*) FROM sqlite_master"))
+            if next(result)[0] == 0:
+                logging.error("Database tables do not exist")
+                db_status = enums.ApplicationStatus.ERROR
+    except sqlalchemy.exc.OperationalError as ex:
+        logging.error("Could not connect to the database", exc_info=ex)
+        db_status = enums.ApplicationStatus.ERROR
+
     # Check the cache status
     cache_status = enums.ApplicationStatus.OK
     try:
         conn = redis.asyncio.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
-        await conn.ping()
+        conn.ping()
     except redis.exceptions.RedisError as ex:
         logging.error("Could not connect to the cache", exc_info=ex)
         cache_status = enums.ApplicationStatus.ERROR
 
-    return response.Status(db_status=db_status, cache_status=cache_status)
+    return schemas.Status(db_status=db_status, cache_status=cache_status)
 
 
 @app.get(
     path="/fuelTypes",
     summary="Fuel Types",
     description="Return all fuel types",
-    response_model=list[response.NameDescription]
+    response_model=list[schemas.NameDescription]
 )
-@cache(expire=settings.CACHE_EXPIRE)
-async def fuel_types() -> list[response.NameDescription]:
+def fuel_types() -> list[schemas.NameDescription]:
     """Returns all fuel types.
 
     :return: The fuel types.
     """
     return [
-        response.NameDescription(name=fuel_type.name, description=fuel_type.description)
-        for fuel_type in enums.FuelType
+        schemas.NameDescription(name=fuel_type.name, description=fuel_type.description) for fuel_type in enums.FuelType
     ]
 
 
@@ -97,16 +95,15 @@ async def fuel_types() -> list[response.NameDescription]:
     path="/prefectures",
     summary="Prefectures",
     description="Return all prefectures",
-    response_model=list[response.NameDescription]
+    response_model=list[schemas.NameDescription]
 )
-@cache(expire=settings.CACHE_EXPIRE)
-async def prefectures() -> list[response.NameDescription]:
+def prefectures() -> list[schemas.NameDescription]:
     """Returns all prefectures.
 
     :return: The prefectures.
     """
     return [
-        response.NameDescription(name=prefecture.name, description=prefecture.description)
+        schemas.NameDescription(name=prefecture.name, description=prefecture.description)
         for prefecture in enums.Prefecture
     ]
 
@@ -115,10 +112,10 @@ async def prefectures() -> list[response.NameDescription]:
     path="/dateRange/{data_type}",
     summary="Date range",
     description="Get the available data date range for a data type",
-    response_model=response.DateRange
+    response_model=schemas.DateRange
 )
-@cache(expire=settings.CACHE_EXPIRE)
-async def date_range(data_type: enums.DataType) -> response.DateRange:
+@fastapi_cache.decorator.cache(expire=settings.CACHE_EXPIRE)
+def date_range(data_type: enums.DataType) -> schemas.DateRange:
     """Returns the available data date range for a data type.
 
     :param data_type: The data type.
@@ -128,28 +125,23 @@ async def date_range(data_type: enums.DataType) -> response.DateRange:
     if not model:
         raise fastapi.HTTPException(status_code=404, detail="Not found")
 
-    result = await model.annotate(
-        start_date=tortoise.functions.Min('date'), end_date=tortoise.functions.Max('date')
-    ).values('start_date', 'end_date')
-    start_date, end_date = None, None
-    if result:
-        start_date = result[0]['start_date']
-        end_date = result[0]['end_date']
+    with database.SessionLocal() as db:
+        start_date, end_date = services.date_range(db=db, data_type=data_type)
 
-    return response.DateRange(start_date=start_date, end_date=end_date)
+        return schemas.DateRange(start_date=start_date, end_date=end_date)
 
 
 @app.get(
     path="/data/daily/country",
     summary="Daily country data",
     description="Returns the daily country data",
-    response_model=list[response.DailyCountry]
+    response_model=list[schemas.DailyCountry]
 )
-@cache(expire=settings.CACHE_EXPIRE)
-async def daily_country_data(
+@fastapi_cache.decorator.cache(expire=settings.CACHE_EXPIRE)
+def daily_country_data(
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> list[response.DailyCountry]:
+) -> list[dict]:
     """Returns the daily country data.
 
     :param start_date: The start date of the data to fetch.
@@ -158,37 +150,22 @@ async def daily_country_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    return [
-        response.DailyCountry(
-            date=date,
-            data_file=enums.DataFileType.DAILY_COUNTRY.link(date=date),
-            data=[
-                response.FuelTypePriceStations(
-                    fuel_type=row.fuel_type.name,
-                    number_of_stations=row.number_of_stations,
-                    price=row.price,
-                ) for row in date_group
-            ]
-        )
-        for date, date_group in itertools.groupby(
-            await models.DailyCountry.filter(date__gte=start_date, date__lte=end_date).order_by('date'),
-            lambda x: x.date
-        )
-    ]
+    with database.SessionLocal() as db:
+        return services.daily_country_data(db=db, start_date=start_date, end_date=end_date)
 
 
 @app.get(
     path="/data/daily/prefectures/{prefecture}",
     summary="Daily prefecture data",
     description="Return the daily prefecture data",
-    response_model=list[response.DailyPrefecture]
+    response_model=list[schemas.DailyPrefecture]
 )
-@cache(expire=settings.CACHE_EXPIRE)
-async def daily_prefecture_data(
+@fastapi_cache.decorator.cache(expire=settings.CACHE_EXPIRE)
+def daily_prefecture_data(
         prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> list[response.DailyPrefecture]:
+) -> list[dict]:
     """Returns the daily prefecture data.
 
     :param prefecture: The prefecture for which to fetch data.
@@ -198,34 +175,21 @@ async def daily_prefecture_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    return [
-        response.DailyPrefecture(
-            date=date,
-            data_file=enums.DataFileType.DAILY_COUNTRY.link(date=date),
-            data=[
-                response.FuelTypePrice(fuel_type=row.fuel_type.name, price=row.price)
-                for row in date_group
-            ]
-        )
-        for date, date_group in itertools.groupby(
-            await models.DailyPrefecture.filter(
-                date__gte=start_date, date__lte=end_date, prefecture=prefecture
-            ).order_by('date'), lambda x: x.date
-        )
-    ]
+    with database.SessionLocal() as db:
+        return services.daily_prefecture_data(db=db, prefecture=prefecture, start_date=start_date, end_date=end_date)
 
 
 @app.get(
     path="/data/weekly/country",
     summary="Weekly country data",
     description="Return the weekly country data",
-    response_model=list[response.Weekly]
+    response_model=list[schemas.Weekly]
 )
-@cache(expire=settings.CACHE_EXPIRE)
-async def weekly_country_data(
+@fastapi_cache.decorator.cache(expire=settings.CACHE_EXPIRE)
+def weekly_country_data(
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> list[response.Weekly]:
+) -> list[dict]:
     """Return the weekly country data.
 
     :param start_date: The start date of the data to fetch.
@@ -234,38 +198,22 @@ async def weekly_country_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    return [
-        response.Weekly(
-            date=date,
-            data_file=enums.DataFileType.WEEKLY.link(date=date),
-            data=[
-                response.FuelTypeWeeklyPrice(
-                    fuel_type=row.fuel_type.name,
-                    lowest_price=row.lowest_price,
-                    highest_price=row.highest_price,
-                    median_price=row.median_price,
-                ) for row in date_group
-            ]
-        )
-        for date, date_group in itertools.groupby(
-            await models.WeeklyCountry.filter(date__gte=start_date, date__lte=end_date).order_by('date'),
-            lambda x: x.date
-        )
-    ]
+    with database.SessionLocal() as db:
+        return services.weekly_country_data(db=db, start_date=start_date, end_date=end_date)
 
 
 @app.get(
     path="/data/weekly/prefectures/{prefecture}",
     summary="Weekly prefecture data",
     description="Return the weekly prefecture data",
-    response_model=list[response.Weekly]
+    response_model=list[schemas.Weekly]
 )
-@cache(expire=settings.CACHE_EXPIRE)
-async def weekly_prefecture_data(
+@fastapi_cache.decorator.cache(expire=settings.CACHE_EXPIRE)
+def weekly_prefecture_data(
         prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> list[response.Weekly]:
+) -> list[dict]:
     """Return the weekly prefecture data
 
     :param prefecture: The prefecture for which to fetch data.
@@ -275,57 +223,25 @@ async def weekly_prefecture_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    return [
-        response.Weekly(
-            date=date,
-            data_file=enums.DataFileType.DAILY_COUNTRY.link(date=date),
-            data=[
-                response.FuelTypeWeeklyPrice(
-                    fuel_type=row.fuel_type.name,
-                    lowest_price=row.lowest_price,
-                    highest_price=row.highest_price,
-                    median_price=row.median_price,
-                ) for row in date_group
-            ]
-        )
-        for date, date_group in itertools.groupby(
-            await models.WeeklyPrefecture.filter(
-                date__gte=start_date, date__lte=end_date, prefecture=prefecture
-            ).order_by('date'), lambda x: x.date
-        )
-    ]
+    with database.SessionLocal() as db:
+        return services.weekly_prefecture_data(db=db, prefecture=prefecture, start_date=start_date, end_date=end_date)
 
 
 @app.get(
     path="/data/country/{date}",
     summary="Country data",
     description="Return country data for a date for all prefectures along with the country averages",
-    response_model=response.CountryData
+    response_model=schemas.Country
 )
-@cache(expire=settings.CACHE_EXPIRE)
-async def country_data(date: datetime.date = fastapi.Path(title="The date")) -> response.CountryData:
+@fastapi_cache.decorator.cache(expire=settings.CACHE_EXPIRE)
+def country_data(date: datetime.date = fastapi.Path(title="The date")) -> dict:
     """Return the country data for a date.
 
     :param date: The date.
     :return: The country data.
     """
-    return response.CountryData(
-        prefectures=[
-            response.PrefectureDaily(
-                prefecture=prefecture, data=[
-                    response.FuelTypePrice(fuel_type=row.fuel_type.name, price=row.price)
-                    for row in list(prefecture_group)
-                ]
-            ) for prefecture, prefecture_group in itertools.groupby(
-                await models.DailyPrefecture.filter(date=date).order_by('prefecture'), lambda x: x.prefecture
-            )
-        ],
-        country=[
-            response.FuelTypePriceStations(
-                fuel_type=row.fuel_type.name, price=row.price, number_of_stations=row.number_of_stations
-            ) for row in await models.DailyCountry.filter(date=date).order_by('date')
-        ]
-    )
+    with database.SessionLocal() as db:
+        return services.country_data(db=db, date=date)
 
 
 def get_date_range(start_date: datetime.date, end_date: datetime.date) -> tuple[datetime.date, datetime.date]:
