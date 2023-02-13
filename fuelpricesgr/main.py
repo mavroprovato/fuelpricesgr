@@ -1,12 +1,14 @@
 """The API main module
 """
 import datetime
+import logging
 
 import fastapi
 import fastapi_cache
 import fastapi_cache.backends.redis
 import fastapi_cache.decorator
 import redis.asyncio
+import sqlalchemy.exc
 
 from fuelpricesgr import database, enums, schemas, services, settings
 
@@ -45,13 +47,30 @@ async def startup():
     description="Return the status of the application",
     response_model=schemas.Status
 )
-async def index() -> schemas.Status:
+def index() -> schemas.Status:
     """Return the status of the application.
     """
-    # TODO: Check the database status
+    import sqlalchemy
+    # Check the database status
     db_status = enums.ApplicationStatus.OK
-    # TODO: Check the cache status
+    try:
+        with database.SessionLocal() as db:
+            result = db.execute(sqlalchemy.sql.text("SELECT COUNT(*) FROM sqlite_master"))
+            if next(result)[0] == 0:
+                logging.error("Database tables do not exist")
+                db_status = enums.ApplicationStatus.ERROR
+    except sqlalchemy.exc.OperationalError as ex:
+        logging.error("Could not connect to the database", exc_info=ex)
+        db_status = enums.ApplicationStatus.ERROR
+
+    # Check the cache status
     cache_status = enums.ApplicationStatus.OK
+    try:
+        conn = redis.asyncio.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
+        conn.ping()
+    except redis.exceptions.RedisError as ex:
+        logging.error("Could not connect to the cache", exc_info=ex)
+        cache_status = enums.ApplicationStatus.ERROR
 
     return schemas.Status(db_status=db_status, cache_status=cache_status)
 
@@ -62,7 +81,7 @@ async def index() -> schemas.Status:
     description="Return all fuel types",
     response_model=list[schemas.NameDescription]
 )
-async def fuel_types() -> list[schemas.NameDescription]:
+def fuel_types() -> list[schemas.NameDescription]:
     """Returns all fuel types.
 
     :return: The fuel types.
@@ -78,7 +97,7 @@ async def fuel_types() -> list[schemas.NameDescription]:
     description="Return all prefectures",
     response_model=list[schemas.NameDescription]
 )
-async def prefectures() -> list[schemas.NameDescription]:
+def prefectures() -> list[schemas.NameDescription]:
     """Returns all prefectures.
 
     :return: The prefectures.
