@@ -48,7 +48,7 @@ def min_date(db: sqlalchemy.orm.Session, data_file_type: enums.DataFileType) -> 
     :return: The minimum available date if it exists, else None.
     """
     dates = [
-        db.query(sqlalchemy.func.min(data_type.model().date)).scalar() for data_type in data_file_type.data_types
+        db.query(sqlalchemy.func.max(data_type.model().date)).scalar() for data_type in data_file_type.data_types
     ]
     dates = [date for date in dates if date is not None]
 
