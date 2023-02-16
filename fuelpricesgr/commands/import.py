@@ -8,7 +8,7 @@ import sys
 
 import sqlalchemy.orm
 
-from fuelpricesgr import database, enums, fetch, mail, models, services, settings
+from fuelpricesgr import caching, database, enums, fetch, mail, models, services, settings
 
 # Auto-create database schema
 models.Base.metadata.create_all(bind=database.engine)
@@ -123,9 +123,14 @@ def main():
     metadata = database.Base.metadata
     metadata.create_all(database.engine)
 
+    # Import data
     with database.SessionLocal() as db:
         error = import_data(db=db, args=args)
 
+    # Clear cache
+    caching.clear_cache()
+
+    # Send mail
     if args.send_mail and settings.MAIL_RECIPIENT:
         send_mail(log_stream=log_stream, error=error)
 

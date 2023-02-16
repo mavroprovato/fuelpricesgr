@@ -22,14 +22,12 @@ CORS_ALLOW_ORIGINS = os.getenv('CORS_ALLOW_ORIGINS', 'http://127.0.0.1:8080,http
 # The maximum number of days to return from the API
 MAX_DAYS = 365
 
-# The Redis URL used for caching
-REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost')
-
-# The cache expiration time in seconds
+# Set the caching parameters
 try:
-    CACHE_EXPIRE = int(os.getenv('CACHE_EXPIRE', '1'))
+    CACHING = os.getenv('CACHING', 'False').lower() == 'true'
 except ValueError:
-    CACHE_EXPIRE = 1
+    CACHING = False
+REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost')
 
 # The base URL from which to fetch the PDF data
 FETCH_URL = 'http://www.fuelprices.gr'
