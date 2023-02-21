@@ -253,7 +253,7 @@ def extract_weekly_data(text: str) -> dict[enums.DataType, list[dict]]:
         raise ValueError(f"Could not find weekly data for {enums.FuelType.UNLEADED_95}")
 
     diesel_match = re.search(
-        r'Π ?ε[τη][ρξ] ?[έζ] ?[λι] ?α[ιη] ?[ον] +Κ ?ί ?[νλ] ?[ηθε] ?[σςζ] ?[ηθε] ?[ςσο] +'
+        r'Π ?ε[τη][ρξ] ?[έζ] ?[λι] ?α ?[ιη] ?[ον] +Κ ?ί ?[νλ] ?[ηθε] ?[σςζ] ?[ηθε] ?[ςσο] +'
         r'\( ?B ?i ?o ?d ?i ?e ?s ?e ?l ?\)', text
     )
     if not diesel_match:
@@ -298,6 +298,7 @@ def extract_weekly_data(text: str) -> dict[enums.DataType, list[dict]]:
         results = re.findall(
             r'ΝΟ ?Μ ?Ο ?[Σ\u03a2] +(\D+) ([0-9,\-\s]+)', prices_text, re.MULTILINE)
         if len(results) != len(enums.Prefecture):
+            print(len(results), len(enums.Prefecture))
             raise ValueError("Could not find all prefectures")
         for result in results:
             prefecture = extract_prefecture(result[0])
