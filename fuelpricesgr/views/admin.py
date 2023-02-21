@@ -1,6 +1,8 @@
 """Admin related views
 """
 import sqladmin
+import sqlalchemy
+import sqlalchemy.orm
 
 from fuelpricesgr import models
 
@@ -11,13 +13,19 @@ class BaseAdmin(sqladmin.ModelView):
     page_size = 100
     page_size_options = [100, 200, 500, 1000]
 
+    def get_list_columns(self) -> list[tuple[str, sqlalchemy.orm.ColumnProperty]]:
+        """Return the list columns. All columns are returned, except for the ID.
+
+        :return: The list columns.
+        """
+        return [(attr.key, attr) for attr in sqlalchemy.inspect(self.model).attrs if attr.key != 'id']
+
 
 class DailyCountryAdmin(BaseAdmin, model=models.DailyCountry):
     """The daily country admin.
     """
     name = "Daily Country Data"
     name_plural = "Daily Country Data"
-    column_list = (models.DailyCountry.date, models.DailyCountry.fuel_type, models.DailyCountry.price)
     column_formatters = {models.DailyCountry.fuel_type: lambda m, _: m.fuel_type.description}
     column_searchable_list = (models.DailyCountry.date, )
     column_sortable_list = (models.DailyCountry.date, )
@@ -29,10 +37,6 @@ class DailyPrefectureAdmin(BaseAdmin, model=models.DailyPrefecture):
     """
     name = "Daily Prefecture Data"
     name_plural = "Daily Prefecture Data"
-    column_list = (
-        models.DailyPrefecture.date, models.DailyPrefecture.prefecture, models.DailyPrefecture.fuel_type,
-        models.DailyPrefecture.price
-    )
     column_formatters = {
         models.DailyPrefecture.fuel_type: lambda m, _: m.fuel_type.description,
         models.DailyPrefecture.prefecture: lambda m, _: m.prefecture.description,
@@ -50,10 +54,6 @@ class WeeklyCountryAdmin(BaseAdmin, model=models.WeeklyCountry):
     """
     name = "Weekly Country Data"
     name_plural = "Weekly Country Data"
-    column_list = (
-        models.WeeklyCountry.date, models.WeeklyCountry.fuel_type, models.WeeklyCountry.lowest_price,
-        models.WeeklyCountry.highest_price, models.WeeklyCountry.median_price
-    )
     column_formatters = {models.WeeklyCountry.fuel_type: lambda m, _: m.fuel_type.description}
     column_searchable_list = (models.WeeklyCountry.date,)
     column_sortable_list = (models.WeeklyCountry.date,)
@@ -65,11 +65,6 @@ class WeeklyPrefectureAdmin(BaseAdmin, model=models.WeeklyPrefecture):
     """
     name = "Weekly Prefecture Data"
     name_plural = "Weekly Prefecture Data"
-    column_list = (
-        models.WeeklyPrefecture.date, models.WeeklyPrefecture.fuel_type, models.WeeklyPrefecture.prefecture,
-        models.WeeklyPrefecture.lowest_price, models.WeeklyPrefecture.highest_price,
-        models.WeeklyPrefecture.median_price
-    )
     column_formatters = {
         models.WeeklyPrefecture.fuel_type: lambda m, _: m.fuel_type.description,
         models.WeeklyPrefecture.prefecture: lambda m, _: m.prefecture.description,
