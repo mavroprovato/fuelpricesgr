@@ -5,8 +5,9 @@ import datetime
 import fastapi
 import fastapi.middleware
 import fastapi.middleware.cors
+import sqladmin
 
-from fuelpricesgr import caching, database, enums, schemas, services, settings
+from fuelpricesgr import caching, database, enums, models, schemas, services, settings
 
 
 app = fastapi.FastAPI(
@@ -34,6 +35,7 @@ app = fastapi.FastAPI(
         )
     ]
 )
+admin = sqladmin.Admin(app, database.engine)
 
 
 @app.get(
@@ -234,3 +236,43 @@ def get_date_range(start_date: datetime.date, end_date: datetime.date) -> tuple[
         start_date = end_date - datetime.timedelta(days=min(days, settings.MAX_DAYS))
 
     return start_date, end_date
+
+
+class DailyCountryAdmin(sqladmin.ModelView, model=models.DailyCountry):
+    """The daily country admin.
+    """
+    column_list = (models.DailyCountry.date, models.DailyCountry.fuel_type, models.DailyCountry.price)
+
+
+class DailyPrefectureAdmin(sqladmin.ModelView, model=models.DailyPrefecture):
+    """The daily country admin.
+    """
+    column_list = (
+        models.DailyPrefecture.date, models.DailyPrefecture.fuel_type, models.DailyPrefecture.fuel_type,
+        models.DailyPrefecture.price
+    )
+
+
+class WeeklyCountryAdmin(sqladmin.ModelView, model=models.WeeklyCountry):
+    """The daily country admin.
+    """
+    column_list = (
+        models.WeeklyCountry.date, models.WeeklyCountry.fuel_type, models.WeeklyCountry.lowest_price,
+        models.WeeklyCountry.highest_price, models.WeeklyCountry.median_price
+    )
+
+
+class WeeklyPrefectureAdmin(sqladmin.ModelView, model=models.WeeklyPrefecture):
+    """The daily country admin.
+    """
+    column_list = (
+        models.WeeklyPrefecture.date, models.WeeklyPrefecture.fuel_type, models.WeeklyPrefecture.prefecture,
+        models.WeeklyPrefecture.lowest_price, models.WeeklyPrefecture.highest_price,
+        models.WeeklyPrefecture.median_price
+    )
+
+
+admin.add_view(DailyCountryAdmin)
+admin.add_view(DailyPrefectureAdmin)
+admin.add_view(WeeklyCountryAdmin)
+admin.add_view(WeeklyPrefectureAdmin)
