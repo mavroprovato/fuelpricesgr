@@ -5,7 +5,14 @@ import sqladmin
 from fuelpricesgr import models
 
 
-class DailyCountryAdmin(sqladmin.ModelView, model=models.DailyCountry):
+class BaseAdmin(sqladmin.ModelView):
+    """Base admin class.
+    """
+    page_size = 100
+    page_size_options = [100, 200, 500, 1000]
+
+
+class DailyCountryAdmin(BaseAdmin, model=models.DailyCountry):
     """The daily country admin.
     """
     name = "Daily Country Data"
@@ -15,11 +22,9 @@ class DailyCountryAdmin(sqladmin.ModelView, model=models.DailyCountry):
     column_searchable_list = (models.DailyCountry.date, )
     column_sortable_list = (models.DailyCountry.date, )
     column_default_sort = [(models.DailyCountry.date, True), (models.DailyCountry.fuel_type, False)]
-    page_size = 100
-    page_size_options = [100, 200, 500, 1000]
 
 
-class DailyPrefectureAdmin(sqladmin.ModelView, model=models.DailyPrefecture):
+class DailyPrefectureAdmin(BaseAdmin, model=models.DailyPrefecture):
     """The daily country admin.
     """
     name = "Daily Prefecture Data"
@@ -38,11 +43,9 @@ class DailyPrefectureAdmin(sqladmin.ModelView, model=models.DailyPrefecture):
         (models.DailyPrefecture.date, True), (models.DailyPrefecture.prefecture, False),
         (models.DailyPrefecture.fuel_type, False)
     ]
-    page_size = 100
-    page_size_options = [100, 200, 500, 1000]
 
 
-class WeeklyCountryAdmin(sqladmin.ModelView, model=models.WeeklyCountry):
+class WeeklyCountryAdmin(BaseAdmin, model=models.WeeklyCountry):
     """The daily country admin.
     """
     name = "Weekly Country Data"
@@ -55,11 +58,9 @@ class WeeklyCountryAdmin(sqladmin.ModelView, model=models.WeeklyCountry):
     column_searchable_list = (models.WeeklyCountry.date,)
     column_sortable_list = (models.WeeklyCountry.date,)
     column_default_sort = [(models.WeeklyCountry.date, True), (models.WeeklyCountry.fuel_type, False)]
-    page_size = 100
-    page_size_options = [100, 200, 500, 1000]
 
 
-class WeeklyPrefectureAdmin(sqladmin.ModelView, model=models.WeeklyPrefecture):
+class WeeklyPrefectureAdmin(BaseAdmin, model=models.WeeklyPrefecture):
     """The daily country admin.
     """
     name = "Weekly Prefecture Data"
@@ -79,5 +80,3 @@ class WeeklyPrefectureAdmin(sqladmin.ModelView, model=models.WeeklyPrefecture):
         (models.WeeklyPrefecture.date, True), (models.WeeklyPrefecture.prefecture, False),
         (models.WeeklyPrefecture.fuel_type, True)
     ]
-    page_size = 100
-    page_size_options = [100, 200, 500, 1000]
