@@ -55,3 +55,18 @@ class WeeklyPrefecture(Base):
     lowest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
     highest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
     median_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
+
+
+class User(Base):
+    """The user database model
+    """
+    __tablename__ = 'users'
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
+    username = sqlalchemy.Column(sqlalchemy.String(64, collation='NOCASE'), index=True)
+    password = sqlalchemy.Column(sqlalchemy.String)
+    active = sqlalchemy.Column(sqlalchemy.Boolean)
+    admin = sqlalchemy.Column(sqlalchemy.Boolean)
+    created_at = sqlalchemy.Column(sqlalchemy.DateTime)
+    updated_at = sqlalchemy.Column(sqlalchemy.DateTime)
+    last_login = sqlalchemy.Column(sqlalchemy.DateTime)
