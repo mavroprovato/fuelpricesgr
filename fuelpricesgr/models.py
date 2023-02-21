@@ -12,10 +12,10 @@ class DailyCountry(Base):
     __tablename__ = 'daily_country'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
-    date = sqlalchemy.Column(sqlalchemy.Date, index=True)
-    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType))
-    number_of_stations = sqlalchemy.Column(sqlalchemy.SmallInteger)
-    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
+    date = sqlalchemy.Column(sqlalchemy.Date, index=True, nullable=False)
+    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
+    number_of_stations = sqlalchemy.Column(sqlalchemy.SmallInteger, nullable=False)
+    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
 
 
 class DailyPrefecture(Base):
@@ -25,9 +25,9 @@ class DailyPrefecture(Base):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
     date = sqlalchemy.Column(sqlalchemy.Date, index=True)
-    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType))
-    prefecture = sqlalchemy.Column(sqlalchemy.Enum(enums.Prefecture))
-    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
+    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
+    prefecture = sqlalchemy.Column(sqlalchemy.Enum(enums.Prefecture), nullable=False)
+    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
 
 
 class WeeklyCountry(Base):
@@ -37,10 +37,10 @@ class WeeklyCountry(Base):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
     date = sqlalchemy.Column(sqlalchemy.Date, index=True)
-    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType))
-    lowest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
-    highest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
-    median_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
+    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
+    lowest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
+    highest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
+    median_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
 
 
 class WeeklyPrefecture(Base):
@@ -49,12 +49,12 @@ class WeeklyPrefecture(Base):
     __tablename__ = 'weekly_prefecture'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
-    date = sqlalchemy.Column(sqlalchemy.Date, index=True)
-    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType))
-    prefecture = sqlalchemy.Column(sqlalchemy.Enum(enums.Prefecture))
-    lowest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
-    highest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
-    median_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3))
+    date = sqlalchemy.Column(sqlalchemy.Date, index=True, nullable=False)
+    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
+    prefecture = sqlalchemy.Column(sqlalchemy.Enum(enums.Prefecture), nullable=False)
+    lowest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
+    highest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
+    median_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
 
 
 class User(Base):
@@ -64,9 +64,9 @@ class User(Base):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
     username = sqlalchemy.Column(sqlalchemy.String(64, collation='NOCASE'), index=True)
-    password = sqlalchemy.Column(sqlalchemy.String)
-    active = sqlalchemy.Column(sqlalchemy.Boolean)
-    admin = sqlalchemy.Column(sqlalchemy.Boolean)
-    created_at = sqlalchemy.Column(sqlalchemy.DateTime)
-    updated_at = sqlalchemy.Column(sqlalchemy.DateTime)
-    last_login = sqlalchemy.Column(sqlalchemy.DateTime)
+    password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    active = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=True)
+    admin = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=False)
+    created_at = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
+    updated_at = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
+    last_login = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
