@@ -10,15 +10,17 @@ from fuelpricesgr import models
 class BaseAdmin(sqladmin.ModelView):
     """Base admin class.
     """
+    column_exclude_list = ('id', )
+    column_details_exclude_list = ('id', )
     page_size = 100
-    page_size_options = [100, 200, 500, 1000]
+    page_size_options = (100, 200, 500, 1000)
 
-    def get_list_columns(self) -> list[tuple[str, sqlalchemy.orm.ColumnProperty]]:
-        """Return the list columns. All columns are returned, except for the ID.
+    def get_column_labels(self) -> dict[sqlalchemy.orm.ColumnProperty, str]:
+        """Get the column labels. This method replaces underscores and capitalizes the string.
 
-        :return: The list columns.
+        :return: The column labels.
         """
-        return [(attr.key, attr) for attr in sqlalchemy.inspect(self.model).attrs if attr.key != 'id']
+        return {attr: attr.key.replace('_', ' ').capitalize() for attr in sqlalchemy.inspect(self.model).attrs}
 
 
 class DailyCountryAdmin(BaseAdmin, model=models.DailyCountry):
@@ -27,8 +29,8 @@ class DailyCountryAdmin(BaseAdmin, model=models.DailyCountry):
     name = "Daily Country Data"
     name_plural = "Daily Country Data"
     column_formatters = {models.DailyCountry.fuel_type: lambda m, _: m.fuel_type.description}
-    column_searchable_list = (models.DailyCountry.date, )
-    column_sortable_list = (models.DailyCountry.date, )
+    column_searchable_list = models.DailyCountry.date,
+    column_sortable_list = models.DailyCountry.date,
     column_default_sort = [(models.DailyCountry.date, True), (models.DailyCountry.fuel_type, False)]
 
 
@@ -41,8 +43,8 @@ class DailyPrefectureAdmin(BaseAdmin, model=models.DailyPrefecture):
         models.DailyPrefecture.fuel_type: lambda m, _: m.fuel_type.description,
         models.DailyPrefecture.prefecture: lambda m, _: m.prefecture.description,
     }
-    column_searchable_list = (models.DailyPrefecture.date,)
-    column_sortable_list = (models.DailyPrefecture.date,)
+    column_searchable_list = models.DailyPrefecture.date,
+    column_sortable_list = models.DailyPrefecture.date,
     column_default_sort = [
         (models.DailyPrefecture.date, True), (models.DailyPrefecture.prefecture, False),
         (models.DailyPrefecture.fuel_type, False)
@@ -55,8 +57,8 @@ class WeeklyCountryAdmin(BaseAdmin, model=models.WeeklyCountry):
     name = "Weekly Country Data"
     name_plural = "Weekly Country Data"
     column_formatters = {models.WeeklyCountry.fuel_type: lambda m, _: m.fuel_type.description}
-    column_searchable_list = (models.WeeklyCountry.date,)
-    column_sortable_list = (models.WeeklyCountry.date,)
+    column_searchable_list = models.WeeklyCountry.date,
+    column_sortable_list = models.WeeklyCountry.date,
     column_default_sort = [(models.WeeklyCountry.date, True), (models.WeeklyCountry.fuel_type, False)]
 
 
@@ -69,8 +71,8 @@ class WeeklyPrefectureAdmin(BaseAdmin, model=models.WeeklyPrefecture):
         models.WeeklyPrefecture.fuel_type: lambda m, _: m.fuel_type.description,
         models.WeeklyPrefecture.prefecture: lambda m, _: m.prefecture.description,
     }
-    column_searchable_list = (models.WeeklyPrefecture.date, )
-    column_sortable_list = (models.WeeklyPrefecture.date, )
+    column_searchable_list = models.WeeklyPrefecture.date,
+    column_sortable_list = models.WeeklyPrefecture.date,
     column_default_sort = [
         (models.WeeklyPrefecture.date, True), (models.WeeklyPrefecture.prefecture, False),
         (models.WeeklyPrefecture.fuel_type, True)
