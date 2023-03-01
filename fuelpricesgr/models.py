@@ -67,6 +67,8 @@ class User(Base):
     password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     active = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=True)
     admin = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=False)
-    created_at = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
-    updated_at = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
-    last_login = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
+    created_at = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False, server_default=sqlalchemy.sql.func.now())
+    updated_at = sqlalchemy.Column(
+        sqlalchemy.DateTime, nullable=False, server_default=sqlalchemy.sql.func.now(),
+        onupdate=sqlalchemy.sql.func.now())
+    last_login = sqlalchemy.Column(sqlalchemy.DateTime)

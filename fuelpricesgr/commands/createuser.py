@@ -2,10 +2,12 @@
 """
 import argparse
 import logging
+import getpass
 
+import argon2
 import sqlalchemy.orm
 
-from fuelpricesgr import database
+from fuelpricesgr import database, models
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -26,6 +28,22 @@ def create_user(db: sqlalchemy.orm.Session, args: argparse.Namespace):
     :param db: The database session.
     :param args: The command line arguments.
     """
+    user_exists = db.query(db.query(models.User).where(models.User.email == args.email).exists()).scalar()
+    if user_exists:
+        raise ValueError(f"User with email {args.email} already exists")
+
+    # Get password
+    password1 = getpass.getpass("Password: ")
+    password2 = getpass.getpass("Repeat password: ")
+    if password1 != password2:
+        raise ValueError("Passwords do not match")
+    ph = argon2.PasswordHasher()
+
+    # Create user
+    password_hash = ph.hash(password1)
+    user = models.User(email=args.email, password=password_hash)
+    db.add(user)
+    db.commit()
 
 
 def main():
