@@ -10,8 +10,8 @@ from fuelpricesgr import models
 class BaseAdmin(sqladmin.ModelView):
     """Base admin class.
     """
-    column_exclude_list = ('id', )
-    column_details_exclude_list = ('id', )
+    column_exclude_list = 'id',
+    column_details_exclude_list = 'id',
     page_size = 100
     page_size_options = (100, 200, 500, 1000)
 
@@ -28,10 +28,10 @@ class DailyCountryAdmin(BaseAdmin, model=models.DailyCountry):
     """
     name = "Daily Country Data"
     name_plural = "Daily Country Data"
-    column_formatters = {models.DailyCountry.fuel_type: lambda m, _: m.fuel_type.description}
-    column_searchable_list = models.DailyCountry.date,
-    column_sortable_list = models.DailyCountry.date,
-    column_default_sort = [(models.DailyCountry.date, True), (models.DailyCountry.fuel_type, False)]
+    column_formatters = {'fuel_type': lambda m, _: m.fuel_type.description}
+    column_searchable_list = 'date',
+    column_sortable_list = 'date',
+    column_default_sort = [('date', True), ('fuel_type', False)]
 
 
 class DailyPrefectureAdmin(BaseAdmin, model=models.DailyPrefecture):
@@ -40,15 +40,12 @@ class DailyPrefectureAdmin(BaseAdmin, model=models.DailyPrefecture):
     name = "Daily Prefecture Data"
     name_plural = "Daily Prefecture Data"
     column_formatters = {
-        models.DailyPrefecture.fuel_type: lambda m, _: m.fuel_type.description,
-        models.DailyPrefecture.prefecture: lambda m, _: m.prefecture.description,
+        'fuel_type': lambda m, _: m.fuel_type.description,
+        'prefecture': lambda m, _: m.prefecture.description,
     }
-    column_searchable_list = models.DailyPrefecture.date,
-    column_sortable_list = models.DailyPrefecture.date,
-    column_default_sort = [
-        (models.DailyPrefecture.date, True), (models.DailyPrefecture.prefecture, False),
-        (models.DailyPrefecture.fuel_type, False)
-    ]
+    column_searchable_list = 'date',
+    column_sortable_list = 'date',
+    column_default_sort = [('date', True), ('prefecture', False), ('fuel_type', False)]
 
 
 class WeeklyCountryAdmin(BaseAdmin, model=models.WeeklyCountry):
@@ -56,10 +53,10 @@ class WeeklyCountryAdmin(BaseAdmin, model=models.WeeklyCountry):
     """
     name = "Weekly Country Data"
     name_plural = "Weekly Country Data"
-    column_formatters = {models.WeeklyCountry.fuel_type: lambda m, _: m.fuel_type.description}
-    column_searchable_list = models.WeeklyCountry.date,
-    column_sortable_list = models.WeeklyCountry.date,
-    column_default_sort = [(models.WeeklyCountry.date, True), (models.WeeklyCountry.fuel_type, False)]
+    column_formatters = {'fuel_type': lambda m, _: m.fuel_type.description}
+    column_searchable_list = 'date',
+    column_sortable_list = 'date',
+    column_default_sort = [('date', True), ('fuel_type', False)]
 
 
 class WeeklyPrefectureAdmin(BaseAdmin, model=models.WeeklyPrefecture):
@@ -68,12 +65,21 @@ class WeeklyPrefectureAdmin(BaseAdmin, model=models.WeeklyPrefecture):
     name = "Weekly Prefecture Data"
     name_plural = "Weekly Prefecture Data"
     column_formatters = {
-        models.WeeklyPrefecture.fuel_type: lambda m, _: m.fuel_type.description,
-        models.WeeklyPrefecture.prefecture: lambda m, _: m.prefecture.description,
+        'fuel_type': lambda m, _: m.fuel_type.description,
+        'prefecture': lambda m, _: m.prefecture.description,
     }
-    column_searchable_list = models.WeeklyPrefecture.date,
-    column_sortable_list = models.WeeklyPrefecture.date,
-    column_default_sort = [
-        (models.WeeklyPrefecture.date, True), (models.WeeklyPrefecture.prefecture, False),
-        (models.WeeklyPrefecture.fuel_type, True)
-    ]
+    column_searchable_list = 'date',
+    column_sortable_list = 'date',
+    column_default_sort = [('date', True), ('prefecture', False), ('fuel_type', True)]
+
+
+class UserAdmin(BaseAdmin, model=models.User):
+    """The user admin.
+    """
+    column_searchable_list = 'email',
+    column_exclude_list = ('id', 'password')
+    column_details_exclude_list = ('id', 'password')
+    form_excluded_columns = 'password',
+    form_widget_args = {
+        'created_at': {'readonly': True}, 'updated_at': {'readonly': True}, 'last_login': {'readonly': True},
+    }
