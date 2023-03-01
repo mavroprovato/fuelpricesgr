@@ -37,10 +37,9 @@ def create_user(db: sqlalchemy.orm.Session, args: argparse.Namespace):
     password2 = getpass.getpass("Repeat password: ")
     if password1 != password2:
         raise ValueError("Passwords do not match")
-    ph = argon2.PasswordHasher()
 
     # Create user
-    password_hash = ph.hash(password1)
+    password_hash = argon2.PasswordHasher().hash(password1)
     user = models.User(email=args.email, password=password_hash)
     db.add(user)
     db.commit()

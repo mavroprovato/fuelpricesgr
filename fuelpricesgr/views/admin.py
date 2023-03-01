@@ -1,10 +1,12 @@
 """Admin related views
 """
-import sqladmin
+import argon2
+import sqladmin.authentication
 import sqlalchemy
 import sqlalchemy.orm
+from starlette.requests import Request
 
-from fuelpricesgr import models
+from fuelpricesgr import database, models
 
 
 class BaseAdmin(sqladmin.ModelView):
@@ -83,3 +85,48 @@ class UserAdmin(BaseAdmin, model=models.User):
     form_widget_args = {
         'created_at': {'readonly': True}, 'updated_at': {'readonly': True}, 'last_login': {'readonly': True},
     }
+
+
+class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
+    """The admin authentication backend.
+    """
+    async def login(self, request: Request) -> bool:
+        """Log in the user.
+
+        :param request: The request.
+        :return: True if the user logged in successfully, False otherwise.
+        """
+        # Get form data
+        form = await request.form()
+        username, password = form['username'], form['password']
+
+        # Check user credentials
+        with database.SessionLocal() as db:
+            user = db.scalar(sqlalchemy.select(models.User).where(models.User.email == username))
+            if user is None:
+                return False
+            try:
+                argon2.PasswordHasher().verify(user.password, password)
+            except argon2.exceptions.VerifyMismatchError:
+                return False
+
+        # TODO: set the token
+        return True
+
+    async def logout(self, request: Request) -> bool:
+        """Logout the user. Clear the user session.
+
+        :param request: The request.
+        :return: True if the logout attempt was successful.
+        """
+        # TODO: implement
+        return True
+
+    async def authenticate(self, request: Request) -> bool:
+        """Authenticate the user.
+
+        :param request: The request.
+        :return: True if the user was authenticated successfully.
+        """
+        # TODO: implement
+        return False
