@@ -62,9 +62,9 @@ def get_date_from_file_name(file_name: str) -> datetime.date | None:
     :param file_name: The file name.
     :return: The date if found.
     """
-    result = re.search(r'(\d{2})_(\d{2})_(\d{4})', file_name)
+    result = re.search(r'(\d{1,2})_(\d{2})_(\d{4})', file_name)
     if not result:
-        logger.error("Could not find date in file name")
+        logger.error("Could not find date in file name %s", file_name)
         return None
 
     return datetime.date(day=int(result[1]), month=int(result[2]), year=int(result[3]))
