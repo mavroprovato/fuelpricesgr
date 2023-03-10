@@ -110,7 +110,8 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
             except argon2.exceptions.VerifyMismatchError:
                 return False
 
-        # TODO: set the token
+        request.session.update({"username": username})
+
         return True
 
     async def logout(self, request: Request) -> bool:
@@ -119,7 +120,7 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
         :param request: The request.
         :return: True if the logout attempt was successful.
         """
-        # TODO: implement
+        request.session.clear()
         return True
 
     async def authenticate(self, request: Request) -> bool:
@@ -128,5 +129,14 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
         :param request: The request.
         :return: True if the user was authenticated successfully.
         """
-        # TODO: implement
-        return False
+        username = request.session.get("username")
+        if not username:
+            return False
+
+        # Check user is active
+        with database.SessionLocal() as db:
+            user = db.scalar(sqlalchemy.select(models.User).where(models.User.email == username))
+            if user is None or not user.active:
+                return False
+
+        return True
