@@ -36,11 +36,11 @@ def cache(func):
                 result = redis_conn.get(cache_key)
 
                 return pickle.loads(result)
-            else:
-                result = func(*args, **kwargs)
-                redis_conn.set(cache_key, pickle.dumps(result))
 
-                return result
+            result = func(*args, **kwargs)
+            redis_conn.set(cache_key, pickle.dumps(result))
+
+            return result
 
         return func(*args, **kwargs)
 

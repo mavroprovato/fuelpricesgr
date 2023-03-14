@@ -55,6 +55,8 @@ def min_date(db: sqlalchemy.orm.Session, data_file_type: enums.DataFileType) -> 
     if dates:
         return min(dates)
 
+    return None
+
 
 def date_range(db: sqlalchemy.orm.Session, data_type: enums.DataType) -> (datetime.date | None, datetime.date | None):
     """Return the date range for a data type.
@@ -76,10 +78,10 @@ def data_exists(db: sqlalchemy.orm.Session, data_file_type: enums.DataFileType, 
     :param date: The data
     :return: True, if data exists for the date and for all data types for the data file type.
     """
-    return all([
+    return all(
         db.query(sqlalchemy.exists().where(data_type.model().date == date)).scalar()
         for data_type in data_file_type.data_types
-    ])
+    )
 
 
 def update_data(db: sqlalchemy.orm.Session, date: datetime.date, data_type: enums.DataType, data: list[dict]):
