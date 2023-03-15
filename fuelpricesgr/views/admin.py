@@ -5,6 +5,7 @@ import sqladmin.authentication
 import sqlalchemy
 import sqlalchemy.orm
 from starlette.requests import Request
+from starlette.responses import RedirectResponse
 
 from fuelpricesgr import database, models
 
@@ -123,7 +124,7 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
         request.session.clear()
         return True
 
-    async def authenticate(self, request: Request) -> bool:
+    async def authenticate(self, request: Request) -> RedirectResponse | None:
         """Authenticate the user.
 
         :param request: The request.
@@ -131,12 +132,12 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
         """
         username = request.session.get("username")
         if not username:
-            return False
+            return RedirectResponse(request.url_for("admin:login"), status_code=302)
 
         # Check user is active
         with database.SessionLocal() as db:
             user = db.scalar(sqlalchemy.select(models.User).where(models.User.email == username))
             if user is None or not user.active:
-                return False
+                return RedirectResponse(request.url_for("admin:login"), status_code=302)
 
-        return True
+        return None
