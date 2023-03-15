@@ -86,6 +86,7 @@ class UserAdmin(BaseAdmin, model=models.User):
     form_widget_args = {
         'created_at': {'readonly': True}, 'updated_at': {'readonly': True}, 'last_login': {'readonly': True},
     }
+    can_create = False
 
 
 class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
@@ -137,7 +138,7 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
         # Check user is active
         with database.SessionLocal() as db:
             user = db.scalar(sqlalchemy.select(models.User).where(models.User.email == username))
-            if user is None or not user.active:
+            if user is None or not user.active or not user.admin:
                 return RedirectResponse(request.url_for("admin:login"), status_code=302)
 
         return None
