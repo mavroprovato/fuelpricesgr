@@ -21,7 +21,7 @@ PREFECTURE_REGEXES = {
     enums.Prefecture.ARTA: re.compile(r'Α ?Ρ ?[ΤΣ] ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.ACHAEA: re.compile(r'Α ?[ΧΥ] ?Α ?Ϊ ?Α ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.BOEOTIA: re.compile(r'Β ?Ο ?[ΙΗ] ?Ω ?[ΤΣ] ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.DRAMA: re.compile(r'[ΔΓ] ?ΡΑ ?Μ ?Α ?[Σ\u03a2]', re.MULTILINE),
+    enums.Prefecture.DRAMA: re.compile(r'[ΔΓ] ?Ρ ?Α ?Μ ?Α ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.GREVENA: re.compile(r'Γ ?Ρ ?[ΕΔ] ?Β ?[ΕΔ] ?Ν ?Ω ?Ν', re.MULTILINE),
     enums.Prefecture.DODECANESE: re.compile(r'[ΔΓ] ?Ω ?[ΔΓ] ?[ΕΔ] ?Κ ?Α ?Ν ?[ΗΖ] ?[Σ\u03a2] ?Ο ?[ΤΥ]', re.MULTILINE),
     enums.Prefecture.EVROS: re.compile(r'[ΕΔ] ?Β ?Ρ ?Ο ?[ΥΤ]', re.MULTILINE),
