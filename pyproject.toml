@@ -5,7 +5,7 @@ description = ""
 authors = ["Kostas Kokkoros <mavroprovato@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 argon2-cffi = "^21.3.0"
 beautifulsoup4 = "^4.11.2"
 boto3 = "^1.26.69"
