@@ -40,7 +40,7 @@ def create_user(db: sqlalchemy.orm.Session, args: argparse.Namespace):
 
     # Create user
     password_hash = argon2.PasswordHasher().hash(password1)
-    user = models.User(email=args.email, password=password_hash)
+    user = models.User(email=args.email, password=password_hash, admin=args.admin)
     db.add(user)
     db.commit()
 
