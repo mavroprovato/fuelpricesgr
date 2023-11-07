@@ -248,8 +248,10 @@ def extract_weekly_data(text: str) -> dict[enums.DataType, list[dict]]:
     :param text: The PDF file text.
     :return: The data. It is a list of dicts with fuel_type, lowest_price, highest_price and median_price as keys.
     """
-    unleaded_95_match = re.search(r'Απ ?λ ?[ήι] +Αμ ?όλ ?υβδ ?[ηθ] Β ?ε ?ν ?[ζη]ί ?ν[ηθ] +9 ?5 οκ ?τα ?ν ?ίω ?ν', text)
+    unleaded_95_match = re.search(
+        r'Απ ?λ ?[ήι] +Αμ ?όλ ?υβδ ?[ηθ] Β ?ε ?ν ?[ζη] ?ί ?ν[ηθ] +9 ?5 οκ ?τα ?ν ?ίω ?ν', text)
     if not unleaded_95_match:
+        print(text)
         raise ValueError(f"Could not find weekly data for {enums.FuelType.UNLEADED_95}")
 
     diesel_match = re.search(
@@ -280,7 +282,7 @@ def extract_weekly_data(text: str) -> dict[enums.DataType, list[dict]]:
     for fuel_type, prices_text in matches.items():
         # Parse country data
         result = re.search(
-            r'[Σ\u03a2][ΤΣ]Α ?Θ ?Μ ?Ι ?[Σ\u03a2] ?Μ ?Ε ?Ν ?Ο ?[Σ\u03a2] *Μ ?\. ?Ο ?\.\*{0,2} ([0-9,\-\s]+)',
+            r'[Σ\u03a2][ΤΣ]Α ?Θ ?Μ ?Ι ?[Σ\u03a2] ?Μ ?Ε ?Ν ?Ο ?[Σ\u03a2] *Μ\.? ?\. ?Ο ?\.? ?\*{0,2} ([0-9,\-\s]+)',
             prices_text)
         if not result:
             raise ValueError("Could not find country data")
