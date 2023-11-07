@@ -30,7 +30,7 @@ python -m fuelpricesgr.commands.import --help
 Now you can launch the API by running the command:
 
 ```
-uvicorn fuelpricesgr.api:app
+uvicorn fuelpricesgr.main:app
 ```
 
 The API is now available at http://localhost:8000. The documentation for the API is available at
