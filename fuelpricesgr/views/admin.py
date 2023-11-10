@@ -125,7 +125,7 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
         request.session.clear()
         return True
 
-    async def authenticate(self, request: Request) -> RedirectResponse | None:
+    async def authenticate(self, request: Request) -> RedirectResponse | bool:
         """Authenticate the user.
 
         :param request: The request.
@@ -141,4 +141,4 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
             if user is None or not user.active or not user.admin:
                 return RedirectResponse(request.url_for("admin:login"), status_code=302)
 
-        return None
+        return True
