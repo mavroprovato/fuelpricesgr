@@ -1485,13 +1485,13 @@ files = [
 
 [[package]]
 name = "sqladmin"
-version = "0.15.2"
+version = "0.16.0"
 description = "SQLAlchemy admin for FastAPI and Starlette"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "sqladmin-0.15.2-py3-none-any.whl", hash = "sha256:dfa87380acd2d88e8aaac23b9b50afe9bb522637b0fb2ce99ab650072290ea97"},
-    {file = "sqladmin-0.15.2.tar.gz", hash = "sha256:f7f25a267a471e60bcdc11cd4e885866904adb27f8ed40beca26e52e4d928f96"},
+    {file = "sqladmin-0.16.0-py3-none-any.whl", hash = "sha256:57aa3347a81348685938b16d6aa8ac9cd72f29fcf0f7516e834a00ea8b45462b"},
+    {file = "sqladmin-0.16.0.tar.gz", hash = "sha256:1b3e2062cf19adcd70a46edda30674d8a8e94f3bc6e008befc9037195e00785b"},
 ]
 
 [package.dependencies]
@@ -1499,7 +1499,7 @@ jinja2 = "*"
 python-multipart = "*"
 sqlalchemy = ">=1.4"
 starlette = "*"
-wtforms = ">=3,<3.1.0"
+wtforms = ">=3.1,<3.2"
 
 [package.extras]
 full = ["itsdangerous"]
@@ -1667,17 +1667,17 @@ standard = ["colorama (>=0.4)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)",
 
 [[package]]
 name = "wtforms"
-version = "3.0.1"
+version = "3.1.1"
 description = "Form validation and rendering for Python web development."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "WTForms-3.0.1-py3-none-any.whl", hash = "sha256:837f2f0e0ca79481b92884962b914eba4e72b7a2daaf1f939c890ed0124b834b"},
-    {file = "WTForms-3.0.1.tar.gz", hash = "sha256:6b351bbb12dd58af57ffef05bc78425d08d1914e0fd68ee14143b7ade023c5bc"},
+    {file = "wtforms-3.1.1-py3-none-any.whl", hash = "sha256:ae7c54b29806c70f7bce8eb9f24afceb10ca5c32af3d9f04f74d2f66ccc5c7e0"},
+    {file = "wtforms-3.1.1.tar.gz", hash = "sha256:5e51df8af9a60f6beead75efa10975e97768825a82146a65c7cbf5b915990620"},
 ]
 
 [package.dependencies]
-MarkupSafe = "*"
+markupsafe = "*"
 
 [package.extras]
 email = ["email-validator"]
@@ -1685,4 +1685,4 @@ email = ["email-validator"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "87e8688c35be9c2415b9088f8dc52b01fa995667a332562fd4cd35f55b385a85"
+content-hash = "5256caddd03ba26426fac20215b261a5a515dcb8fd557771568bce623bfe8200"

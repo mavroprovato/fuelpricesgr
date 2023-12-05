@@ -17,7 +17,7 @@ PyPDF2 = "^3.0.1"
 python-dotenv = "^1.0.0"
 requests = "^2.28.2"
 redis = "^5.0.1"
-sqladmin = "^0.15.0"
+sqladmin = "^0.16.0"
 SQLAlchemy = "^2.0.3"
 uvicorn = "^0.24.0"
 
