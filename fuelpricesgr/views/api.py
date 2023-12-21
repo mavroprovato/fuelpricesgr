@@ -1,5 +1,6 @@
 """API related views
 """
+from collections.abc import Iterable, Mapping
 import datetime
 
 import fastapi
@@ -10,12 +11,12 @@ router = fastapi.APIRouter()
 
 
 @router.get(
-    path="/",
+    path="/status",
     summary="Application status",
     description="Return the status of the application",
     response_model=schemas.Status
 )
-def index() -> dict:
+def index() -> Mapping[str, object]:
     """Return the status of the application.
     """
     return services.status()
@@ -27,7 +28,7 @@ def index() -> dict:
     description="Return all fuel types",
     response_model=list[schemas.NameDescription]
 )
-def fuel_types() -> list[dict]:
+def fuel_types() -> Iterable[Mapping[str, str]]:
     """Returns all fuel types.
 
     :return: The fuel types.
@@ -41,7 +42,7 @@ def fuel_types() -> list[dict]:
     description="Return all prefectures",
     response_model=list[schemas.NameDescription]
 )
-def prefectures() -> list[dict]:
+def prefectures() -> Iterable[Mapping[str, str]]:
     """Returns all prefectures.
 
     :return: The prefectures.
@@ -56,7 +57,7 @@ def prefectures() -> list[dict]:
     response_model=schemas.DateRange
 )
 @caching.cache
-def date_range(data_type: enums.DataType) -> dict:
+def date_range(data_type: enums.DataType) -> Mapping[str, datetime.date | None]:
     """Returns the available data date range for a data type.
 
     :param data_type: The data type.
@@ -82,7 +83,7 @@ def date_range(data_type: enums.DataType) -> dict:
 def daily_country_data(
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> list[dict]:
+) -> Iterable[Mapping[str, object]]:
     """Returns the daily country data.
 
     :param start_date: The start date of the data to fetch.
@@ -106,7 +107,7 @@ def daily_prefecture_data(
         prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> list[dict]:
+) -> Iterable[Mapping[str, object]]:
     """Returns the daily prefecture data.
 
     :param prefecture: The prefecture for which to fetch data.
@@ -130,7 +131,7 @@ def daily_prefecture_data(
 def weekly_country_data(
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> list[dict]:
+) -> Iterable[Mapping[str, object]]:
     """Return the weekly country data.
 
     :param start_date: The start date of the data to fetch.
@@ -154,7 +155,7 @@ def weekly_prefecture_data(
         prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> list[dict]:
+) -> Iterable[Mapping[str, object]]:
     """Return the weekly prefecture data
 
     :param prefecture: The prefecture for which to fetch data.
@@ -175,7 +176,7 @@ def weekly_prefecture_data(
     response_model=schemas.Country
 )
 @caching.cache
-def country_data(date: datetime.date = fastapi.Path(title="The date")) -> dict:
+def country_data(date: datetime.date = fastapi.Path(title="The date")) -> Mapping[str, object]:
     """Return the country data for a date.
 
     :param date: The date.
@@ -188,7 +189,7 @@ def country_data(date: datetime.date = fastapi.Path(title="The date")) -> dict:
 def get_date_range(start_date: datetime.date, end_date: datetime.date) -> tuple[datetime.date, datetime.date]:
     """Get the date range from the provided start and end dates.
 
-    :param start_date: The start date.
+    :param start_date: The start date.k
     :param end_date: The end date.
     :return: The date range as a tuple, with the start date as the first element and the end date as the second.
     """

@@ -1,5 +1,7 @@
 """Admin related views
 """
+from collections.abc import Mapping
+
 import argon2
 import sqladmin.authentication
 import sqlalchemy
@@ -18,7 +20,7 @@ class BaseAdmin(sqladmin.ModelView):
     page_size = 100
     page_size_options = (100, 200, 500, 1000)
 
-    def get_column_labels(self) -> dict[sqlalchemy.orm.ColumnProperty, str]:
+    def get_column_labels(self) -> Mapping[sqlalchemy.orm.ColumnProperty, str]:
         """Get the column labels. This method replaces underscores and capitalizes the string.
 
         :return: The column labels.

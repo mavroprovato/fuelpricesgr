@@ -1,6 +1,7 @@
 """Command to import data into the database.
 """
 import argparse
+from collections.abc import Iterable
 import datetime
 import io
 import logging
@@ -17,7 +18,7 @@ models.Base.metadata.create_all(bind=database.engine)
 logger = logging.getLogger(__name__)
 
 
-def parse_data_file_type(data_file_types: str) -> list[enums.DataFileType] | None:
+def parse_data_file_type(data_file_types: str) -> Iterable[enums.DataFileType] | None:
     """Parse the data file types argument.
 
     :param data_file_types: The data file types argument.

@@ -1,5 +1,6 @@
 """Contains service methods
 """
+from collections.abc import Iterable, Mapping
 import datetime
 import logging
 import itertools
@@ -15,7 +16,7 @@ from fuelpricesgr import database, enums, models, settings
 logger = logging.getLogger(__name__)
 
 
-def status() -> dict:
+def status() -> Mapping[str, object]:
     """Return the application status.
 
     :return: The application status.
@@ -105,7 +106,9 @@ def update_data(db: sqlalchemy.orm.Session, date: datetime.date, data_type: enum
     db.commit()
 
 
-def daily_country_data(db: sqlalchemy.orm.Session, start_date: datetime.date, end_date: datetime.date) -> list[dict]:
+def daily_country_data(
+        db: sqlalchemy.orm.Session, start_date: datetime.date, end_date: datetime.date
+) -> Iterable[Mapping[str, object]]:
     """Return the daily country data, grouped by date.
 
     :param db: The database.
@@ -135,7 +138,7 @@ def daily_country_data(db: sqlalchemy.orm.Session, start_date: datetime.date, en
 
 def daily_prefecture_data(
         db: sqlalchemy.orm.Session, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
-) -> list[dict]:
+) -> Iterable[Mapping[str, object]]:
     """Return the daily prefecture data, grouped by date.
 
     :param db: The database.
@@ -164,7 +167,9 @@ def daily_prefecture_data(
     ]
 
 
-def weekly_country_data(db: sqlalchemy.orm.Session, start_date: datetime.date, end_date: datetime.date) -> list[dict]:
+def weekly_country_data(
+        db: sqlalchemy.orm.Session, start_date: datetime.date, end_date: datetime.date
+) -> Iterable[Mapping[str, object]]:
     """Return the daily prefecture data, grouped by date.
 
     :param db: The database.
@@ -195,7 +200,7 @@ def weekly_country_data(db: sqlalchemy.orm.Session, start_date: datetime.date, e
 
 def weekly_prefecture_data(
         db: sqlalchemy.orm.Session, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
-) -> list[dict]:
+) -> Iterable[Mapping[str, object]]:
     """Return the weekly prefecture data, grouped by date.
 
     :param db: The database.
@@ -226,7 +231,7 @@ def weekly_prefecture_data(
     ]
 
 
-def country_data(db: sqlalchemy.orm.Session, date: datetime.date) -> dict:
+def country_data(db: sqlalchemy.orm.Session, date: datetime.date) -> Mapping[str, object]:
     """Return the country data for a date.
 
     :param db: The database.
