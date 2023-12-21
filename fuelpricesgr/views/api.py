@@ -189,7 +189,7 @@ def country_data(date: datetime.date = fastapi.Path(title="The date")) -> Mappin
 def get_date_range(start_date: datetime.date, end_date: datetime.date) -> tuple[datetime.date, datetime.date]:
     """Get the date range from the provided start and end dates.
 
-    :param start_date: The start date.k
+    :param start_date: The start date.
     :param end_date: The end date.
     :return: The date range as a tuple, with the start date as the first element and the end date as the second.
     """
