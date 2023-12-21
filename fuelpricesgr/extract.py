@@ -251,7 +251,6 @@ def extract_weekly_data(text: str) -> dict[enums.DataType, list[dict]]:
     unleaded_95_match = re.search(
         r'Απ ?λ ?[ήι] +Αμ ?όλ ?υβδ ?[ηθ] Β ?ε ?ν ?[ζη] ?ί ?ν[ηθ] +9 ?5 οκ ?τα ?ν ?ίω ?ν', text)
     if not unleaded_95_match:
-        print(text)
         raise ValueError(f"Could not find weekly data for {enums.FuelType.UNLEADED_95}")
 
     diesel_match = re.search(
@@ -262,9 +261,7 @@ def extract_weekly_data(text: str) -> dict[enums.DataType, list[dict]]:
         logger.warning("Could not find weekly data for %s", enums.FuelType.DIESEL)
 
     diesel_heating_match = re.search(
-        r'Π ?ετ ?ρ ?[έζ] ?λ ?α ?ι ?ο +Θ ?[έζ] ?ρμ ?αν[σς] ?[ηθ][ςσ] +\(Κα ?τ ?΄ ?ο ?ί ?κον ?\)',
-        text
-    )
+        r'Π ?ετ ?ρ ?[έζ] ?λ ?α ?ι ?ο +Θ ?[έζ]?ρμ ?αν[σς] ?[ηθ][ςσ] +\(Κα ?τ ?΄ ?ο ?ί ?κ ?ον ?\)', text)
     if not diesel_heating_match:
         logger.warning("Could not find weekly data for %s", enums.FuelType.DIESEL_HEATING)
 
@@ -300,10 +297,6 @@ def extract_weekly_data(text: str) -> dict[enums.DataType, list[dict]]:
         results = re.findall(
             r'ΝΟ ?Μ ?Ο ?[Σ\u03a2] +(\D+) ([0-9,\-\s]+)', prices_text, re.MULTILINE)
         if len(results) != len(enums.Prefecture):
-            print(results)
-            print("len(results)", len(results))
-            print("len(enums.Prefecture)", len(enums.Prefecture))
-            print(set(p.description for p in enums.Prefecture) - set(result[0].strip() for result in results))
             raise ValueError("Could not find all prefectures")
         for result in results:
             prefecture = extract_prefecture(result[0])
@@ -324,8 +317,8 @@ def extract_daily_prices(prices: str) -> tuple[decimal.Decimal, decimal.Decimal,
     """
     price_matches = re.findall(r'\d[,.][\d ]{3}', prices, re.MULTILINE)
     if len(price_matches) != 3:
-        print(prices)
         raise ValueError("Could not parse prices")
+
     return (
         decimal.Decimal(price_matches[0].replace(' ', '').replace(',', '.')),
         decimal.Decimal(price_matches[1].replace(' ', '').replace(',', '.')),
