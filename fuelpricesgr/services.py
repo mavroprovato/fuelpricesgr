@@ -11,6 +11,9 @@ import sqlalchemy.orm
 
 from fuelpricesgr import database, enums, models, settings
 
+# The module logger
+logger = logging.getLogger(__name__)
+
 
 def status() -> dict:
     """Return the application status.
@@ -23,10 +26,10 @@ def status() -> dict:
         with database.SessionLocal() as db:
             result = db.execute(sqlalchemy.sql.text("SELECT COUNT(*) FROM sqlite_master"))
             if next(result)[0] == 0:
-                logging.error("Database tables do not exist")
+                logger.error("Database tables do not exist")
                 db_status = enums.ApplicationStatus.ERROR
     except sqlalchemy.exc.OperationalError as ex:
-        logging.error("Could not connect to the database", exc_info=ex)
+        logger.error("Could not connect to the database", exc_info=ex)
         db_status = enums.ApplicationStatus.ERROR
     # Check the cache status
     cache_status = enums.ApplicationStatus.OK
@@ -34,7 +37,7 @@ def status() -> dict:
         conn = redis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
         conn.ping()
     except redis.exceptions.RedisError as ex:
-        logging.error("Could not connect to the cache", exc_info=ex)
+        logger.error("Could not connect to the cache", exc_info=ex)
         cache_status = enums.ApplicationStatus.ERROR
 
     return {'db_status': db_status, 'cache_status': cache_status}

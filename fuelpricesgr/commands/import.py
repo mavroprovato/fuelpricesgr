@@ -74,7 +74,7 @@ def import_data(db: sqlalchemy.orm.Session, args: argparse.Namespace) -> bool:
                 data_file_type=data_file_type, start_date=args.start_date, end_date=args.end_date
             ):
                 if args.update or not services.data_exists(db=db, data_file_type=data_file_type, date=date):
-                    logging.info("Updating data for data file type %s and date %s", data_file_type, date)
+                    logger.info("Updating data for data file type %s and date %s", data_file_type, date)
                     data = fetch.fetch_data(
                         file_link=file_link, data_file_type=data_file_type, skip_file_cache=args.skip_file_cache
                     )
