@@ -4,10 +4,7 @@ import argparse
 import logging
 import getpass
 
-import argon2
-import sqlalchemy.orm
-
-from fuelpricesgr import database, models
+from fuelpricesgr import services
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -22,27 +19,24 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def create_user(db: sqlalchemy.orm.Session, args: argparse.Namespace):
+def create_user(args: argparse.Namespace):
     """Create the user.
 
-    :param db: The database session.
     :param args: The command line arguments.
     """
-    user_exists = db.query(db.query(models.User).where(models.User.email == args.email).exists()).scalar()
-    if user_exists:
-        raise ValueError(f"User with email {args.email} already exists")
+    with services.sql.SqlService() as service:
+        user_exists = service.user_exists(email=args.email)
+        if user_exists:
+            raise ValueError(f"User with email {args.email} already exists")
 
-    # Get password
-    password1 = getpass.getpass("Password: ")
-    password2 = getpass.getpass("Repeat password: ")
-    if password1 != password2:
-        raise ValueError("Passwords do not match")
+        # Get password
+        password1 = getpass.getpass("Password: ")
+        password2 = getpass.getpass("Repeat password: ")
+        if password1 != password2:
+            raise ValueError("Passwords do not match")
 
-    # Create user
-    password_hash = argon2.PasswordHasher().hash(password1)
-    user = models.User(email=args.email, password=password_hash, admin=args.admin)
-    db.add(user)
-    db.commit()
+        # Create user
+        service.create_user(email=args.email, password=password1, admin=args.admin)
 
 
 def main():
@@ -54,9 +48,8 @@ def main():
     # Parse arguments
     args = parse_arguments()
 
-    # Import data
-    with database.SessionLocal() as db:
-        create_user(db=db, args=args)
+    # Create user
+    create_user(args=args)
 
 
 if __name__ == '__main__':

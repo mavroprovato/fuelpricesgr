@@ -119,7 +119,7 @@ class DataType(enum.Enum):
 
         :return: The database model for the data type.
         """
-        module = importlib.import_module("fuelpricesgr.models")
+        module = importlib.import_module("fuelpricesgr.services.sql")
 
         match self:
             case self.WEEKLY_COUNTRY:

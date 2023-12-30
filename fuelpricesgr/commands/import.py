@@ -9,10 +9,10 @@ import sys
 
 import sqlalchemy.orm
 
-from fuelpricesgr import caching, database, enums, fetch, mail, models, services, settings
+from fuelpricesgr import caching, enums, fetch, mail, services, settings
 
 # Auto-create database schema
-models.Base.metadata.create_all(bind=database.engine)
+services.sql.Base.metadata.create_all(bind=services.sql.engine)
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -56,10 +56,10 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def import_data(db: sqlalchemy.orm.Session, args: argparse.Namespace) -> bool:
+def import_data(service: services.base.BaseService, args: argparse.Namespace) -> bool:
     """Import data based on the command line arguments.
 
-    :param db: The database session.
+    :param service: The database service.
     :param args: The command line arguments.
     :return: True if an error occurred, False otherwise.
     """
@@ -68,20 +68,20 @@ def import_data(db: sqlalchemy.orm.Session, args: argparse.Namespace) -> bool:
         data_file_types = enums.DataFileType if args.types is None else args.types
         for data_file_type in data_file_types:
             if args.start_date is None:
-                args.start_date = services.min_date(db=db, data_file_type=data_file_type)
+                args.start_date = service.min_date(data_file_type=data_file_type)
             logger.info("Fetching data between %s and %s, and data file type %s", args.start_date, args.end_date,
                         data_file_type)
             for date, file_link in fetch.fetch_link(
                 data_file_type=data_file_type, start_date=args.start_date, end_date=args.end_date
             ):
-                if args.update or not services.data_exists(db=db, data_file_type=data_file_type, date=date):
+                if args.update or not service.data_exists(data_file_type=data_file_type, date=date):
                     logger.info("Updating data for data file type %s and date %s", data_file_type, date)
                     data = fetch.fetch_data(
                         file_link=file_link, data_file_type=data_file_type, skip_file_cache=args.skip_file_cache
                     )
                     for data_type, fuel_type_data in fetch.extract_data(
                             data_file_type=data_file_type, date=date, data=data).items():
-                        services.update_data(db=db, date=date, data_type=data_type, data=fuel_type_data)
+                        service.update_data(date=date, data_type=data_type, data=fuel_type_data)
     except Exception as ex:
         logger.exception("", exc_info=ex)
         error = True
@@ -121,12 +121,12 @@ def main():
 
     # Parse arguments
     args = parse_arguments()
-    metadata = database.Base.metadata
-    metadata.create_all(database.engine)
+    metadata = services.sql.Base.metadata
+    metadata.create_all(services.sql.engine)
 
     # Import data
-    with database.SessionLocal() as db:
-        error = import_data(db=db, args=args)
+    with services.sql.SqlService() as service:
+        error = import_data(service=service, args=args)
 
     # Clear cache
     caching.clear_cache()

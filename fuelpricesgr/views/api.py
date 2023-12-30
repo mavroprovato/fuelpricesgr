@@ -5,7 +5,7 @@ import datetime
 
 import fastapi
 
-from fuelpricesgr import caching, database, enums, schemas, services, settings
+from fuelpricesgr import caching, enums, schemas, services, settings
 
 router = fastapi.APIRouter()
 
@@ -19,7 +19,8 @@ router = fastapi.APIRouter()
 def index() -> Mapping[str, object]:
     """Return the status of the application.
     """
-    return services.status()
+    with services.sql.SqlService() as service:
+        return service.status()
 
 
 @router.get(
@@ -67,8 +68,8 @@ def date_range(data_type: enums.DataType) -> Mapping[str, datetime.date | None]:
     if not model:
         raise fastapi.HTTPException(status_code=404, detail="Not found")
 
-    with database.SessionLocal() as db:
-        start_date, end_date = services.date_range(db=db, data_type=data_type)
+    with services.sql.SqlService() as service:
+        start_date, end_date = service.date_range(data_type=data_type)
 
         return {'start_date': start_date, 'end_date': end_date}
 
@@ -92,8 +93,8 @@ def daily_country_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    with database.SessionLocal() as db:
-        return services.daily_country_data(db=db, start_date=start_date, end_date=end_date)
+    with services.sql.SqlService() as service:
+        return service.daily_country_data(start_date=start_date, end_date=end_date)
 
 
 @router.get(
@@ -117,8 +118,8 @@ def daily_prefecture_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    with database.SessionLocal() as db:
-        return services.daily_prefecture_data(db=db, prefecture=prefecture, start_date=start_date, end_date=end_date)
+    with services.sql.SqlService() as service:
+        return service.daily_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date)
 
 
 @router.get(
@@ -140,8 +141,8 @@ def weekly_country_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    with database.SessionLocal() as db:
-        return services.weekly_country_data(db=db, start_date=start_date, end_date=end_date)
+    with services.sql.SqlService() as service:
+        return service.weekly_country_data(start_date=start_date, end_date=end_date)
 
 
 @router.get(
@@ -165,8 +166,8 @@ def weekly_prefecture_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    with database.SessionLocal() as db:
-        return services.weekly_prefecture_data(db=db, prefecture=prefecture, start_date=start_date, end_date=end_date)
+    with services.sql.SqlService() as service:
+        return service.weekly_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date)
 
 
 @router.get(
@@ -182,8 +183,8 @@ def country_data(date: datetime.date = fastapi.Path(title="The date")) -> Mappin
     :param date: The date.
     :return: The country data.
     """
-    with database.SessionLocal() as db:
-        return services.country_data(db=db, date=date)
+    with services.sql.SqlService() as service:
+        return service.country_data(date=date)
 
 
 def get_date_range(start_date: datetime.date, end_date: datetime.date) -> tuple[datetime.date, datetime.date]:

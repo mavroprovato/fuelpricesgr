@@ -9,7 +9,7 @@ import sqlalchemy.orm
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
-from fuelpricesgr import database, models
+from fuelpricesgr import services
 
 
 class BaseAdmin(sqladmin.ModelView):
@@ -28,7 +28,7 @@ class BaseAdmin(sqladmin.ModelView):
         return {attr: attr.key.replace('_', ' ').capitalize() for attr in sqlalchemy.inspect(self.model).attrs}
 
 
-class DailyCountryAdmin(BaseAdmin, model=models.DailyCountry):
+class DailyCountryAdmin(BaseAdmin, model=services.sql.DailyCountry):
     """The daily country admin.
     """
     name = "Daily Country Data"
@@ -39,7 +39,7 @@ class DailyCountryAdmin(BaseAdmin, model=models.DailyCountry):
     column_default_sort = [('date', True), ('fuel_type', False)]
 
 
-class DailyPrefectureAdmin(BaseAdmin, model=models.DailyPrefecture):
+class DailyPrefectureAdmin(BaseAdmin, model=services.sql.DailyPrefecture):
     """The daily country admin.
     """
     name = "Daily Prefecture Data"
@@ -53,7 +53,7 @@ class DailyPrefectureAdmin(BaseAdmin, model=models.DailyPrefecture):
     column_default_sort = [('date', True), ('prefecture', False), ('fuel_type', False)]
 
 
-class WeeklyCountryAdmin(BaseAdmin, model=models.WeeklyCountry):
+class WeeklyCountryAdmin(BaseAdmin, model=services.sql.WeeklyCountry):
     """The daily country admin.
     """
     name = "Weekly Country Data"
@@ -64,7 +64,7 @@ class WeeklyCountryAdmin(BaseAdmin, model=models.WeeklyCountry):
     column_default_sort = [('date', True), ('fuel_type', False)]
 
 
-class WeeklyPrefectureAdmin(BaseAdmin, model=models.WeeklyPrefecture):
+class WeeklyPrefectureAdmin(BaseAdmin, model=services.sql.WeeklyPrefecture):
     """The daily country admin.
     """
     name = "Weekly Prefecture Data"
@@ -78,7 +78,7 @@ class WeeklyPrefectureAdmin(BaseAdmin, model=models.WeeklyPrefecture):
     column_default_sort = [('date', True), ('prefecture', False), ('fuel_type', True)]
 
 
-class UserAdmin(BaseAdmin, model=models.User):
+class UserAdmin(BaseAdmin, model=services.sql.User):
     """The user admin.
     """
     column_searchable_list = ('email', )
@@ -105,14 +105,8 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
         username, password = form['username'], form['password']
 
         # Check user credentials
-        with database.SessionLocal() as db:
-            user = db.scalar(sqlalchemy.select(models.User).where(models.User.email == username))
-            if user is None:
-                return False
-            try:
-                argon2.PasswordHasher().verify(user.password, password)
-            except argon2.exceptions.VerifyMismatchError:
-                return False
+        with services.sql.SqlService() as service:
+            service.authenticate(email=username, password=password)
 
         request.session.update({"username": username})
 
@@ -138,8 +132,8 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
             return RedirectResponse(request.url_for("admin:login"), status_code=302)
 
         # Check user is active
-        with database.SessionLocal() as db:
-            user = db.scalar(sqlalchemy.select(models.User).where(models.User.email == username))
+        with services.sql.SqlService() as service:
+            user = service.get_user(email=username)
             if user is None or not user.active or not user.admin:
                 return RedirectResponse(request.url_for("admin:login"), status_code=302)
 
