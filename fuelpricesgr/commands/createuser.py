@@ -24,7 +24,7 @@ def create_user(args: argparse.Namespace):
 
     :param args: The command line arguments.
     """
-    with services.sql.SqlService() as service:
+    with services.get_service() as service:
         user_exists = service.user_exists(email=args.email)
         if user_exists:
             raise ValueError(f"User with email {args.email} already exists")

@@ -7,12 +7,7 @@ import io
 import logging
 import sys
 
-import sqlalchemy.orm
-
 from fuelpricesgr import caching, enums, fetch, mail, services, settings
-
-# Auto-create database schema
-services.sql.Base.metadata.create_all(bind=services.sql.engine)
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -121,11 +116,10 @@ def main():
 
     # Parse arguments
     args = parse_arguments()
-    metadata = services.sql.Base.metadata
-    metadata.create_all(services.sql.engine)
 
     # Import data
-    with services.sql.SqlService() as service:
+    services.init_service()
+    with services.get_service() as service:
         error = import_data(service=service, args=args)
 
     # Clear cache

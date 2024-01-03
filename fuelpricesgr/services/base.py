@@ -6,6 +6,13 @@ import datetime
 from fuelpricesgr import enums
 
 
+def init_service():
+    """Initialize the service.
+    """
+    from .sql import Base, engine
+    Base.metadata.create_all(engine)
+
+
 @contextlib.contextmanager
 def get_service() -> 'BaseService':
     """Get the service.

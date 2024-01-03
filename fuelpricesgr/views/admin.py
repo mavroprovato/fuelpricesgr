@@ -131,7 +131,7 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
             return RedirectResponse(request.url_for("admin:login"), status_code=302)
 
         # Check user is active
-        with services.sql.SqlService() as service:
+        with services.get_service() as service:
             user = service.get_user(email=username)
             if user is None or not user.active or not user.admin:
                 return RedirectResponse(request.url_for("admin:login"), status_code=302)
