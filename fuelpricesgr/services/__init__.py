@@ -1,2 +1,2 @@
-from . import base
+from .base import *
 from . import sql

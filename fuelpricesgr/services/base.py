@@ -1,29 +1,32 @@
 import abc
 from collections.abc import Iterable, Mapping
+import contextlib
 import datetime
 
 from fuelpricesgr import enums
 
 
+@contextlib.contextmanager
+def get_service() -> 'BaseService':
+    """Get the service.
+
+    :return: The service.
+    """
+    from .sql import SqlService
+    service = SqlService()
+    try:
+        yield service
+    finally:
+        service.close()
+
+
 class BaseService(abc.ABC):
     """The abstract base class for the service.
     """
-    @abc.abstractmethod
-    def __enter__(self):
-        """Enter the runtime context related to this object. Creates the connection to the database.
+    def close(self):
+        """Release the resources.
         """
-        return self
-
-    @abc.abstractmethod
-    def __exit__(self, exc_type, exc_value, traceback) -> bool:
-        """Exit the runtime context related to this object. Closes the connection to the database.
-
-        :param exc_type: The exception type, if the context was exited because of an exception, else None.
-        :param exc_value: The exception value, if the context was exited because of an exception, else None.
-        :param traceback: The exception traceback, if the context was exited because of an exception, else None.
-        :return: Always false, we do not wish to suppress the exception if supplied.
-        """
-        return False
+        pass
 
     @abc.abstractmethod
     def status(self) -> Mapping[str, object]:

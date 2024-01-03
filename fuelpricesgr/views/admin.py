@@ -2,7 +2,6 @@
 """
 from collections.abc import Mapping
 
-import argon2
 import sqladmin.authentication
 import sqlalchemy
 import sqlalchemy.orm

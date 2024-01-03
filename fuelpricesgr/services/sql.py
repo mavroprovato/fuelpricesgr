@@ -99,26 +99,12 @@ class SqlService(base.BaseService):
     def __init__(self):
         """Class constructor.
         """
-        self.db: SessionLocal = None
+        self.db: SessionLocal = SessionLocal()
 
-    def __enter__(self):
-        """Enter the runtime context related to this object. Creates the connection to the database.
+    def close(self):
+        """Closes the connection to the database.
         """
-        self.db = SessionLocal()
-
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback) -> bool:
-        """Exit the runtime context related to this object. Closes the connection to the database.
-
-        :param exc_type: The exception type, if the context was exited because of an exception, else None.
-        :param exc_value: The exception value, if the context was exited because of an exception, else None.
-        :param traceback: The exception traceback, if the context was exited because of an exception, else None.
-        :return: Always false, we do not wish to suppress the exception if supplied.
-        """
-        self.db.__exit__(exc_type, exc_value, traceback)
-
-        return False
+        self.db.close()
 
     def status(self) -> Mapping[str, object]:
         """Return the status of the database storages.

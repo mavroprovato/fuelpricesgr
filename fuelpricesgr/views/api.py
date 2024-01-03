@@ -16,10 +16,10 @@ router = fastapi.APIRouter()
     description="Return the status of the application",
     response_model=schemas.Status
 )
-def index() -> Mapping[str, object]:
+def status() -> Mapping[str, object]:
     """Return the status of the application.
     """
-    with services.sql.SqlService() as service:
+    with services.get_service() as service:
         return service.status()
 
 
@@ -68,7 +68,7 @@ def date_range(data_type: enums.DataType) -> Mapping[str, datetime.date | None]:
     if not model:
         raise fastapi.HTTPException(status_code=404, detail="Not found")
 
-    with services.sql.SqlService() as service:
+    with services.get_service() as service:
         start_date, end_date = service.date_range(data_type=data_type)
 
         return {'start_date': start_date, 'end_date': end_date}
@@ -93,7 +93,7 @@ def daily_country_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    with services.sql.SqlService() as service:
+    with services.get_service() as service:
         return service.daily_country_data(start_date=start_date, end_date=end_date)
 
 
@@ -118,7 +118,7 @@ def daily_prefecture_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    with services.sql.SqlService() as service:
+    with services.get_service() as service:
         return service.daily_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date)
 
 
@@ -141,7 +141,7 @@ def weekly_country_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    with services.sql.SqlService() as service:
+    with services.get_service() as service:
         return service.weekly_country_data(start_date=start_date, end_date=end_date)
 
 
@@ -166,7 +166,7 @@ def weekly_prefecture_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    with services.sql.SqlService() as service:
+    with services.get_service() as service:
         return service.weekly_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date)
 
 
@@ -183,7 +183,7 @@ def country_data(date: datetime.date = fastapi.Path(title="The date")) -> Mappin
     :param date: The date.
     :return: The country data.
     """
-    with services.sql.SqlService() as service:
+    with services.get_service() as service:
         return service.country_data(date=date)
 
 
