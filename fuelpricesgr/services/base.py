@@ -108,15 +108,6 @@ class BaseService(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def min_date(self, data_file_type: enums.DataFileType) -> datetime.date | None:
-        """Get the minimum date available for the data file type.
-
-        :param data_file_type: The data file type.
-        :return: The minimum available date if it exists, else None.
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
     def data_exists(self, data_file_type: enums.DataFileType, date: datetime.date) -> bool:
         """Check if data exists for the data file type for the date.
 
@@ -145,6 +136,7 @@ class BaseService(abc.ABC):
         """
         raise NotImplementedError()
 
+    @abc.abstractmethod
     def create_user(self, email: str, password: str, admin: bool = False):
         """Create a user.
 
@@ -154,6 +146,7 @@ class BaseService(abc.ABC):
         """
         raise NotImplementedError()
 
+    @abc.abstractmethod
     def authenticate(self, email: str, password: str) -> bool:
         """Authenticate the user.
 
@@ -163,6 +156,7 @@ class BaseService(abc.ABC):
         """
         raise NotImplementedError()
 
+    @abc.abstractmethod
     def get_user(self, email: str):
         """Get the user information by email.
 

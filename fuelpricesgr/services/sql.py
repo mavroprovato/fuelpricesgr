@@ -286,23 +286,6 @@ class SqlService(base.BaseService):
             ]
         }
 
-    def min_date(self, data_file_type: enums.DataFileType) -> datetime.date | None:
-        """Get the minimum date available for the data file type.
-
-        :param data_file_type: The data file type.
-        :return: The minimum available date if it exists, else None.
-        """
-        dates = [
-            self.db.query(sqlalchemy.func.max(data_type.model().date)).scalar()
-            for data_type in data_file_type.data_types
-        ]
-        dates = [date for date in dates if date is not None]
-
-        if dates:
-            return min(dates)
-
-        return None
-
     def data_exists(self, data_file_type: enums.DataFileType, date: datetime.date) -> bool:
         """Check if data exists for the data file type for the date.
 
