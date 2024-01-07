@@ -65,12 +65,11 @@ def import_data(service: services.base.BaseService, args: argparse.Namespace) ->
             if args.start_date is None:
                 dates = []
                 for data_type in data_file_type.data_types:
-                    start_date, _ = service.date_range(data_type=data_type)
-                    if start_date is not None:
-                        dates.append(start_date)
+                    _, end_date = service.date_range(data_type=data_type)
+                    if end_date is not None:
+                        dates.append(end_date)
                 if dates:
                     args.start_date = min(dates)
-
             logger.info("Fetching data between %s and %s, and data file type %s", args.start_date, args.end_date,
                         data_file_type)
             for date, file_link in fetch.fetch_link(
