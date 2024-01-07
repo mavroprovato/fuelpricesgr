@@ -20,6 +20,7 @@ redis = "^5.0.1"
 sqladmin = "^0.16.0"
 SQLAlchemy = "^2.0.3"
 uvicorn = "^0.25.0"
+firebase-admin = "^6.3.0"
 
 [tool.poetry.dev-dependencies]
 coverage = "^7.1.0"
