@@ -50,5 +50,8 @@ def cache(func):
 def clear_cache():
     """Deletes all the cache keys.
     """
-    for key in redis_conn.scan_iter(CACHE_PREFIX + "*"):
-        redis_conn.delete(key)
+    try:
+        for key in redis_conn.scan_iter(CACHE_PREFIX + "*"):
+            redis_conn.delete(key)
+    except redis.ConnectionError:
+        pass
