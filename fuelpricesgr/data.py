@@ -31,14 +31,14 @@ class DataFetcher:
         self.cache_dir.mkdir(exist_ok=True)
 
     def fetch_data(
-            self, data_file_type: enums.DataFileType
+            self, data_file_type: enums.DataFileType, start_date: datetime.date = None, end_date: datetime.date = None
     ) -> Generator[datetime.date, pathlib.Path]:
         """Fetch the data files.
 
         :param data_file_type: The data file type.
         :param start_date: The date from which to start fetching data.
         :param end_date: The date until
-        :return:
+        :return: Yields the date for the file and the file itself.
         """
         # Make sure that the data file type exists
         data_file_type_dir = self.cache_dir / data_file_type.value
@@ -59,6 +59,8 @@ class DataFetcher:
                     continue
                 date = datetime.date(
                     year=int(match.group('year')), month=int(match.group('month')), day=int(match.group('day')))
+                if (start_date is not None and date < start_date) or (end_date is not None and date > end_date):
+                    continue
                 file = data_file_type_dir / f"{date.isoformat()}.pdf"
 
                 # Download the file if not exists
