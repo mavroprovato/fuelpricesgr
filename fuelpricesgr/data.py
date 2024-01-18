@@ -24,30 +24,32 @@ _LINK_PARSING_REGEX = re.compile(
 class DataFetcher:
     """Class for fetching data files
     """
-    def __init__(self):
-        """Create the data fetcher
+    def __init__(self, data_file_type: enums.DataFileType):
+        """Create the data fetcher.
+
+        :param data_file_type: The data file type for the fetcher.
         """
+        self.data_file_type = data_file_type
         self.cache_dir = settings.DATA_PATH / 'cache'
         self.cache_dir.mkdir(exist_ok=True)
 
     def fetch_data(
-            self, data_file_type: enums.DataFileType, start_date: datetime.date = None, end_date: datetime.date = None
+            self, start_date: datetime.date = None, end_date: datetime.date = None
     ) -> Generator[datetime.date, pathlib.Path]:
         """Fetch the data files.
 
-        :param data_file_type: The data file type.
         :param start_date: The date from which to start fetching data.
         :param end_date: The date until
         :return: Yields the date for the file and the file itself.
         """
         # Make sure that the data file type exists
-        data_file_type_dir = self.cache_dir / data_file_type.value
+        data_file_type_dir = self.cache_dir / self.data_file_type.value
         data_file_type_dir.mkdir(exist_ok=True)
 
         # Fetch all the page URLs
-        page_url = urllib.parse.urljoin(settings.FETCH_URL, data_file_type.page)
+        page_url = urllib.parse.urljoin(settings.FETCH_URL, self.data_file_type.page)
         logger.info("Processing page %s", page_url)
-        response = requests.get(f"{settings.FETCH_URL}/{data_file_type.page}", timeout=settings.REQUESTS_TIMEOUT)
+        response = requests.get(f"{settings.FETCH_URL}/{self.data_file_type.page}", timeout=settings.REQUESTS_TIMEOUT)
         soup = bs4.BeautifulSoup(response.text, 'html.parser')
 
         # Process all file links
