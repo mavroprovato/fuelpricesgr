@@ -1,17 +1,22 @@
-"""Contains functions used to extract data from PDF file text.
+"""Module for parsing data
 """
-import collections.abc
+import datetime
 import decimal
 import logging
+import pathlib
 import re
+import typing
 
-from fuelpricesgr import enums
+import PyPDF2
+import PyPDF2.errors
+
+from fuelpricesgr import enums, settings
 
 # The module logger
 logger = logging.getLogger(__name__)
 
 # The regular expressions used to find the prefectures from the PDF text.
-PREFECTURE_REGEXES = {
+_PREFECTURE_REGEXES = {
     enums.Prefecture.ATTICA: re.compile(r'Α ?[ΤΣ] ?[ΤΣ] ?[ΙΗ] ?Κ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
     enums.Prefecture.AETOLIA_ACARNANIA: re.compile(
         r'Α ?[ΙΗ] ?[ΤΣ] ?Ω ?Λ ?[ΙΗ] ?Α ?[Σ\u03a2] {1,2}Κ ?Α ?[ΙΗ]\s{1,2}Α ?Κ ?Α ?Ρ ?Ν ?Α ?Ν ?[ΙΗ] ?Α ?[Σ\u03a2]',
@@ -69,28 +74,7 @@ PREFECTURE_REGEXES = {
 }
 
 
-def get_extractor(
-        data_file_type: enums.DataFileType) -> collections.abc.Callable[[str], dict[enums.DataType, list[dict]]] | None:
-    """Returns the data extractor function for a data file type.
-
-    :param data_file_type: The data file type.
-    :return: The data extractor function.
-    """
-    match data_file_type:
-        case enums.DataFileType.DAILY_COUNTRY:
-            return extract_daily_country_data
-        case enums.DataFileType.DAILY_PREFECTURE:
-            return extract_daily_prefecture_data
-        case enums.DataFileType.WEEKLY:
-            return extract_weekly_data
-
-
-def extract_daily_country_data(text: str) -> dict[enums.DataType, list[dict]]:
-    """Extract daily country data.
-
-    :param text: The PDF file text.
-    :return: The data. It is a list of dicts with fuel_type, number_of_stations and price as keys.
-    """
+def _extract_daily_country_data(text: str) -> dict[enums.DataType, list[dict[str, typing.Any]]]:
     data = []
 
     matches = {}
@@ -111,7 +95,8 @@ def extract_daily_country_data(text: str) -> dict[enums.DataType, list[dict]]:
     else:
         logger.warning("Cannot find data for %s in daily country data", enums.FuelType.DIESEL)
     if match := re.search(
-            r'Die ?s ?e ?l +Θ ?[έζ] ?ρ ?μ ?α ?ν ?[σζς] ?[ηθ] ?[ςσ] +Κ ?α ?[τη] ?΄ ?ο ?ί ?κ ?ο ?ν +([\d.,\- ]+)', text):
+            r'Die ?s ?e ?l +Θ ?[έζ] ?ρ ?μ ?α ?ν ?[σζς] ?[ηθ] ?[ςσ] +Κ ?α ?[τη] ?΄ ?ο ?ί ?κ ?ο ?ν +([\d.,\- ]+)',
+            text):
         matches[enums.FuelType.DIESEL_HEATING] = match[1]
     else:
         logger.warning("Cannot find data for %s in daily country data", enums.FuelType.DIESEL_HEATING)
@@ -142,7 +127,7 @@ def extract_daily_country_data(text: str) -> dict[enums.DataType, list[dict]]:
     return {enums.DataType.DAILY_COUNTRY: data}
 
 
-def extract_fuel_types(text: str) -> tuple[list[enums.FuelType], int]:
+def _extract_fuel_types(text: str) -> tuple[list[enums.FuelType], int]:
     """Get the fuel types from the PDF text. The fuel types are ordered in the order they appear in the text.
 
     :param text: The PDF file text.
@@ -186,28 +171,45 @@ def extract_fuel_types(text: str) -> tuple[list[enums.FuelType], int]:
     return [fuel_type[0] for fuel_type in fuel_types], fuel_types[-1][1][-1] + 1
 
 
-def extract_prefecture(prefecture_text: str) -> enums.Prefecture:
+def _extract_prefecture(prefecture_text: str) -> enums.Prefecture:
     """Extract the prefecture from the PDF text.
 
     :param prefecture_text: The prefecture text.
     :return: The prefecture.
     :raises ValueError: If the prefecture text cannot be parsed.
     """
-    for prefecture, prefecture_regex in PREFECTURE_REGEXES.items():
+    for prefecture, prefecture_regex in _PREFECTURE_REGEXES.items():
         if prefecture_regex.match(prefecture_text):
             return prefecture
 
     raise ValueError(f"Could not parse prefecture text: {prefecture_text}")
 
 
-def extract_daily_prefecture_data(text: str) -> dict[enums.DataType, list[dict]]:
+def _extract_daily_prices(prices: str) -> tuple[decimal.Decimal, decimal.Decimal, decimal.Decimal]:
+    """Extract the prices for daily data.
+
+    :param prices: The prices string.
+    :return: A tuple with the lowest, highest and median daily price.
+    """
+    price_matches = re.findall(r'\d[,.][\d ]{3}', prices, re.MULTILINE)
+    if len(price_matches) != 3:
+        raise ValueError("Could not parse prices")
+
+    return (
+        decimal.Decimal(price_matches[0].replace(' ', '').replace(',', '.')),
+        decimal.Decimal(price_matches[1].replace(' ', '').replace(',', '.')),
+        decimal.Decimal(price_matches[2].replace(' ', '').replace(',', '.'))
+    )
+
+
+def _extract_daily_prefecture_data(text: str) -> dict[enums.DataType, list[dict[str, typing.Any]]]:
     """Extract daily country data.
 
     :param text: The PDF file text.
     :return: The data. It is a list of dicts with fuel_type, number_of_stations and price as keys.
     """
     try:
-        fuel_types, last_index = extract_fuel_types(text)
+        fuel_types, last_index = _extract_fuel_types(text)
     except ValueError:
         logger.error("Could not parse fuel types", exc_info=True)
         return {}
@@ -221,7 +223,7 @@ def extract_daily_prefecture_data(text: str) -> dict[enums.DataType, list[dict]]
         return {}
 
     for result in results:
-        prefecture = extract_prefecture(result[0])
+        prefecture = _extract_prefecture(result[0])
 
         prices = re.findall(r'(\d[,.]\d ?\d ?\d)|-|\n', result[1].strip(), re.MULTILINE)
         if len(fuel_types) - len(prices) == 1 and enums.FuelType.SUPER in fuel_types:
@@ -242,7 +244,7 @@ def extract_daily_prefecture_data(text: str) -> dict[enums.DataType, list[dict]]
     return {enums.DataType.DAILY_PREFECTURE: data}
 
 
-def extract_weekly_data(text: str) -> dict[enums.DataType, list[dict]]:
+def _extract_weekly_data(text: str) -> dict[enums.DataType, list[dict]]:
     """Extract daily country data.
 
     :param text: The PDF file text.
@@ -261,7 +263,7 @@ def extract_weekly_data(text: str) -> dict[enums.DataType, list[dict]]:
         logger.warning("Could not find weekly data for %s", enums.FuelType.DIESEL)
 
     diesel_heating_match = re.search(
-        r'Π ?ετ ?ρ ?[έζ] ?λ ?α ?ι ?ο +Θ ?[έζ]? ?ρμ ?αν[σς] ?[ηθ][ςσ] +\(Κα ?τ ?΄ ?ο ?ί ?κ ?ον ?\)', text)
+        r'Π ?ετ ?ρ ?[έζ] ?λ ?α ?ι ?ο +Θ ?[έζ]? ?ρμ ?αν[σς] ?[ηθ] ?[ςσ] +\(Κα ?τ ?΄ ?ο ?ί ?κ ?ον ?\)', text)
     if not diesel_heating_match:
         logger.warning("Could not find weekly data for %s", enums.FuelType.DIESEL_HEATING)
 
@@ -283,7 +285,7 @@ def extract_weekly_data(text: str) -> dict[enums.DataType, list[dict]]:
             prices_text)
         if not result:
             raise ValueError("Could not find country data")
-        lowest_price, highest_price, median_price = extract_daily_prices(result[1].strip())
+        lowest_price, highest_price, median_price = _extract_daily_prices(result[1].strip())
         country_data.append({
             'fuel_type': fuel_type, 'lowest_price': lowest_price, 'highest_price': highest_price,
             'median_price': median_price
@@ -297,10 +299,12 @@ def extract_weekly_data(text: str) -> dict[enums.DataType, list[dict]]:
         results = re.findall(
             r'ΝΟ ?Μ ?Ο ?[Σ\u03a2] +(\D+) ([0-9,\-\s]+)', prices_text, re.MULTILINE)
         if len(results) != len(enums.Prefecture):
+            print(fuel_type)
+            print(len(results), len(enums.Prefecture))
             raise ValueError("Could not find all prefectures")
         for result in results:
-            prefecture = extract_prefecture(result[0])
-            lowest_price, highest_price, median_price = extract_daily_prices(result[1].strip())
+            prefecture = _extract_prefecture(result[0])
+            lowest_price, highest_price, median_price = _extract_daily_prices(result[1].strip())
             prefecture_data.append({
                 'prefecture': prefecture, 'fuel_type': fuel_type, 'lowest_price': lowest_price,
                 'highest_price': highest_price, 'median_price': median_price
@@ -309,18 +313,37 @@ def extract_weekly_data(text: str) -> dict[enums.DataType, list[dict]]:
     return {enums.DataType.WEEKLY_COUNTRY: country_data, enums.DataType.WEEKLY_PREFECTURE: prefecture_data}
 
 
-def extract_daily_prices(prices: str) -> tuple[decimal.Decimal, decimal.Decimal, decimal.Decimal]:
-    """Extract the prices for daily data.
-
-    :param prices: The prices string.
-    :return: A tuple with the lowest, highest and median daily price.
+class Parser:
+    """Class to parse data files
     """
-    price_matches = re.findall(r'\d[,.][\d ]{3}', prices, re.MULTILINE)
-    if len(price_matches) != 3:
-        raise ValueError("Could not parse prices")
+    def __init__(self, data_file_type: enums.DataFileType):
+        """Create the parser object.
 
-    return (
-        decimal.Decimal(price_matches[0].replace(' ', '').replace(',', '.')),
-        decimal.Decimal(price_matches[1].replace(' ', '').replace(',', '.')),
-        decimal.Decimal(price_matches[2].replace(' ', '').replace(',', '.'))
-    )
+        :param data_file_type: The data file type.
+        """
+        self.data_file_type = data_file_type
+
+    def parse(self, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:
+        """Parse the data for the specified date.
+
+        :param date: The date for which to parse the data.
+        :return:
+        """
+        file = pathlib.Path(
+            settings.DATA_PATH / 'cache' / self.data_file_type.value / pathlib.Path(f"{date.isoformat()}.pdf"))
+        if not file.exists():
+            logger.error("File %s does not exist", file)
+            return None
+        logger.info("Parsing file %s", file)
+        try:
+            reader = PyPDF2.PdfReader(file)
+        except PyPDF2.errors.PdfReadError:
+            logger.error("Error parsing PDF data", exc_info=True)
+            return None
+
+        text = ''.join(page.extract_text() for page in reader.pages)
+        if not text:
+            logger.error("Could not extract text from file %s", file)
+            return None
+
+        return globals()[f"_extract_{self.data_file_type.value}_data"](text)

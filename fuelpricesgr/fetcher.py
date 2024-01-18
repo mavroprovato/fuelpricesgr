@@ -21,7 +21,7 @@ _LINK_PARSING_REGEX = re.compile(
 )
 
 
-class DataFetcher:
+class Fetcher:
     """Class for fetching data files
     """
     def __init__(self, data_file_type: enums.DataFileType):
