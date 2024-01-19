@@ -46,6 +46,7 @@ def parse_arguments() -> argparse.Namespace:
                             help="Skip the file cache. By default, the file cache is used.")
     arg_parser.add_argument('--update', default=False, action="store_true",
                             help="Update existing data. By default existing data are not updated.")
+    arg_parser.add_argument('--verbose', default=False, action="store_true", help="Verbose logging.")
     arg_parser.add_argument('--send-mail', default=False, action="store_true",
                             help="Send mail after running the command.")
 
@@ -113,15 +114,15 @@ def send_mail(log_stream: io.StringIO, error: bool):
 def main():
     """Entry point of the script.
     """
+    # Parse arguments
+    args = parse_arguments()
+
     # Configure logging
     log_stream = io.StringIO()
     logging.basicConfig(
         handlers=[logging.StreamHandler(stream=sys.stdout), logging.StreamHandler(stream=log_stream)],
-        level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s %(message)s'
+        level=logging.INFO if args.verbose else logging.WARNING, format='%(asctime)s %(name)s %(levelname)s %(message)s'
     )
-
-    # Parse arguments
-    args = parse_arguments()
 
     # Import data
     services.init_service()
