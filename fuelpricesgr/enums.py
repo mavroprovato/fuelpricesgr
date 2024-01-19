@@ -19,7 +19,7 @@ class FuelType(enum.Enum):
     """Enumeration for the different fuel types
     """
     UNLEADED_95 = 'UNLEADED_95', "Αμόλυβδη 95"
-    UNLEADED_100 = 'UNLEADED_100',  "Αμόλυβδη 100"
+    UNLEADED_100 = 'UNLEADED_100', "Αμόλυβδη 100"
     SUPER = 'SUPER', "Super"
     DIESEL = 'DIESEL', "Diesel"
     DIESEL_HEATING = 'DIESEL_HEATING', "Diesel Θέρμανσης"
