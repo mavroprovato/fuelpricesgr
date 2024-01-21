@@ -73,6 +73,9 @@ _PREFECTURE_REGEXES = {
     enums.Prefecture.CHIOS: re.compile(r'[ΧΥ] ?[ΙΗ] ?Ο ?[ΥΤ]', re.MULTILINE),
 }
 
+# Months that can contain diesel heading data
+DIESEL_HEATING_MONTHS = {10, 11, 12, 1, 2, 3, 4, 5}
+
 
 def _extract_daily_country_data(text: str, date: datetime.date) -> dict[enums.DataType, list[dict[str, typing.Any]]]:
     """Extract daily country data.
@@ -107,7 +110,7 @@ def _extract_daily_country_data(text: str, date: datetime.date) -> dict[enums.Da
             r'Die ?s ?e ?l +Θ ?[έζ] ?ρ ?μ ?α ?ν ?[σζς] ?[ηθ] ?[ςσ] +Κ ?α ?[τη] ?΄ ?ο ?ί ?κ ?ο ?ν +([\d.,\- ]+)',
             text):
         matches[enums.FuelType.DIESEL_HEATING] = match[1]
-    else:
+    elif date.month in DIESEL_HEATING_MONTHS:
         logger.warning("Cannot find data for %s in daily country data and date %s",
                        enums.FuelType.DIESEL_HEATING.description, date)
     if match := re.search(
