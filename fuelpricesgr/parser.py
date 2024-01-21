@@ -76,6 +76,9 @@ _PREFECTURE_REGEXES = {
 # Months that can contain diesel heading data
 DIESEL_HEATING_MONTHS = {10, 11, 12, 1, 2, 3, 4, 5}
 
+# The final date for Super data
+SUPER_FINAL_DATE = datetime.date(2022, 8, 12)
+
 
 def _extract_daily_country_data(text: str, date: datetime.date) -> dict[enums.DataType, list[dict[str, typing.Any]]]:
     """Extract daily country data.
@@ -98,7 +101,7 @@ def _extract_daily_country_data(text: str, date: datetime.date) -> dict[enums.Da
                        enums.FuelType.UNLEADED_100.description, date)
     if match := re.search(r'Super +([\d.,\- #ΔΙΑΡ/0!]+)', text):
         matches[enums.FuelType.SUPER] = match[1]
-    else:
+    elif date < SUPER_FINAL_DATE:
         logger.warning("Cannot find data for %s in daily country data and date %s", enums.FuelType.SUPER.description,
                        date)
     if match := re.search(r'Die ?s ?e ?l +Κ ?ί ?ν ?[ηθ] ?[σζς] ?[ηθ] ?[ςσ] +([\d.,\- ]+)', text):
