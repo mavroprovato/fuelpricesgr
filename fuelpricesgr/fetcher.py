@@ -15,15 +15,15 @@ from fuelpricesgr import enums, parser, settings
 # The module logger
 logger = logging.getLogger(__name__)
 
-# The link parsing regex
-_LINK_PARSING_REGEX = re.compile(
-    r'\./files/deltia/(?P<prefix>[A-Z_]+)_(?P<day>\d{1,2})_(?P<month>\d{2})_(?P<year>\d{4})[ =.?\-()\d]*.(pdf|doc)$'
-)
-
 
 class Fetcher:
     """Class for fetching data files
     """
+    # The link parsing regex
+    LINK_PARSING_REGEX = re.compile(
+        r'\./files/deltia/(?P<prefix>[A-Z_]+)_(?P<day>\d{1,2})_(?P<month>\d{2})_(?P<year>\d{4})[ =.?\-()\d]*.(pdf|doc)$'
+    )
+
     def __init__(self, data_file_type: enums.DataFileType):
         """Create the data fetcher.
 
@@ -52,7 +52,7 @@ class Fetcher:
             if not link.has_attr('href') or not link['href'].startswith('./files'):
                 continue
             # Extract date from link
-            match = _LINK_PARSING_REGEX.match(link['href'])
+            match = self.LINK_PARSING_REGEX.match(link['href'])
             if not match:
                 logger.warning("Cannot parse link %s", link['href'])
                 continue
