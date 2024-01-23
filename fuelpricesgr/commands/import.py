@@ -7,7 +7,7 @@ import io
 import logging
 import sys
 
-from fuelpricesgr import caching, fetcher, enums, mail, parser, services, settings
+from fuelpricesgr import caching, fetcher, enums, mail, services, settings
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -42,8 +42,8 @@ def parse_arguments() -> argparse.Namespace:
                                  "(YYYY-MM-DD)")
     arg_parser.add_argument('--end-date', type=datetime.date.fromisoformat, default=datetime.date.today().isoformat(),
                             help="The end date for the data to fetch. The date must be in ISO date format (YYYY-MM-DD)")
-    arg_parser.add_argument('--skip-file-cache', default=False, action="store_true",
-                            help="Skip the file cache. By default, the file cache is used.")
+    arg_parser.add_argument('--skip-cache', default=False, action="store_true",
+                            help="Skip the file cache. By default, the cache is used.")
     arg_parser.add_argument('--update', default=False, action="store_true",
                             help="Update existing data. By default existing data are not updated.")
     arg_parser.add_argument('--verbose', default=False, action="store_true", help="Verbose logging.")
@@ -65,7 +65,6 @@ def import_data(service: services.base.BaseService, args: argparse.Namespace) ->
         data_file_types = enums.DataFileType if args.types is None else args.types
         for data_file_type in data_file_types:
             data_fetcher = fetcher.Fetcher(data_file_type=data_file_type)
-            data_parser = parser.Parser(data_file_type=data_file_type)
             # If start date is not provided, set it to the latest data date that we have
             if args.start_date is None:
                 dates = []
@@ -77,11 +76,9 @@ def import_data(service: services.base.BaseService, args: argparse.Namespace) ->
                     args.start_date = min(dates)
             logger.info("Fetching data between %s and %s, and data file type %s", args.start_date, args.end_date,
                         data_file_type)
-            for date, file in data_fetcher.fetch_data(start_date=args.start_date, end_date=args.end_date):
+            for date in data_fetcher.dates(start_date=args.start_date, end_date=args.end_date):
                 if args.update or not service.data_exists(data_file_type=data_file_type, date=date):
-                    file_data = data_parser.parse(date)
-                    if file_data is None:
-                        continue
+                    file_data = data_fetcher.data(date=date, skip_cache=args.skip_cache)
                     for data_type, fuel_type_data in file_data.items():
                         service.update_data(date=date, data_type=data_type, data=fuel_type_data)
     except Exception as ex:

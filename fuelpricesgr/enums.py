@@ -135,21 +135,23 @@ class DataType(enum.Enum):
 class DataFileType(enum.Enum):
     """Enumeration for the different data file types.
     """
-    WEEKLY = 'weekly', 'deltia.view', (DataType.WEEKLY_COUNTRY, DataType.WEEKLY_PREFECTURE)
-    DAILY_COUNTRY = 'daily_country', 'deltia_d.view', (DataType.DAILY_COUNTRY, )
-    DAILY_PREFECTURE = 'daily_prefecture', 'deltia_dn.view', (DataType.DAILY_PREFECTURE, )
+    WEEKLY = 'weekly', 'deltia.view', (DataType.WEEKLY_COUNTRY, DataType.WEEKLY_PREFECTURE), 'EBDOM_DELTIO'
+    DAILY_COUNTRY = 'daily_country', 'deltia_d.view', (DataType.DAILY_COUNTRY, ), 'IMERISIO_DELTIO_PANELLINIO'
+    DAILY_PREFECTURE = 'daily_prefecture', 'deltia_dn.view', (DataType.DAILY_PREFECTURE, ), 'IMERISIO_DELTIO_ANA_NOMO'
 
-    def __new__(cls, value: str, page: str, data_types: collections.abc.Iterable[DataType]):
+    def __new__(cls, value: str, page: str, data_types: collections.abc.Iterable[DataType], prefix: str):
         """Creates the enum.
 
         :param value: The enum value.
         :param page: The path, relative to the base URL, from which we will fetch the data.
         :param data_types: The data types that this page contains.
+        :param prefix: The prefix for the data link.
         """
         obj = object.__new__(cls)
         obj._value_ = value
         obj.page = page
         obj.data_types = data_types
+        obj.prefix = prefix
 
         return obj
 
@@ -159,11 +161,4 @@ class DataFileType(enum.Enum):
         :param date: The date.
         :return: The file link.
         """
-        if self == self.WEEKLY:
-            return f'{settings.FETCH_URL}/files/deltia/EBDOM_DELTIO_{date:%d_%m_%Y}.pdf'
-        if self == self.DAILY_COUNTRY:
-            return f'{settings.FETCH_URL}/files/deltia/IMERISIO_DELTIO_PANELLINIO_{date:%d_%m_%Y}.pdf'
-        if self == self.DAILY_PREFECTURE:
-            return f'{settings.FETCH_URL}/files/deltia/IMERISIO_DELTIO_ANA_NOMO_{date:%d_%m_%Y}.pdf'
-
-        return None
+        return f'{settings.FETCH_URL}/files/deltia/{self.prefix}_{date:%d_%m_%Y}.pdf'

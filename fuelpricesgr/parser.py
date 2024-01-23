@@ -10,7 +10,7 @@ import typing
 import PyPDF2
 import PyPDF2.errors
 
-from fuelpricesgr import enums, settings
+from fuelpricesgr import enums
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -350,17 +350,13 @@ class Parser:
         """
         self.data_file_type = data_file_type
 
-    def parse(self, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:
-        """Parse the data for the specified date.
+    def parse(self, file: pathlib.Path, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:
+        """Parse the data file.
 
-        :param date: The date for which to parse the data.
-        :return:
+        :param file: The file to parse
+        :param date: The file to date.
+        :return: The data.
         """
-        file = pathlib.Path(
-            settings.DATA_PATH / 'cache' / self.data_file_type.value / pathlib.Path(f"{date.isoformat()}.pdf"))
-        if not file.exists():
-            logger.error("File %s does not exist", file)
-            return None
         logger.info("Parsing file %s", file)
         try:
             reader = PyPDF2.PdfReader(file)
