@@ -81,70 +81,6 @@ DIESEL_HEATING_MONTHS = {10, 11, 12, 1, 2, 3, 4, 5}
 SUPER_FINAL_DATE = datetime.date(2022, 8, 12)
 
 
-def _extract_daily_country_data(text: str, date: datetime.date) -> dict[enums.DataType, list[dict[str, typing.Any]]]:
-    """Extract daily country data.
-
-    :param text: The PDF file text.
-    :return: The data. It is a list of dicts with fuel_type, number_of_stations and price as keys.
-    """
-    data = []
-
-    matches = {}
-    if match := re.search(r'Αμόλ[υσ]βδ[ηθ] 95 οκ ?[τη]\. +([\d.,\- ]+)', text):
-        matches[enums.FuelType.UNLEADED_95] = match[1]
-    else:
-        logger.warning("Cannot find data for %s in daily country data and date %s",
-                       enums.FuelType.UNLEADED_95.description, date)
-    if match := re.search(r'Αμόλ?[υσ]β ?δ ?[ηθ] +10 ?0 +ο ?κ ?[τη]\. +([\d.,\- ]+)', text):
-        matches[enums.FuelType.UNLEADED_100] = match[1]
-    else:
-        logger.warning("Cannot find data for %s in daily country data and date %s",
-                       enums.FuelType.UNLEADED_100.description, date)
-    if match := re.search(r'Super +([\d.,\- #ΔΙΑΡ/0!]+)', text):
-        matches[enums.FuelType.SUPER] = match[1]
-    elif date < SUPER_FINAL_DATE:
-        logger.warning("Cannot find data for %s in daily country data and date %s", enums.FuelType.SUPER.description,
-                       date)
-    if match := re.search(r'Die ?s ?e ?l +Κ ?ί ?ν ?[ηθ] ?[σζς] ?[ηθ] ?[ςσ] +([\d.,\- ]+)', text):
-        matches[enums.FuelType.DIESEL] = match[1]
-    else:
-        logger.warning("Cannot find data for %s in daily country data and date %s", enums.FuelType.DIESEL.description,
-                       date)
-    if match := re.search(
-            r'Die ?s ?e ?l +Θ ?[έζ] ?ρ ?μ ?α ?ν ?[σζς] ?[ηθ] ?[ςσ] +Κ ?α ?[τη] ?΄ ?ο ?ί ?κ ?ο ?ν +([\d.,\- ]+)',
-            text):
-        matches[enums.FuelType.DIESEL_HEATING] = match[1]
-    elif date.month in DIESEL_HEATING_MONTHS:
-        logger.warning("Cannot find data for %s in daily country data and date %s",
-                       enums.FuelType.DIESEL_HEATING.description, date)
-    if match := re.search(
-            r'[ΥT]γρ ?α[έσζ] ?ριο\s+κί ?ν[ηθ] ?[σζς] ?[ηθ][ςσ]\s+\(A ?ut ?o ?g ?a ?s ?\) +([\d.,\- ]+)', text):
-        matches[enums.FuelType.GAS] = match[1]
-    else:
-        logger.warning("Cannot find data for %s in daily country data and date %s", enums.FuelType.GAS.description,
-                       date)
-
-    for fuel_type, fuel_type_text in matches.items():
-        if fuel_type_text.strip():
-            matches = re.match(
-                r'(\d? ?\.?\d ?\d ?\d|\d? ?\d? ?\d?|-) +(\d?[,.] ?\d ?\d ?\d|-|#ΔΙΑΙΡ\./0!)', fuel_type_text)
-            if not matches or len(matches.groups()) != 2:
-                logger.warning("Could not parse daily country data for fuel type %s and date %s", fuel_type, date)
-                continue
-            number_of_stations = None
-            if matches.group(1) != '-':
-                number_of_stations = int(matches.group(1).replace(' ', '').replace('.', ''))
-            price = None
-            if matches.group(2) != '-' and matches.group(2) != '#ΔΙΑΙΡ./0!':
-                price = decimal.Decimal(matches.group(2).replace(' ', '').replace(',', '.'))
-            if number_of_stations is not None and price is not None:
-                data.append({
-                    'fuel_type': fuel_type, 'number_of_stations': number_of_stations, 'price': price
-                })
-
-    return {enums.DataType.DAILY_COUNTRY: data}
-
-
 def _extract_fuel_types(text: str, date: datetime.date) -> tuple[list[enums.FuelType], int]:
     """Get the fuel types from the PDF text. The fuel types are ordered in the order they appear in the text.
 
@@ -273,18 +209,28 @@ def _extract_daily_prefecture_data(
 class Parser(abc.ABC):
     """Class to parse data files
     """
+    # Regex to get date from file name
+    DATE_PARSING_REGEX = re.compile(r'(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2}).pdf$')
+
     @staticmethod
     def get(data_file_type: enums.DataFileType) -> 'Parser':
-        """Create the parser object.
+        """Get the parser object.
         """
         match data_file_type:
             case enums.DataFileType.WEEKLY:
                 return WeeklyParser()
+            case enums.DataFileType.DAILY_COUNTRY:
+                return DailyCountryParser()
             case _:
                 raise NotImplementedError()
 
     @staticmethod
     def read_text(file: pathlib.Path) -> str | None:
+        """Extract the text from the file.
+
+        :param file: The file.
+        :return: The extracted text.
+        """
         logger.info("Parsing file %s", file)
         try:
             reader = PyPDF2.PdfReader(file)
@@ -306,16 +252,22 @@ class Parser(abc.ABC):
         :return: The file data.
         """
         text = self.read_text(file=file)
+        match = self.DATE_PARSING_REGEX.match(file.name)
+        if not match:
+            logger.error("Could not parse file name %s", file.name)
+            return None
+        date = datetime.date(
+            year=int(match.group('year')), month=int(match.group('month')), day=int(match.group('day')))
 
         if text:
-            return self.extract_data(text=text, file=file)
+            return self.extract_data(text=text, date=date)
 
     @abc.abstractmethod
-    def extract_data(self, text: str, file: pathlib.Path) -> dict[enums.DataType, list[dict]] | None:
-        """Extract data from the file.
+    def extract_data(self, text: str, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:
+        """Extract weekly country and prefecture data.
 
         :param text: The file text.
-        :param file: The file from which the text was extracted.
+        :param date: The date for the file.
         :return: The data.
         """
 
@@ -323,32 +275,33 @@ class Parser(abc.ABC):
 class WeeklyParser(Parser):
     """Parser for weekly data files
     """
-    def extract_data(self, text: str, file: pathlib.Path) -> dict[enums.DataType, list[dict]] | None:
+    def extract_data(self, text: str, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:
         """Extract weekly country and prefecture data.
 
         :param text: The file text.
-        :param file: The file from which the text was extracted.
+        :param date: The date for the file.
         :return: The data.
         """
-        logger.info("Extracting weekly data from file %s", file.name)
+        logger.info("Extracting weekly data from file %s", date.isoformat())
         unleaded_95_match = re.search(
             r'Απ ?λ ?[ήι] +Αμ ?όλ ?υβδ ?[ηθ] Β ?ε ?ν ?[ζη] ?ί ?ν[ηθ] +9 ?5 οκ ?τα ?ν ?ίω ?ν', text)
         if not unleaded_95_match:
-            logger.error("Could not find weekly data for %s in file %s", enums.FuelType.UNLEADED_95.description,
-                         file.name)
+            logger.error("Could not find weekly data for %s and date %s", enums.FuelType.UNLEADED_95.description,
+                         date.isoformat())
             return None
 
         diesel_match = re.search(
             r'Π ?ε[τη][ρξ] ?[έζ] ?[λι] ?α ?[ιη] ?[ον] +Κ ?ί ?[νλ] ?[ηθε] ?[σςζ] ?[ηθε] ?[ςσο] +'
             r'\( ?B ?i ?o ?d ?i ?e ?s ?e ?l ?\)', text)
         if not diesel_match:
-            logger.warning("Could not find weekly data for %s in file %s", enums.FuelType.DIESEL.description, file.name)
+            logger.warning("Could not find weekly data for %s and date %s", enums.FuelType.DIESEL.description,
+                           date.isoformat())
 
         diesel_heating_match = re.search(
             r'Π ?ετ ?ρ ?[έζ] ?λ ?α ?ι ?ο +Θ ?[έζ]? ?ρμ ?αν[σς] ?[ηθ] ?[ςσ] +\(Κα ?τ ?΄ ?ο ?ί ?κ ?ον ?\)', text)
         if not diesel_heating_match:
-            logger.warning("Could not find weekly data for %s in file %s", enums.FuelType.DIESEL_HEATING.description,
-                           file.name)
+            logger.warning("Could not find weekly data for %s and date %s", enums.FuelType.DIESEL_HEATING.description,
+                           date.isoformat())
 
         matches = {
             enums.FuelType.UNLEADED_95: text[
@@ -369,7 +322,7 @@ class WeeklyParser(Parser):
                 r'[Σ\u03a2][ΤΣ]Α ?Θ ?Μ ?Ι ?[Σ\u03a2] ?Μ ?Ε ?Ν ?Ο ?[Σ\u03a2] *Μ\.? ?\. ?Ο ?\.? ?\*{0,2} ([0-9,\-\s]+)',
                 prices_text)
             if not result:
-                logger.error("Could not find country data for %s in file %s", fuel_type.description, file.name)
+                logger.error("Could not find country data for %s and date %s", fuel_type.description, date.isoformat())
                 continue
             lowest_price, highest_price, median_price = _extract_daily_prices(result[1].strip())
             country_data.append({
@@ -386,7 +339,8 @@ class WeeklyParser(Parser):
             results = re.findall(
                 r'ΝΟ ?Μ ?Ο ?[Σ\u03a2] +(\D+) ([0-9,\-\s]+)', prices_text, re.MULTILINE)
             if len(results) != len(enums.Prefecture):
-                logger.error("Could not find all prefectures for %s in file %s", fuel_type.description, file.name)
+                logger.error("Could not find all prefectures for %s and date %s", fuel_type.description,
+                             date.isoformat())
                 continue
             for result in results:
                 prefecture = _extract_prefecture(result[0])
@@ -397,3 +351,72 @@ class WeeklyParser(Parser):
                 })
 
         return {enums.DataType.WEEKLY_COUNTRY: country_data, enums.DataType.WEEKLY_PREFECTURE: prefecture_data}
+
+
+class DailyCountryParser(Parser):
+    """Parser for daily country data files
+    """
+    def extract_data(self, text: str, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:
+        """Extract daily country data.
+
+        :param text: The file text.
+        :param date: The date for the file.
+        :return: The data.
+        """
+        data = []
+
+        matches = {}
+        if match := re.search(r'Αμόλ[υσ]βδ[ηθ] 95 οκ ?[τη]\. +([\d.,\- ]+)', text):
+            matches[enums.FuelType.UNLEADED_95] = match[1]
+        else:
+            logger.warning("Cannot find daily country data for %s and date %s", enums.FuelType.UNLEADED_95.description,
+                           date.isoformat())
+        if match := re.search(r'Αμόλ?[υσ]β ?δ ?[ηθ] +10 ?0 +ο ?κ ?[τη]\. +([\d.,\- ]+)', text):
+            matches[enums.FuelType.UNLEADED_100] = match[1]
+        else:
+            logger.warning("Cannot find daily country data for %s and date %s", enums.FuelType.UNLEADED_100.description,
+                           date.isoformat())
+        if match := re.search(r'Super +([\d.,\- #ΔΙΑΡ/0!]+)', text):
+            matches[enums.FuelType.SUPER] = match[1]
+        elif date < SUPER_FINAL_DATE:
+            logger.warning("Cannot find daily country data for %s and date %s", enums.FuelType.SUPER.description,
+                           date.isoformat())
+        if match := re.search(r'Die ?s ?e ?l +Κ ?ί ?ν ?[ηθ] ?[σζς] ?[ηθ] ?[ςσ] +([\d.,\- ]+)', text):
+            matches[enums.FuelType.DIESEL] = match[1]
+        else:
+            logger.warning("Cannot find daily country data for %s and date %s", enums.FuelType.DIESEL.description,
+                           date.isoformat())
+        if match := re.search(
+                r'Die ?s ?e ?l +Θ ?[έζ] ?ρ ?μ ?α ?ν ?[σζς] ?[ηθ] ?[ςσ] +Κ ?α ?[τη] ?΄ ?ο ?ί ?κ ?ο ?ν +([\d.,\- ]+)',
+                text):
+            matches[enums.FuelType.DIESEL_HEATING] = match[1]
+        elif date.month in DIESEL_HEATING_MONTHS:
+            logger.warning("Cannot find daily country data for %s and date %s",
+                           enums.FuelType.DIESEL_HEATING.description, date.isoformat())
+        if match := re.search(
+                r'[ΥT]γρ ?α[έσζ] ?ριο\s+κί ?ν[ηθ] ?[σζς] ?[ηθ][ςσ]\s+\(A ?ut ?o ?g ?a ?s ?\) +([\d.,\- ]+)', text):
+            matches[enums.FuelType.GAS] = match[1]
+        else:
+            logger.warning("Cannot find daily country data for %s and date %s", enums.FuelType.GAS.description,
+                           date.isoformat())
+
+        for fuel_type, fuel_type_text in matches.items():
+            if fuel_type_text.strip():
+                matches = re.match(
+                    r'(\d? ?\.?\d ?\d ?\d|\d? ?\d? ?\d?|-) +(\d?[,.] ?\d ?\d ?\d|-|#ΔΙΑΙΡ\./0!)', fuel_type_text)
+                if not matches or len(matches.groups()) != 2:
+                    logger.error("Cannot parse country data for %s and date %s", fuel_type.description,
+                                 date.isoformat())
+                    continue
+                number_of_stations = None
+                if matches.group(1) != '-':
+                    number_of_stations = int(matches.group(1).replace(' ', '').replace('.', ''))
+                price = None
+                if matches.group(2) != '-' and matches.group(2) != '#ΔΙΑΙΡ./0!':
+                    price = decimal.Decimal(matches.group(2).replace(' ', '').replace(',', '.'))
+                if number_of_stations is not None and price is not None:
+                    data.append({
+                        'fuel_type': fuel_type, 'number_of_stations': number_of_stations, 'price': price
+                    })
+
+        return {enums.DataType.DAILY_COUNTRY: data}
