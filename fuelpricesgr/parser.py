@@ -22,23 +22,6 @@ DIESEL_HEATING_MONTHS = {10, 11, 12, 1, 2, 3, 4, 5}
 SUPER_FINAL_DATE = datetime.date(2022, 8, 12)
 
 
-def _extract_daily_prices(prices: str) -> tuple[decimal.Decimal, decimal.Decimal, decimal.Decimal]:
-    """Extract the prices for daily data.
-
-    :param prices: The prices string.
-    :return: A tuple with the lowest, highest and median daily price.
-    """
-    price_matches = re.findall(r'\d[,.][\d ]{3}', prices, re.MULTILINE)
-    if len(price_matches) != 3:
-        raise ValueError("Could not parse prices")
-
-    return (
-        decimal.Decimal(price_matches[0].replace(' ', '').replace(',', '.')),
-        decimal.Decimal(price_matches[1].replace(' ', '').replace(',', '.')),
-        decimal.Decimal(price_matches[2].replace(' ', '').replace(',', '.'))
-    )
-
-
 class Parser(abc.ABC):
     """Class to parse data files
     """
@@ -232,7 +215,11 @@ class WeeklyParser(Parser):
             if not result:
                 logger.error("Could not find country data for %s and date %s", fuel_type.description, date.isoformat())
                 continue
-            lowest_price, highest_price, median_price = _extract_daily_prices(result[1].strip())
+            lowest_price, highest_price, median_price = self.extract_daily_prices(result[1].strip())
+            if any((lowest_price is None, highest_price is None, median_price is None)):
+                logger.error("Could not extract daily prices for %s and date %s", fuel_type.description,
+                             date.isoformat())
+                continue
             country_data.append({
                 'fuel_type': fuel_type, 'lowest_price': lowest_price, 'highest_price': highest_price,
                 'median_price': median_price
@@ -252,13 +239,35 @@ class WeeklyParser(Parser):
                 continue
             for result in results:
                 prefecture = self.extract_prefecture(result[0])
-                lowest_price, highest_price, median_price = _extract_daily_prices(result[1].strip())
+                lowest_price, highest_price, median_price = self.extract_daily_prices(result[1].strip())
+                if any((lowest_price is None, highest_price is None, median_price is None)):
+                    logger.error("Could not extract daily prices for %s and date %s", fuel_type.description,
+                                 date.isoformat())
+                    continue
                 prefecture_data.append({
                     'prefecture': prefecture, 'fuel_type': fuel_type, 'lowest_price': lowest_price,
                     'highest_price': highest_price, 'median_price': median_price
                 })
 
         return {enums.DataType.WEEKLY_COUNTRY: country_data, enums.DataType.WEEKLY_PREFECTURE: prefecture_data}
+
+    @staticmethod
+    def extract_daily_prices(
+            prices: str) -> tuple[decimal.Decimal | None, decimal.Decimal | None, decimal.Decimal | None]:
+        """Extract the prices for daily data.
+
+        :param prices: The prices string.
+        :return: A tuple with the lowest, highest and median daily price.
+        """
+        price_matches = re.findall(r'\d[,.][\d ]{3}', prices, re.MULTILINE)
+        if len(price_matches) != 3:
+            return None, None, None
+
+        return (
+            decimal.Decimal(price_matches[0].replace(' ', '').replace(',', '.')),
+            decimal.Decimal(price_matches[1].replace(' ', '').replace(',', '.')),
+            decimal.Decimal(price_matches[2].replace(' ', '').replace(',', '.'))
+        )
 
 
 class DailyCountryParser(Parser):
