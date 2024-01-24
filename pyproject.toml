@@ -23,7 +23,6 @@ uvicorn = "^0.27.0"
 
 [tool.poetry.dev-dependencies]
 coverage = "^7.1.0"
-fabric = "<3.0.0"
 patchwork = "^1.0.1"
 pylint = "^3.0.1"
 pytest = "^7.2.1"

@@ -7,9 +7,9 @@ those PDF files, extracts the data from them, inserts them in a database, and ex
 
 ## Running the API
 
-The backend API is a [Python](https://www.python.org) based project, built with
-[FastAPI](https://fastapi.tiangolo.com), that uses [Poetry](https://python-poetry.org) for dependency management. In
-order to install the dependencies, you need to run:
+The backend API is a [Python](https://www.python.org) based project, built with [FastAPI](https://fastapi.tiangolo.com),
+that uses [Poetry](https://python-poetry.org) for dependency management. In order to install the dependencies, you need
+to run:
 
 ```
 poetry install
@@ -35,20 +35,3 @@ uvicorn fuelpricesgr.main:app
 
 The API is now available at http://localhost:8000. The documentation for the API is available at
 http://localhost:8000/docs.
-
-## Running the frontend
-
-A simple front end has been developed. The project dependencies are manages by [npm](https://www.npmjs.com), so you
-need to change to the `frontend` directory and run:
-
-```
-npm install
-```
-
-Then you can launch the frontend with:
-
-```
-npm start
-```
-
-This command will launch the frontend at http://localhost:8080.
