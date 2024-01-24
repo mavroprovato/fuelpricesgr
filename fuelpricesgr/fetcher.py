@@ -58,7 +58,7 @@ class Fetcher:
                 continue
             date = datetime.date(
                 year=int(match.group('year')), month=int(match.group('month')), day=int(match.group('day')))
-            if (start_date is None or date >= start_date) or (end_date is None or date <= end_date):
+            if (start_date is None or date >= start_date) and (end_date is None or date <= end_date):
                 yield date
 
     def data(self, date: datetime.date, skip_cache: bool = False) -> dict[enums.DataType, list[dict]] | None:
