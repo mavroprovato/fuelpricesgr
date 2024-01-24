@@ -21,7 +21,7 @@ def parse_data_file_type(data_file_types: str) -> Iterable[enums.DataFileType] |
     """
     if data_file_types:
         try:
-            return [enums.DataFileType[dft] for dft in data_file_types.split(',')]
+            return [enums.DataFileType[dft] for dft in data_file_types.upper().split(',')]
         except KeyError as exc:
             raise argparse.ArgumentTypeError("Could not parse data file types") from exc
 
