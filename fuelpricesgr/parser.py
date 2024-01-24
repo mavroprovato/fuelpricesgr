@@ -7,8 +7,8 @@ import logging
 import pathlib
 import re
 
-import PyPDF2
-import PyPDF2.errors
+import pypdf
+import pypdf.errors
 
 from fuelpricesgr import enums
 
@@ -110,8 +110,8 @@ class Parser(abc.ABC):
         """
         logger.info("Parsing file %s", file)
         try:
-            reader = PyPDF2.PdfReader(file)
-        except PyPDF2.errors.PdfReadError:
+            reader = pypdf.PdfReader(file)
+        except pypdf.errors.PdfReadError:
             logger.error("Could not extract text from file %s", file, exc_info=True)
             return None
 
