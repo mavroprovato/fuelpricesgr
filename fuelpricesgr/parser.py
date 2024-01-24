@@ -15,83 +15,11 @@ from fuelpricesgr import enums
 # The module logger
 logger = logging.getLogger(__name__)
 
-# The regular expressions used to find the prefectures from the PDF text.
-_PREFECTURE_REGEXES = {
-    enums.Prefecture.ATTICA: re.compile(r'Α ?[ΤΣ] ?[ΤΣ] ?[ΙΗ] ?Κ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.AETOLIA_ACARNANIA: re.compile(
-        r'Α ?[ΙΗ] ?[ΤΣ] ?Ω ?Λ ?[ΙΗ] ?Α ?[Σ\u03a2] {1,2}Κ ?Α ?[ΙΗ]\s{1,2}Α ?Κ ?Α ?Ρ ?Ν ?Α ?Ν ?[ΙΗ] ?Α ?[Σ\u03a2]',
-        re.MULTILINE),
-    enums.Prefecture.ARGOLIS: re.compile(r'Α ?Ρ ?Γ ?Ο ?Λ ?[ΙΗ] ?[ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.ARKADIAS: re.compile(r'Α ?Ρ ?Κ ?Α ?[ΔΓ] ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.ARTA: re.compile(r'Α ?Ρ ?[ΤΣ] ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.ACHAEA: re.compile(r'Α ?[ΧΥ] ?Α ?Ϊ ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.BOEOTIA: re.compile(r'Β ?Ο ?[ΙΗ] ?Ω ?[ΤΣ] ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.DRAMA: re.compile(r'[ΔΓ] ?Ρ ?Α ?Μ ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.GREVENA: re.compile(r'Γ ?Ρ ?[ΕΔ] ?Β ?[ΕΔ] ?Ν ?Ω ?Ν', re.MULTILINE),
-    enums.Prefecture.DODECANESE: re.compile(r'[ΔΓ] ?Ω ?[ΔΓ] ?[ΕΔ] ?Κ ?Α ?Ν ?[ΗΖ] ?[Σ\u03a2] ?Ο ?[ΤΥ]', re.MULTILINE),
-    enums.Prefecture.EVROS: re.compile(r'[ΕΔ] ?Β ?Ρ ?Ο ?[ΥΤ]', re.MULTILINE),
-    enums.Prefecture.EUBOEA: re.compile(r'[ΕΔ] ?[ΥΤ] ?Β ?Ο ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.EVRYTANIA: re.compile(r'[ΕΔ] ?[ΥΤ] ?Ρ ?[ΥΤ] ?[ΤΣ] ?Α ?Ν ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.ZAKYNTHOS: re.compile(r'[ΖΕ] ?Α ?Κ ?[ΥΤ] ?Ν ?Θ ?Ο ?[ΥΤ]', re.MULTILINE),
-    enums.Prefecture.ELIS: re.compile(r'[ΗΖ] ?Λ ?[ΕΔ] ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.IMATHIA: re.compile(r'[ΗΖ] ?Μ ?Α ?Θ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.HERAKLION: re.compile(r'[ΗΖ] ?Ρ ?Α ?Κ ?Λ ?[ΕΔ] ?[ΙΗ] ?Ο ?[ΥΤ]', re.MULTILINE),
-    enums.Prefecture.THESPROTIA: re.compile(r'Θ ?[ΕΔ] ?[Σ\u03a2] ?Π ?Ρ ?Ω ?[ΤΣ] ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.THESSALONIKI: re.compile(
-        r'Θ ?[ΕΔ] ?[Σ\u03a2] ?[Σ|\u03a2] ?Α ?Λ ?Ο ?Ν ?[ΙΗ] ?Κ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.IOANNINA: re.compile(r'[ΙΗ] ?Ω ?Α ?Ν ?Ν ?[ΙΗ] ?Ν ?Ω ?Ν', re.MULTILINE),
-    enums.Prefecture.KAVALA: re.compile(r'Κ ?Α ?Β ?Α ?Λ ?Α ?[Σ|\u03a2]', re.MULTILINE),
-    enums.Prefecture.KARDITSA: re.compile(r'Κ ?Α ?Ρ ?[ΔΓ] ?[ΙΗ] ?Τ? ?Σ ?[ \u03a2]?[ΗΖ] ?[Σ|\u03a2]', re.MULTILINE),
-    enums.Prefecture.KASTORIA: re.compile(r'Κ ?Α ?[Σ\u03a2] ?[ΤΣ] ?Ο ?Ρ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.KERKYRA: re.compile(r'Κ ?[ΕΔ] ?Ρ ?Κ ?[ΥΤ] ?Ρ ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.CEPHALONIA: re.compile(r'Κ ?[ΕΔ] ?Φ ?Α ?Λ ?Λ ?[ΗΖ] ?Ν ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.KILKIS: re.compile(r'Κ ?[ΙΗ] ?Λ ?Κ ?[ΙΗ] ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.KOZANI: re.compile(r'Κ ?Ο ?[ΖΕ] ?Α ?Ν ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.CORINTHIA: re.compile(r'Κ ?Ο ?Ρ ?[ΙΗ] ?Ν ?Θ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.CYCLADES: re.compile(r'Κ ?[ΥΤ] ?Κ ?Λ ?Α ?[ΔΓ] ?Ω ?Ν', re.MULTILINE),
-    enums.Prefecture.LACONIA: re.compile(r'Λ ?Α ?Κ ?Ω ?Ν ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.LARISSA: re.compile(r'Λ ?Α ?Ρ ?[ΙΗ] ?[Σ\u03a2] ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.LASITHI: re.compile(r'Λ ?Α ?[Σ\u03a2] ?[ΙΗ] ?Θ ?[ΙΗ] ?Ο ?[ΥΤ]', re.MULTILINE),
-    enums.Prefecture.LESBOS: re.compile(r'Λ ?[ΕΔ] ?[Σ\u03a2]Β ?Ο ?[ΥΤ]', re.MULTILINE),
-    enums.Prefecture.LEFKADA: re.compile(r'Λ ?[ΕΔ] ?[ΥΤ] ?Κ ?Α ?[ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.MAGNESIA: re.compile(r'Μ ?Α ?Γ ?Ν ?[ΗΖ] ?[Σ\u03a2] ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.MESSENIA: re.compile(r'Μ ?[ΕΔ] ?[Σ\u03a2] ?[Σ\u03a2] ?[ΗΖ] ?Ν ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.XANTHI: re.compile(r'Ξ ?Α ?Ν ?Θ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.PELLA: re.compile(r'Π ?[ΕΔ] ?Λ ?Λ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.PIERIA: re.compile(r'Π ?[ΙΗ] ?[ΕΔ] ?Ρ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.PREVEZA: re.compile(r'Π ?Ρ ?[ΕΔ] ?Β ?[ΕΔ] ?[ΖΕ] ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.RETHYMNO: re.compile(r'Ρ ?[ΕΔ] ?Θ ?[ΥΤ] ?Μ ?Ν ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.RHODOPE: re.compile(r'Ρ ?Ο ?[ΔΓ] ?Ο ?Π ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.SAMOS: re.compile(r'[Σ\u03a2] ?Α ?Μ ?Ο ?[ΥΤ]', re.MULTILINE),
-    enums.Prefecture.SERRES: re.compile(r'[Σ\u03a2] ?[ΕΔ] ?Ρ ?Ρ ?Ω ?Ν', re.MULTILINE),
-    enums.Prefecture.TRIKALA: re.compile(r'[ΤΣ] ?Ρ ?[ΙΗ] ?Κ ?Α ?Λ ?Ω ?Ν', re.MULTILINE),
-    enums.Prefecture.PHTHIOTIS: re.compile(r'Φ ?Θ ?[ΙΗ] ?Ω ?[ΤΣ] ?[ΙΗ]? ?[ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.FLORINA: re.compile(r'Φ ?Λ ?Ω ?Ρ ?[ΙΗ] ?Ν ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.PHOCIS: re.compile(r'Φ ?Ω ?Κ ?[ΙΗ] ?[ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.CHALKIDIKI: re.compile(r'[ΧΥ] ?Α ?Λ ?Κ ?[ΙΗ] ?[ΔΓ] ?[ΙΗ] ?Κ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
-    enums.Prefecture.CHANIA: re.compile(r'[ΧΥ] ?Α ?Ν ?[ΙΗ] ?Ω ?Ν', re.MULTILINE),
-    enums.Prefecture.CHIOS: re.compile(r'[ΧΥ] ?[ΙΗ] ?Ο ?[ΥΤ]', re.MULTILINE),
-}
-
 # Months that can contain diesel heading data
 DIESEL_HEATING_MONTHS = {10, 11, 12, 1, 2, 3, 4, 5}
 
 # The final date for Super data
 SUPER_FINAL_DATE = datetime.date(2022, 8, 12)
-
-
-def _extract_prefecture(prefecture_text: str) -> enums.Prefecture:
-    """Extract the prefecture from the PDF text.
-
-    :param prefecture_text: The prefecture text.
-    :return: The prefecture.
-    :raises ValueError: If the prefecture text cannot be parsed.
-    """
-    for prefecture, prefecture_regex in _PREFECTURE_REGEXES.items():
-        if prefecture_regex.match(prefecture_text):
-            return prefecture
-
-    raise ValueError(f"Could not parse prefecture text: {prefecture_text}")
 
 
 def _extract_daily_prices(prices: str) -> tuple[decimal.Decimal, decimal.Decimal, decimal.Decimal]:
@@ -116,6 +44,65 @@ class Parser(abc.ABC):
     """
     # Regex to get date from file name
     DATE_PARSING_REGEX = re.compile(r'(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2}).pdf$')
+    # The regular expressions used to find the prefectures from the PDF text.
+    PREFECTURE_REGEXES = {
+        enums.Prefecture.ATTICA: re.compile(r'Α ?[ΤΣ] ?[ΤΣ] ?[ΙΗ] ?Κ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.AETOLIA_ACARNANIA: re.compile(
+            r'Α ?[ΙΗ] ?[ΤΣ] ?Ω ?Λ ?[ΙΗ] ?Α ?[Σ\u03a2] {1,2}Κ ?Α ?[ΙΗ]\s{1,2}Α ?Κ ?Α ?Ρ ?Ν ?Α ?Ν ?[ΙΗ] ?Α ?[Σ\u03a2]',
+            re.MULTILINE),
+        enums.Prefecture.ARGOLIS: re.compile(r'Α ?Ρ ?Γ ?Ο ?Λ ?[ΙΗ] ?[ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.ARKADIAS: re.compile(r'Α ?Ρ ?Κ ?Α ?[ΔΓ] ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.ARTA: re.compile(r'Α ?Ρ ?[ΤΣ] ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.ACHAEA: re.compile(r'Α ?[ΧΥ] ?Α ?Ϊ ?Α ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.BOEOTIA: re.compile(r'Β ?Ο ?[ΙΗ] ?Ω ?[ΤΣ] ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.DRAMA: re.compile(r'[ΔΓ] ?Ρ ?Α ?Μ ?Α ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.GREVENA: re.compile(r'Γ ?Ρ ?[ΕΔ] ?Β ?[ΕΔ] ?Ν ?Ω ?Ν', re.MULTILINE),
+        enums.Prefecture.DODECANESE: re.compile(r'[ΔΓ] ?Ω ?[ΔΓ] ?[ΕΔ] ?Κ ?Α ?Ν ?[ΗΖ] ?[Σ\u03a2] ?Ο ?[ΤΥ]',
+                                                re.MULTILINE),
+        enums.Prefecture.EVROS: re.compile(r'[ΕΔ] ?Β ?Ρ ?Ο ?[ΥΤ]', re.MULTILINE),
+        enums.Prefecture.EUBOEA: re.compile(r'[ΕΔ] ?[ΥΤ] ?Β ?Ο ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.EVRYTANIA: re.compile(r'[ΕΔ] ?[ΥΤ] ?Ρ ?[ΥΤ] ?[ΤΣ] ?Α ?Ν ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.ZAKYNTHOS: re.compile(r'[ΖΕ] ?Α ?Κ ?[ΥΤ] ?Ν ?Θ ?Ο ?[ΥΤ]', re.MULTILINE),
+        enums.Prefecture.ELIS: re.compile(r'[ΗΖ] ?Λ ?[ΕΔ] ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.IMATHIA: re.compile(r'[ΗΖ] ?Μ ?Α ?Θ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.HERAKLION: re.compile(r'[ΗΖ] ?Ρ ?Α ?Κ ?Λ ?[ΕΔ] ?[ΙΗ] ?Ο ?[ΥΤ]', re.MULTILINE),
+        enums.Prefecture.THESPROTIA: re.compile(r'Θ ?[ΕΔ] ?[Σ\u03a2] ?Π ?Ρ ?Ω ?[ΤΣ] ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.THESSALONIKI: re.compile(
+            r'Θ ?[ΕΔ] ?[Σ\u03a2] ?[Σ|\u03a2] ?Α ?Λ ?Ο ?Ν ?[ΙΗ] ?Κ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.IOANNINA: re.compile(r'[ΙΗ] ?Ω ?Α ?Ν ?Ν ?[ΙΗ] ?Ν ?Ω ?Ν', re.MULTILINE),
+        enums.Prefecture.KAVALA: re.compile(r'Κ ?Α ?Β ?Α ?Λ ?Α ?[Σ|\u03a2]', re.MULTILINE),
+        enums.Prefecture.KARDITSA: re.compile(r'Κ ?Α ?Ρ ?[ΔΓ] ?[ΙΗ] ?Τ? ?Σ ?[ \u03a2]?[ΗΖ] ?[Σ|\u03a2]', re.MULTILINE),
+        enums.Prefecture.KASTORIA: re.compile(r'Κ ?Α ?[Σ\u03a2] ?[ΤΣ] ?Ο ?Ρ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.KERKYRA: re.compile(r'Κ ?[ΕΔ] ?Ρ ?Κ ?[ΥΤ] ?Ρ ?Α ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.CEPHALONIA: re.compile(r'Κ ?[ΕΔ] ?Φ ?Α ?Λ ?Λ ?[ΗΖ] ?Ν ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.KILKIS: re.compile(r'Κ ?[ΙΗ] ?Λ ?Κ ?[ΙΗ] ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.KOZANI: re.compile(r'Κ ?Ο ?[ΖΕ] ?Α ?Ν ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.CORINTHIA: re.compile(r'Κ ?Ο ?Ρ ?[ΙΗ] ?Ν ?Θ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.CYCLADES: re.compile(r'Κ ?[ΥΤ] ?Κ ?Λ ?Α ?[ΔΓ] ?Ω ?Ν', re.MULTILINE),
+        enums.Prefecture.LACONIA: re.compile(r'Λ ?Α ?Κ ?Ω ?Ν ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.LARISSA: re.compile(r'Λ ?Α ?Ρ ?[ΙΗ] ?[Σ\u03a2] ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.LASITHI: re.compile(r'Λ ?Α ?[Σ\u03a2] ?[ΙΗ] ?Θ ?[ΙΗ] ?Ο ?[ΥΤ]', re.MULTILINE),
+        enums.Prefecture.LESBOS: re.compile(r'Λ ?[ΕΔ] ?[Σ\u03a2]Β ?Ο ?[ΥΤ]', re.MULTILINE),
+        enums.Prefecture.LEFKADA: re.compile(r'Λ ?[ΕΔ] ?[ΥΤ] ?Κ ?Α ?[ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.MAGNESIA: re.compile(r'Μ ?Α ?Γ ?Ν ?[ΗΖ] ?[Σ\u03a2] ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.MESSENIA: re.compile(r'Μ ?[ΕΔ] ?[Σ\u03a2] ?[Σ\u03a2] ?[ΗΖ] ?Ν ?[ΙΗ] ?Α ?[Σ\u03a2]',
+                                              re.MULTILINE),
+        enums.Prefecture.XANTHI: re.compile(r'Ξ ?Α ?Ν ?Θ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.PELLA: re.compile(r'Π ?[ΕΔ] ?Λ ?Λ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.PIERIA: re.compile(r'Π ?[ΙΗ] ?[ΕΔ] ?Ρ ?[ΙΗ] ?Α ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.PREVEZA: re.compile(r'Π ?Ρ ?[ΕΔ] ?Β ?[ΕΔ] ?[ΖΕ] ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.RETHYMNO: re.compile(r'Ρ ?[ΕΔ] ?Θ ?[ΥΤ] ?Μ ?Ν ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.RHODOPE: re.compile(r'Ρ ?Ο ?[ΔΓ] ?Ο ?Π ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.SAMOS: re.compile(r'[Σ\u03a2] ?Α ?Μ ?Ο ?[ΥΤ]', re.MULTILINE),
+        enums.Prefecture.SERRES: re.compile(r'[Σ\u03a2] ?[ΕΔ] ?Ρ ?Ρ ?Ω ?Ν', re.MULTILINE),
+        enums.Prefecture.TRIKALA: re.compile(r'[ΤΣ] ?Ρ ?[ΙΗ] ?Κ ?Α ?Λ ?Ω ?Ν', re.MULTILINE),
+        enums.Prefecture.PHTHIOTIS: re.compile(r'Φ ?Θ ?[ΙΗ] ?Ω ?[ΤΣ] ?[ΙΗ]? ?[ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.FLORINA: re.compile(r'Φ ?Λ ?Ω ?Ρ ?[ΙΗ] ?Ν ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.PHOCIS: re.compile(r'Φ ?Ω ?Κ ?[ΙΗ] ?[ΔΓ] ?Ο ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.CHALKIDIKI: re.compile(r'[ΧΥ] ?Α ?Λ ?Κ ?[ΙΗ] ?[ΔΓ] ?[ΙΗ] ?Κ ?[ΗΖ] ?[Σ\u03a2]', re.MULTILINE),
+        enums.Prefecture.CHANIA: re.compile(r'[ΧΥ] ?Α ?Ν ?[ΙΗ] ?Ω ?Ν', re.MULTILINE),
+        enums.Prefecture.CHIOS: re.compile(r'[ΧΥ] ?[ΙΗ] ?Ο ?[ΥΤ]', re.MULTILINE),
+    }
 
     @staticmethod
     def get(data_file_type: enums.DataFileType) -> 'Parser':
@@ -151,6 +138,20 @@ class Parser(abc.ABC):
             return None
 
         return text
+
+    @classmethod
+    def extract_prefecture(cls, prefecture_text: str) -> enums.Prefecture:
+        """Extract the prefecture from the PDF text.
+
+        :param prefecture_text: The prefecture text.
+        :return: The prefecture.
+        :raises ValueError: If the prefecture text cannot be parsed.
+        """
+        for prefecture, prefecture_regex in cls.PREFECTURE_REGEXES.items():
+            if prefecture_regex.match(prefecture_text):
+                return prefecture
+
+        raise ValueError(f"Could not parse prefecture text: {prefecture_text}")
 
     def parse(self, file: pathlib.Path) -> dict[enums.DataType, list[dict]] | None:
         """Parse the file to get the data.
@@ -250,7 +251,7 @@ class WeeklyParser(Parser):
                              date.isoformat())
                 continue
             for result in results:
-                prefecture = _extract_prefecture(result[0])
+                prefecture = self.extract_prefecture(result[0])
                 lowest_price, highest_price, median_price = _extract_daily_prices(result[1].strip())
                 prefecture_data.append({
                     'prefecture': prefecture, 'fuel_type': fuel_type, 'lowest_price': lowest_price,
@@ -353,7 +354,7 @@ class DailyPrefectureParser(Parser):
             return None
 
         for result in results:
-            prefecture = _extract_prefecture(result[0])
+            prefecture = self.extract_prefecture(result[0])
 
             prices = re.findall(r'(\d[,.]\d ?\d ?\d)|-|\n', result[1].strip(), re.MULTILINE)
             if len(fuel_types) - len(prices) == 1 and enums.FuelType.SUPER in fuel_types:
