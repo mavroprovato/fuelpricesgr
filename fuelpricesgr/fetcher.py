@@ -32,7 +32,7 @@ class Fetcher:
         self.data_file_type = data_file_type
         self.cache_dir = settings.DATA_PATH / 'cache'
         self.cache_dir.mkdir(exist_ok=True)
-        self.file_parser = parser.Parser(data_file_type=data_file_type)
+        self.file_parser = parser.Parser.get(data_file_type=data_file_type)
 
     def dates(self, start_date: datetime.date = None, end_date: datetime.date = None) -> Generator[datetime.date]:
         """Fetch the available dates for the data files between two dates.
@@ -96,7 +96,7 @@ class Fetcher:
                 file.unlink(missing_ok=True)
                 return {}
 
-        return self.file_parser.parse(file, date) or {}
+        return self.file_parser.parse(file=file) or {}
 
     def path_for_date(self, date: datetime.date) -> pathlib.Path:
         """Get the file path for the specified date. The file may not exist.

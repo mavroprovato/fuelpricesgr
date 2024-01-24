@@ -1,5 +1,6 @@
 """Module for parsing data
 """
+import abc
 import datetime
 import decimal
 import logging
@@ -269,94 +270,21 @@ def _extract_daily_prefecture_data(
     return {enums.DataType.DAILY_PREFECTURE: data}
 
 
-def _extract_weekly_data(text: str, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:
-    """Extract weekly data.
-
-    :param text: The PDF file text.
-    :param date: The week date.
-    :return: The data. It is a list of dicts with fuel_type, lowest_price, highest_price and median_price as keys.
-    """
-    logger.info("Extracting weekly data for date %s", date)
-    unleaded_95_match = re.search(
-        r'Απ ?λ ?[ήι] +Αμ ?όλ ?υβδ ?[ηθ] Β ?ε ?ν ?[ζη] ?ί ?ν[ηθ] +9 ?5 οκ ?τα ?ν ?ίω ?ν', text)
-    if not unleaded_95_match:
-        logger.error("Could not find weekly data for %s and date %s", enums.FuelType.UNLEADED_95.description, date)
-        return None
-
-    diesel_match = re.search(
-        r'Π ?ε[τη][ρξ] ?[έζ] ?[λι] ?α ?[ιη] ?[ον] +Κ ?ί ?[νλ] ?[ηθε] ?[σςζ] ?[ηθε] ?[ςσο] +'
-        r'\( ?B ?i ?o ?d ?i ?e ?s ?e ?l ?\)', text)
-    if not diesel_match:
-        logger.warning("Could not find weekly data for %s and date %s", enums.FuelType.DIESEL.description, date)
-
-    diesel_heating_match = re.search(
-        r'Π ?ετ ?ρ ?[έζ] ?λ ?α ?ι ?ο +Θ ?[έζ]? ?ρμ ?αν[σς] ?[ηθ] ?[ςσ] +\(Κα ?τ ?΄ ?ο ?ί ?κ ?ον ?\)', text)
-    if not diesel_heating_match:
-        logger.warning("Could not find weekly data for %s and date %s", enums.FuelType.DIESEL_HEATING.description, date)
-
-    matches = {
-        enums.FuelType.UNLEADED_95: text[unleaded_95_match.span()[0]:diesel_match.span()[0] if diesel_match else None]
-    }
-    if diesel_match:
-        matches[enums.FuelType.DIESEL] = text[
-            diesel_match.span()[1]:(diesel_heating_match.span()[0] if diesel_heating_match else None)
-        ]
-    if diesel_heating_match:
-        matches[enums.FuelType.DIESEL_HEATING] = text[diesel_heating_match.span()[1]:]
-
-    country_data, prefecture_data = [], []
-    for fuel_type, prices_text in matches.items():
-        # Parse country data
-        result = re.search(
-            r'[Σ\u03a2][ΤΣ]Α ?Θ ?Μ ?Ι ?[Σ\u03a2] ?Μ ?Ε ?Ν ?Ο ?[Σ\u03a2] *Μ\.? ?\. ?Ο ?\.? ?\*{0,2} ([0-9,\-\s]+)',
-            prices_text)
-        if not result:
-            logger.error("Could not find country data for %s and date %s", fuel_type.description, date)
-            continue
-        lowest_price, highest_price, median_price = _extract_daily_prices(result[1].strip())
-        country_data.append({
-            'fuel_type': fuel_type, 'lowest_price': lowest_price, 'highest_price': highest_price,
-            'median_price': median_price
-        })
-        # Parse prefecture data
-        prices_text = re.sub(
-            r'ΝΟ ?Μ ?Ο ?[Σ\u03a2]\s+'
-            r'ΜΕ ?[Σ\u03a2] ?Η\s+ΚΑ ?[ΤΣ] ?Ω ?[ΤΣ] ?Α ?[ΤΣ] ?Η\s+ΜΕ\s+Φ ?Π ?Α\s+'
-            r'ΜΕ ?[Σ\u03a2] ?Η\s+Α ?Ν ?Ω ?[ΤΣ] ?Α ?[ΤΣ] ?Η\s+ΜΕ\s+Φ ?Π ?Α\s+'
-            r'(ΔΙΑ ?Μ ?Ε ?[Σ\u03a2] ?Ο ?[Σ\u03a2]|MΕ ?[Σ\u03a2] ?Η)\s+[ΤΣ] ?Ι ?Μ ?Η', '', prices_text, re.MULTILINE)
-        results = re.findall(
-            r'ΝΟ ?Μ ?Ο ?[Σ\u03a2] +(\D+) ([0-9,\-\s]+)', prices_text, re.MULTILINE)
-        if len(results) != len(enums.Prefecture):
-            logger.error("Could not find all prefectures for %s and date %s", fuel_type.description, date)
-            continue
-        for result in results:
-            prefecture = _extract_prefecture(result[0])
-            lowest_price, highest_price, median_price = _extract_daily_prices(result[1].strip())
-            prefecture_data.append({
-                'prefecture': prefecture, 'fuel_type': fuel_type, 'lowest_price': lowest_price,
-                'highest_price': highest_price, 'median_price': median_price
-            })
-
-    return {enums.DataType.WEEKLY_COUNTRY: country_data, enums.DataType.WEEKLY_PREFECTURE: prefecture_data}
-
-
-class Parser:
+class Parser(abc.ABC):
     """Class to parse data files
     """
-    def __init__(self, data_file_type: enums.DataFileType):
+    @staticmethod
+    def get(data_file_type: enums.DataFileType) -> 'Parser':
         """Create the parser object.
-
-        :param data_file_type: The data file type.
         """
-        self.data_file_type = data_file_type
+        match data_file_type:
+            case enums.DataFileType.WEEKLY:
+                return WeeklyParser()
+            case _:
+                raise NotImplementedError()
 
-    def parse(self, file: pathlib.Path, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:
-        """Parse the data file.
-
-        :param file: The file to parse
-        :param date: The file to date.
-        :return: The data.
-        """
+    @staticmethod
+    def read_text(file: pathlib.Path) -> str | None:
         logger.info("Parsing file %s", file)
         try:
             reader = PyPDF2.PdfReader(file)
@@ -366,7 +294,106 @@ class Parser:
 
         text = ''.join(page.extract_text() for page in reader.pages)
         if not text:
-            logger.error("Could not extract text from file %s", file)
+            logger.error("No text found in file %s", file)
             return None
 
-        return globals()[f"_extract_{self.data_file_type.value}_data"](text, date)
+        return text
+
+    def parse(self, file: pathlib.Path) -> dict[enums.DataType, list[dict]] | None:
+        """Parse the file to get the data.
+
+        :param file: The file.
+        :return: The file data.
+        """
+        text = self.read_text(file=file)
+
+        if text:
+            return self.extract_data(text=text, file=file)
+
+    @abc.abstractmethod
+    def extract_data(self, text: str, file: pathlib.Path) -> dict[enums.DataType, list[dict]] | None:
+        """Extract data from the file.
+
+        :param text: The file text.
+        :param file: The file from which the text was extracted.
+        :return: The data.
+        """
+
+
+class WeeklyParser(Parser):
+    """Parser for weekly data files
+    """
+    def extract_data(self, text: str, file: pathlib.Path) -> dict[enums.DataType, list[dict]] | None:
+        """Extract weekly country and prefecture data.
+
+        :param text: The file text.
+        :param file: The file from which the text was extracted.
+        :return: The data.
+        """
+        logger.info("Extracting weekly data from file %s", file.name)
+        unleaded_95_match = re.search(
+            r'Απ ?λ ?[ήι] +Αμ ?όλ ?υβδ ?[ηθ] Β ?ε ?ν ?[ζη] ?ί ?ν[ηθ] +9 ?5 οκ ?τα ?ν ?ίω ?ν', text)
+        if not unleaded_95_match:
+            logger.error("Could not find weekly data for %s in file %s", enums.FuelType.UNLEADED_95.description,
+                         file.name)
+            return None
+
+        diesel_match = re.search(
+            r'Π ?ε[τη][ρξ] ?[έζ] ?[λι] ?α ?[ιη] ?[ον] +Κ ?ί ?[νλ] ?[ηθε] ?[σςζ] ?[ηθε] ?[ςσο] +'
+            r'\( ?B ?i ?o ?d ?i ?e ?s ?e ?l ?\)', text)
+        if not diesel_match:
+            logger.warning("Could not find weekly data for %s in file %s", enums.FuelType.DIESEL.description, file.name)
+
+        diesel_heating_match = re.search(
+            r'Π ?ετ ?ρ ?[έζ] ?λ ?α ?ι ?ο +Θ ?[έζ]? ?ρμ ?αν[σς] ?[ηθ] ?[ςσ] +\(Κα ?τ ?΄ ?ο ?ί ?κ ?ον ?\)', text)
+        if not diesel_heating_match:
+            logger.warning("Could not find weekly data for %s in file %s", enums.FuelType.DIESEL_HEATING.description,
+                           file.name)
+
+        matches = {
+            enums.FuelType.UNLEADED_95: text[
+                unleaded_95_match.span()[0]:diesel_match.span()[0] if diesel_match else None
+            ]
+        }
+        if diesel_match:
+            matches[enums.FuelType.DIESEL] = text[
+                diesel_match.span()[1]:(diesel_heating_match.span()[0] if diesel_heating_match else None)
+            ]
+        if diesel_heating_match:
+            matches[enums.FuelType.DIESEL_HEATING] = text[diesel_heating_match.span()[1]:]
+
+        country_data, prefecture_data = [], []
+        for fuel_type, prices_text in matches.items():
+            # Parse country data
+            result = re.search(
+                r'[Σ\u03a2][ΤΣ]Α ?Θ ?Μ ?Ι ?[Σ\u03a2] ?Μ ?Ε ?Ν ?Ο ?[Σ\u03a2] *Μ\.? ?\. ?Ο ?\.? ?\*{0,2} ([0-9,\-\s]+)',
+                prices_text)
+            if not result:
+                logger.error("Could not find country data for %s in file %s", fuel_type.description, file.name)
+                continue
+            lowest_price, highest_price, median_price = _extract_daily_prices(result[1].strip())
+            country_data.append({
+                'fuel_type': fuel_type, 'lowest_price': lowest_price, 'highest_price': highest_price,
+                'median_price': median_price
+            })
+
+            # Parse prefecture data
+            prices_text = re.sub(
+                r'ΝΟ ?Μ ?Ο ?[Σ\u03a2]\s+'
+                r'ΜΕ ?[Σ\u03a2] ?Η\s+ΚΑ ?[ΤΣ] ?Ω ?[ΤΣ] ?Α ?[ΤΣ] ?Η\s+ΜΕ\s+Φ ?Π ?Α\s+'
+                r'ΜΕ ?[Σ\u03a2] ?Η\s+Α ?Ν ?Ω ?[ΤΣ] ?Α ?[ΤΣ] ?Η\s+ΜΕ\s+Φ ?Π ?Α\s+'
+                r'(ΔΙΑ ?Μ ?Ε ?[Σ\u03a2] ?Ο ?[Σ\u03a2]|MΕ ?[Σ\u03a2] ?Η)\s+[ΤΣ] ?Ι ?Μ ?Η', '', prices_text, re.MULTILINE)
+            results = re.findall(
+                r'ΝΟ ?Μ ?Ο ?[Σ\u03a2] +(\D+) ([0-9,\-\s]+)', prices_text, re.MULTILINE)
+            if len(results) != len(enums.Prefecture):
+                logger.error("Could not find all prefectures for %s in file %s", fuel_type.description, file.name)
+                continue
+            for result in results:
+                prefecture = _extract_prefecture(result[0])
+                lowest_price, highest_price, median_price = _extract_daily_prices(result[1].strip())
+                prefecture_data.append({
+                    'prefecture': prefecture, 'fuel_type': fuel_type, 'lowest_price': lowest_price,
+                    'highest_price': highest_price, 'median_price': median_price
+                })
+
+        return {enums.DataType.WEEKLY_COUNTRY: country_data, enums.DataType.WEEKLY_PREFECTURE: prefecture_data}
