@@ -1,14 +1,11 @@
 """Module for fetching data
 """
-from collections.abc import Generator
 import datetime
 import logging
 import pathlib
 import re
-import urllib.parse
 
 import requests
-import bs4
 
 from fuelpricesgr import enums, parser, settings
 
@@ -34,33 +31,6 @@ class Fetcher:
         self.cache_dir.mkdir(exist_ok=True)
         self.file_parser = parser.Parser.get(data_file_type=data_file_type)
 
-    def dates(self, start_date: datetime.date = None, end_date: datetime.date = None) -> Generator[datetime.date]:
-        """Fetch the available dates for the data files between two dates.
-
-        :param start_date: The date from which to start fetching data.
-        :param end_date: The date until which to stop fetching data.
-        :return: Yields the date for the file.
-        """
-        # Fetch all the page URLs
-        page_url = urllib.parse.urljoin(settings.FETCH_URL, self.data_file_type.page)
-        logger.info("Processing page %s", page_url)
-        response = requests.get(f"{settings.FETCH_URL}/{self.data_file_type.page}", timeout=settings.REQUESTS_TIMEOUT)
-        soup = bs4.BeautifulSoup(response.text, 'html.parser')
-
-        # Process all file links
-        for link in reversed(soup.find_all('a')):
-            if not link.has_attr('href') or not link['href'].startswith('./files'):
-                continue
-            # Extract date from link
-            match = self.LINK_PARSING_REGEX.match(link['href'])
-            if not match:
-                logger.warning("Cannot parse link %s", link['href'])
-                continue
-            date = datetime.date(
-                year=int(match.group('year')), month=int(match.group('month')), day=int(match.group('day')))
-            if (start_date is None or date >= start_date) and (end_date is None or date <= end_date):
-                yield date
-
     def data(self, date: datetime.date, skip_cache: bool = False) -> dict[enums.DataType, list[dict]] | None:
         """Get the data for the specified date.
 
@@ -77,12 +47,12 @@ class Fetcher:
                 response = requests.get(file_url, stream=True, timeout=settings.REQUESTS_TIMEOUT)
                 response.raise_for_status()
             except requests.RequestException as ex:
-                logger.error("Could not fetch URL", exc_info=ex)
+                logger.error("Could not fetch URL for date %s", date.isoformat(), exc_info=ex)
                 return {}
 
             # Check if response is a PDF file
             if response.headers['content-type'] != 'application/pdf':
-                logger.error("File is not PDF")
+                logger.error("File is not PDF for date %s", date.isoformat())
                 return {}
 
             # Download the file
@@ -92,7 +62,7 @@ class Fetcher:
 
             # Check if empty
             if file.stat().st_size == 0:
-                logger.error("File is empty")
+                logger.error("File is empty for date %s", date.isoformat())
                 file.unlink(missing_ok=True)
                 return {}
 

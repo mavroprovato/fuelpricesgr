@@ -4,6 +4,7 @@ import collections.abc
 import datetime
 import enum
 import importlib
+from collections.abc import Generator
 
 from fuelpricesgr import settings
 
@@ -154,6 +155,19 @@ class DataFileType(enum.Enum):
         obj.prefix = prefix
 
         return obj
+
+    def dates(self, start_date: datetime.date, end_date: datetime.date) -> Generator[datetime.date]:
+        """Get the available dates for the file type and the selected dates.
+
+        :param start_date: The start date.
+        :param end_date: The end date.
+        :return: Yield each available date.
+        """
+        current_date = start_date
+        while current_date <= end_date:
+            if self != self.WEEKLY or current_date.weekday() == 4:
+                yield current_date
+            current_date += datetime.timedelta(days=1)
 
     def link(self, date: datetime.date) -> str | None:
         """Return the link of the file from which we got the data for the specified date.

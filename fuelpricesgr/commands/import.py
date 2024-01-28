@@ -74,9 +74,11 @@ def import_data(service: services.base.BaseService, args: argparse.Namespace) ->
                         dates.append(end_date)
                 if dates:
                     args.start_date = min(dates)
+            if args.end_date is None:
+                args.end_date = datetime.date.today()
             logger.info("Fetching data between %s and %s, and data file type %s", args.start_date, args.end_date,
                         data_file_type)
-            for date in data_fetcher.dates(start_date=args.start_date, end_date=args.end_date):
+            for date in data_file_type.dates(start_date=args.start_date, end_date=args.end_date):
                 if args.update or not service.data_exists(data_file_type=data_file_type, date=date):
                     file_data = data_fetcher.data(date=date, skip_cache=args.skip_cache)
                     for data_type, fuel_type_data in file_data.items():
