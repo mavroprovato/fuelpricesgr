@@ -60,12 +60,6 @@ class Fetcher:
             with file.open('wb') as f:
                 f.write(file_data)
 
-            # Check if empty
-            if file.stat().st_size == 0:
-                logger.error("File is empty for date %s", date.isoformat())
-                file.unlink(missing_ok=True)
-                return {}
-
         return self.file_parser.parse(file=file) or {}
 
     def path_for_date(self, date: datetime.date) -> pathlib.Path:
