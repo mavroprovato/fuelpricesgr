@@ -174,13 +174,18 @@ class WeeklyParser(Parser):
         :return: The data.
         """
         logger.info("Extracting weekly data from file %s", date.isoformat())
+        # Try to find "Μέσες τιμές λιανικής πώλησης καυσίμων ανά Νομό"
         weekly_country_end_data = re.search(
-            r'\* *Η [μκ][έζ] *[σςζ][ηθε] +[ητ] *[ιη][μκ] *[ήι] +π *α *[νλ] *ε *[λι] *[λι] *α *δ *[ιη] *[κθ] *ά +'
-            r'[υπ] *π *[ον] *[λι] *[ον] *γ *ί *[ζηδ] *ε *[τη] *α *[ιη]\s+α *π *ό *[τη] *[ον] *[νλ]\s+'
-            r'[σςζ] *[τη] *α *[θκζ] *[μκ] *[ιη] *[σςζ] *[μκ] *[έζ] *[νλ][ον]', text, re.MULTILINE)
+            r'Μέσες τιμές λ *ιανι *κή *ς +πώλη *σης +κ *α *υ *σ *ί *μ *ω *ν +α *ν *ά [Νν] *ο *μ *ό', text, re.MULTILINE)
         if not weekly_country_end_data:
-            logger.error("Could not find weekly country data for date %s", date.isoformat())
-            return None
+            # Try to find "Η μέση τιμή πανελλαδικά υπολογίζεται απο τον σταθμισμένο μέσο όρο"
+            weekly_country_end_data = re.search(
+                r'\* *Η [μκ][έζ] *[σςζ][ηθε] [τη][ιη][μκ] *[ήι] πα *[νλ] *ε[λι] *[λι] *αδ *[ιη][κθ] *ά +'
+                r'[υπ] *π *[ον] *[λι] *[ον] *γ *ί *[ζηδ] *ε *[τη] *α *[ιη] +α *π *ό +[τη] *[ον][νλ]\s+'
+                r'[σςζ][τη] *α[θκζ] *[μκ] *[ιη] *[ιζσς] *[μκ] *[έζ][νλ][ον]\s+[μκ] *[έζ] *[σςζ] *[ον]\s+ό[ρξ][ον]',
+                text, re.MULTILINE)
+        if not weekly_country_end_data:
+            raise ValueError(f"Could not find weekly country data for date %s", date.isoformat())
 
         country_data, prefecture_data = [], []
 
