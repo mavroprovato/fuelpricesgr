@@ -25,6 +25,18 @@ SessionLocal = sqlalchemy.orm.sessionmaker(autocommit=False, autoflush=False, bi
 Base = sqlalchemy.orm.declarative_base()
 
 
+class WeeklyCountry(Base):
+    """The weekly country database model
+    """
+    __tablename__ = 'weekly_country'
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
+    date = sqlalchemy.Column(sqlalchemy.Date, index=True)
+    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
+    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
+    number_of_stations = sqlalchemy.Column(sqlalchemy.SmallInteger)
+
+
 class DailyCountry(Base):
     """The daily country database model
     """
@@ -47,19 +59,6 @@ class DailyPrefecture(Base):
     fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
     prefecture = sqlalchemy.Column(sqlalchemy.Enum(enums.Prefecture), nullable=False)
     price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
-
-
-class WeeklyCountry(Base):
-    """The weekly country database model
-    """
-    __tablename__ = 'weekly_country'
-
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
-    date = sqlalchemy.Column(sqlalchemy.Date, index=True)
-    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
-    lowest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
-    highest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
-    median_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
 
 
 class WeeklyPrefecture(Base):

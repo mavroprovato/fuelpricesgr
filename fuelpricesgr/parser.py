@@ -187,27 +187,31 @@ class WeeklyParser(Parser):
         if not weekly_country_end_data:
             raise ValueError(f"Could not find weekly country data for date %s", date.isoformat())
 
-        country_data, prefecture_data = [], []
+        country_data, prefecture_data = self.get_country_data(text[:weekly_country_end_data.start(0)], date), []
 
         return {enums.DataType.WEEKLY_COUNTRY: country_data, enums.DataType.WEEKLY_PREFECTURE: prefecture_data}
 
     @staticmethod
-    def extract_daily_prices(
-            prices: str) -> tuple[decimal.Decimal | None, decimal.Decimal | None, decimal.Decimal | None]:
-        """Extract the prices for daily data.
+    def get_country_data(text: str, date: datetime.date):
+        """Get the weekly country data.
 
-        :param prices: The prices string.
-        :return: A tuple with the lowest, highest and median daily price.
+        :param text: The weekly country data text.
+        :param date: The date.
+        :return: The weekly country data.
         """
-        price_matches = re.findall(r'\d[,.][\d ]{3}', prices, re.MULTILINE)
-        if len(price_matches) != 3:
-            return None, None, None
+        data = []
+        unleaded_95 = re.search(
+            r'Αμόλ ?[υσ]βδ ?[ηθ] +9 ?5 +ο ?κ ?τ ?\. *(?P<number_of_stations>\d\.\d{3})? *(?P<price>\d,[\d ]{3,4})', text)
+        if not unleaded_95:
+            raise ValueError(f"Could not find Unleaded 95 data for date {date.isoformat()}")
+        data.append({
+            'fuel_type': enums.FuelType.UNLEADED_95.value,
+            'number_of_stations': int(unleaded_95.group('number_of_stations').replace('.', ''))
+            if unleaded_95.group('number_of_stations') else None,
+            'price': decimal.Decimal(unleaded_95.group('price').replace(' ', '').replace(',', '.')),
+        })
 
-        return (
-            decimal.Decimal(price_matches[0].replace(' ', '').replace(',', '.')),
-            decimal.Decimal(price_matches[1].replace(' ', '').replace(',', '.')),
-            decimal.Decimal(price_matches[2].replace(' ', '').replace(',', '.'))
-        )
+        return data
 
 
 class DailyCountryParser(Parser):
