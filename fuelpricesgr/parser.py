@@ -200,26 +200,47 @@ class WeeklyParser(Parser):
         :return: The weekly country data.
         """
         data = []
-        unleaded_95 = re.search(
+        match = re.search(
             r'Αμόλ ?[υσ]βδ ?[ηθ] +9 ?5 +ο ?κ ?τ ?\. *(?P<number_of_stations>\d\.\d{3})? *(?P<price>\d,[\d ]{3,4})',
             text)
-        if not unleaded_95:
+        if not match:
             raise ValueError(f"Could not find Unleaded 95 data for date {date.isoformat()}")
         data.append({
             'fuel_type': enums.FuelType.UNLEADED_95.value,
-            'number_of_stations': WeeklyParser.get_number_of_stations(unleaded_95),
-            'price': WeeklyParser.get_price(unleaded_95),
+            'number_of_stations': WeeklyParser.get_number_of_stations(match),
+            'price': WeeklyParser.get_price(match),
+        })
+
+        match = re.search(
+            r'Αμόλ[υσ] ?β ?δ[ηθ] 100 οκτ\. *(?P<number_of_stations>\d\.\d{3})? *(?P<price>\d,[\d ]{3,4})',
+            text)
+        if not match:
+            raise ValueError(f"Could not find Unleaded 100 data for date {date.isoformat()}")
+        data.append({
+            'fuel_type': enums.FuelType.UNLEADED_100.value,
+            'number_of_stations': WeeklyParser.get_number_of_stations(match),
+            'price': WeeklyParser.get_price(match),
         })
 
         return data
 
     @staticmethod
     def get_number_of_stations(match: re.Match) -> int | None:
+        """Get the number of stations from the matched text.
+
+        :param match: The matched text.
+        :return: The number of stations, if they can be found.
+        """
         if match.group('number_of_stations'):
             return int(match.group('number_of_stations').replace('.', ''))
 
     @staticmethod
-    def get_price(match: re.Match) -> decimal.Decimal | None:
+    def get_price(match: re.Match) -> decimal.Decimal:
+        """Get the price from the matched text.
+
+        :param match: The matched text.
+        :return: The price.
+        """
         return decimal.Decimal(str(match.group('price').replace(' ', '').replace(',', '.')))
 
 
