@@ -201,17 +201,26 @@ class WeeklyParser(Parser):
         """
         data = []
         unleaded_95 = re.search(
-            r'Αμόλ ?[υσ]βδ ?[ηθ] +9 ?5 +ο ?κ ?τ ?\. *(?P<number_of_stations>\d\.\d{3})? *(?P<price>\d,[\d ]{3,4})', text)
+            r'Αμόλ ?[υσ]βδ ?[ηθ] +9 ?5 +ο ?κ ?τ ?\. *(?P<number_of_stations>\d\.\d{3})? *(?P<price>\d,[\d ]{3,4})',
+            text)
         if not unleaded_95:
             raise ValueError(f"Could not find Unleaded 95 data for date {date.isoformat()}")
         data.append({
             'fuel_type': enums.FuelType.UNLEADED_95.value,
-            'number_of_stations': int(unleaded_95.group('number_of_stations').replace('.', ''))
-            if unleaded_95.group('number_of_stations') else None,
-            'price': decimal.Decimal(unleaded_95.group('price').replace(' ', '').replace(',', '.')),
+            'number_of_stations': WeeklyParser.get_number_of_stations(unleaded_95),
+            'price': WeeklyParser.get_price(unleaded_95),
         })
 
         return data
+
+    @staticmethod
+    def get_number_of_stations(match: re.Match) -> int | None:
+        if match.group('number_of_stations'):
+            return int(match.group('number_of_stations').replace('.', ''))
+
+    @staticmethod
+    def get_price(match: re.Match) -> decimal.Decimal | None:
+        return decimal.Decimal(str(match.group('price').replace(' ', '').replace(',', '.')))
 
 
 class DailyCountryParser(Parser):
