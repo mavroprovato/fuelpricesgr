@@ -234,6 +234,19 @@ class WeeklyParser(Parser):
                 'price': WeeklyParser.get_price(match),
             })
 
+        match = re.search(
+            r'[ΥΤ]γρα[έζ]ρ ?ιο κίν ?[ηθ][σς][ηθ][ςσ] \(Auto ?g ?a ?s ?\) *'
+            r'(?P<number_of_stations>(?:\d\.)?\d{3})? *(?P<price>\d,[\d ]{3,4})',
+            text)
+        if not match:
+            logger.warning("Could not find Gas data for date %s", date)
+        else:
+            data.append({
+                'fuel_type': enums.FuelType.GAS.value,
+                'number_of_stations': WeeklyParser.get_number_of_stations(match),
+                'price': WeeklyParser.get_price(match),
+            })
+
         return data
 
     @staticmethod
