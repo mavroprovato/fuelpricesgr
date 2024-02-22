@@ -200,64 +200,60 @@ class WeeklyParser(Parser):
         :return: The weekly country data.
         """
         data = []
-        match = re.search(
-            r'Αμόλ ?[υσ]βδ ?[ηθ] +9 ?5 +ο ?κ ?τ ?\. *(?P<number_of_stations>\d\.\d{3})? *(?P<price>\d,[\d ]{3,4})',
-            text)
-        if not match:
-            raise ValueError(f"Could not find Unleaded 95 data for date {date.isoformat()}")
-        data.append({
-            'fuel_type': enums.FuelType.UNLEADED_95.value,
-            'number_of_stations': WeeklyParser.get_number_of_stations(match),
-            'price': WeeklyParser.get_price(match),
-        })
-
-        match = re.search(
-            r'Αμόλ[υσ] ?β ?δ[ηθ] 100 οκτ\. *(?P<number_of_stations>\d\.\d{3})? *(?P<price>\d,[\d ]{3,4})',
-            text)
-        if not match:
-            raise ValueError(f"Could not find Unleaded 100 data for date {date.isoformat()}")
-        data.append({
-            'fuel_type': enums.FuelType.UNLEADED_100.value,
-            'number_of_stations': WeeklyParser.get_number_of_stations(match),
-            'price': WeeklyParser.get_price(match),
-        })
-
-        match = re.search(
-            r'Diesel +Κ ?ίν[ηθ][σς][ηθ][ςσ] *(?P<number_of_stations>(?:\d\.)?\d{3})? *(?P<price>\d,[\d ]{3,4})',
-            text)
-        if not match:
-            logger.warning("Could not find Diesel data for date %s", date)
+        if match := re.search(
+                r'Αμόλ ?[υσ]βδ ?[ηθ] +9 ?5 +ο ?κ ?τ ?\. *(?P<number_of_stations>\d\.\d{3})? *(?P<price>\d,[\d ]{3,4})',
+                text):
+            data.append({
+                'fuel_type': enums.FuelType.UNLEADED_95.value,
+                'number_of_stations': WeeklyParser.get_number_of_stations(match),
+                'price': WeeklyParser.get_price(match),
+            })
         else:
+            logger.error("Could not find Unleaded 95 data for date %s", date)
+
+        if match := re.search(
+                r'Αμόλ[υσ] ?β ?δ[ηθ] 100 οκτ\. *(?P<number_of_stations>\d\.\d{3})? *(?P<price>\d,[\d ]{3,4})', text):
+            data.append({
+                'fuel_type': enums.FuelType.UNLEADED_100.value,
+                'number_of_stations': WeeklyParser.get_number_of_stations(match),
+                'price': WeeklyParser.get_price(match),
+            })
+        else:
+            logger.error("Could not find Unleaded 100 data for date %s", date)
+
+        if match := re.search(
+                r'Diesel +Κ ?ίν[ηθ][σς][ηθ][ςσ] *(?P<number_of_stations>(?:\d\.)?\d{3})? *(?P<price>\d,[\d ]{3,4})',
+                text):
             data.append({
                 'fuel_type': enums.FuelType.DIESEL.value,
                 'number_of_stations': WeeklyParser.get_number_of_stations(match),
                 'price': WeeklyParser.get_price(match),
             })
-
-        match = re.search(
-            r'[ΥΤ]γρα[έζ]ρ ?ιο κίν ?[ηθ][σς][ηθ][ςσ] \(Auto ?g ?a ?s ?\) *'
-            r'(?P<number_of_stations>(?:\d\.)?\d{3})? *(?P<price>\d,[\d ]{3,4})', text)
-        if not match:
-            logger.warning("Could not find Gas data for date %s", date)
         else:
+            logger.warning("Could not find Diesel data for date %s", date)
+
+        if match := re.search(
+                r'[ΥΤ]γρα[έζ]ρ ?ιο +κίν ?[ηθ][σς][ηθ][ςσ] \(Auto ?g ?a ?s ?\) *'
+                r'(?P<number_of_stations>(?:\d\.)?\d{3})? *(?P<price>\d,[\d ]{3,4})', text):
             data.append({
                 'fuel_type': enums.FuelType.GAS.value,
                 'number_of_stations': WeeklyParser.get_number_of_stations(match),
                 'price': WeeklyParser.get_price(match),
             })
-
-        match = re.search(
-            r'Diesel Θ[έζ]ρμαν[σς][ηθ][ςσ] (?:Κατ΄ο ?ίκο ?ν)? *'
-            r'(?P<number_of_stations>(?:\d\.)?\d{3})? *(?P<price>\d,[\d ]{3,4})', text)
-        if not match:
-            if (date.month >= 10 and date.day >= 15) or (date.month <= 4):
-                raise ValueError(f"Could not find Diesel heating data for date {date.isoformat()}")
         else:
+            logger.warning("Could not find Gas data for date %s", date)
+
+        if match := re.search(
+                r'Diesel Θ[έζ]ρμαν[σς][ηθ][ςσ] (?:Κατ΄ο ?ίκο ?ν)? *'
+                r'(?P<number_of_stations>(?:\d\.)?\d{3})? *(?P<price>\d,[\d ]{3,4})', text):
             data.append({
                 'fuel_type': enums.FuelType.DIESEL_HEATING.value,
                 'number_of_stations': WeeklyParser.get_number_of_stations(match),
                 'price': WeeklyParser.get_price(match),
             })
+        else:
+            if (date.month >= 10 and date.day >= 15) or (date.month <= 4):
+                logger.error("Could not find Diesel heating data for date %s", date)
 
         return data
 
