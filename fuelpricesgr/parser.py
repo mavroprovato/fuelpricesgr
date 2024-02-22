@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 DIESEL_HEATING_MONTHS = {10, 11, 12, 1, 2, 3, 4, 5}
 
 # The final date for Super data
-SUPER_FINAL_DATE = datetime.date(2022, 8, 12)
+SUPER_FINAL_DATE = datetime.date(2022, 8, 5)
 
 
 class Parser(abc.ABC):
@@ -254,6 +254,17 @@ class WeeklyParser(Parser):
         else:
             if (date.month >= 10 and date.day >= 15) or (date.month <= 4):
                 logger.error("Could not find Diesel heating data for date %s", date)
+
+        if match := re.search(
+                r'Super *(?P<number_of_stations>(?:\d\.)?\d{1,3})? *(?P<price>\d,[\d ]{3,4})', text):
+            data.append({
+                'fuel_type': enums.FuelType.SUPER.value,
+                'number_of_stations': WeeklyParser.get_number_of_stations(match),
+                'price': WeeklyParser.get_price(match),
+            })
+        else:
+            if date <= SUPER_FINAL_DATE:
+                logger.error("Could not find Super data for date %s", date)
 
         return data
 
