@@ -210,9 +210,8 @@ class SqlService(base.BaseService):
                 'data': [
                     {
                         'fuel_type': row.fuel_type.name,
-                        'lowest_price': row.lowest_price,
-                        'highest_price': row.highest_price,
-                        'median_price': row.median_price,
+                        'price': row.price,
+                        'number_of_stations': row.number_of_stations,
                     } for row in date_group
                 ]
             } for date, date_group in itertools.groupby(

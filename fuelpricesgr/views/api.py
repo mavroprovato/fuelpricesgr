@@ -74,6 +74,30 @@ def date_range(data_type: enums.DataType) -> Mapping[str, datetime.date | None]:
         return {'start_date': start_date, 'end_date': end_date}
 
 
+
+@router.get(
+    path="/data/weekly/country",
+    summary="Weekly country data",
+    description="Return the weekly country data",
+    response_model=list[schemas.Weekly]
+)
+@caching.cache
+def weekly_country_data(
+        start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
+        end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
+) -> Iterable[Mapping[str, object]]:
+    """Return the weekly country data.
+
+    :param start_date: The start date of the data to fetch.
+    :param end_date: The end date of the data to fetch.
+    :return: The weekly country data.
+    """
+    start_date, end_date = get_date_range(start_date, end_date)
+
+    with services.get_service() as service:
+        return service.weekly_country_data(start_date=start_date, end_date=end_date)
+
+
 @router.get(
     path="/data/daily/country",
     summary="Daily country data",
@@ -120,29 +144,6 @@ def daily_prefecture_data(
 
     with services.get_service() as service:
         return service.daily_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date)
-
-
-@router.get(
-    path="/data/weekly/country",
-    summary="Weekly country data",
-    description="Return the weekly country data",
-    response_model=list[schemas.Weekly]
-)
-@caching.cache
-def weekly_country_data(
-        start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
-        end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> Iterable[Mapping[str, object]]:
-    """Return the weekly country data.
-
-    :param start_date: The start date of the data to fetch.
-    :param end_date: The end date of the data to fetch.
-    :return: The weekly country data.
-    """
-    start_date, end_date = get_date_range(start_date, end_date)
-
-    with services.get_service() as service:
-        return service.weekly_country_data(start_date=start_date, end_date=end_date)
 
 
 @router.get(

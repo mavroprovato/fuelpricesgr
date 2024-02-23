@@ -37,6 +37,14 @@ class FuelTypePriceStationsPriceData(pydantic.BaseModel):
     price: decimal.Decimal = pydantic.Field(title="The price")
 
 
+class Weekly(pydantic.BaseModel):
+    """The weekly response.
+    """
+    date: datetime.date = pydantic.Field(title="The date")
+    data_file: str = pydantic.Field(title="The data file from which the data were fetched")
+    data: list[FuelTypePriceStationsPriceData] = pydantic.Field(title="The weekly data")
+
+
 class DailyCountry(pydantic.BaseModel):
     """The daily country data response.
     """
@@ -58,23 +66,6 @@ class DailyPrefecture(pydantic.BaseModel):
     date: datetime.date = pydantic.Field(title="The date")
     data_file: str = pydantic.Field(title="The data file from which the data were fetched")
     data: list[FuelTypePriceData] = pydantic.Field(title="The daily prefecture data")
-
-
-class FuelTypeLowHighMedianPrice(pydantic.BaseModel):
-    """The fuel type, low, high and median price data.
-    """
-    fuel_type: enums.FuelType = pydantic.Field(title="The fuel type")
-    lowest_price: decimal.Decimal = pydantic.Field(title="The lowest price")
-    highest_price: decimal.Decimal = pydantic.Field(title="The highest price")
-    median_price: decimal.Decimal = pydantic.Field(title="The median price")
-
-
-class Weekly(pydantic.BaseModel):
-    """The weekly response.
-    """
-    date: datetime.date = pydantic.Field(title="The date")
-    data_file: str = pydantic.Field(title="The data file from which the data were fetched")
-    data: list[FuelTypeLowHighMedianPrice] = pydantic.Field(title="The weekly data")
 
 
 class PrefectureDaily(pydantic.BaseModel):
