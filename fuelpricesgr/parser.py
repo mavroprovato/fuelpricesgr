@@ -174,6 +174,8 @@ class WeeklyParser(Parser):
         :return: The data.
         """
         logger.info("Extracting weekly data from file %s", date.isoformat())
+
+        # Extract weekly country data
         # Try to find "Μέσες τιμές λιανικής πώλησης καυσίμων ανά Νομό"
         weekly_country_end_data = re.search(
             r'Μέσες τιμές λ ?ιανι ?κή ?ς +πώλη ?σης ?κ ?α ?υ ?σ ?ί ?μ ?ω ?ν +α ?ν ?ά [Νν] ?ο ?μ ?ό', text, re.MULTILINE)
@@ -186,8 +188,16 @@ class WeeklyParser(Parser):
                 text, re.MULTILINE)
         if not weekly_country_end_data:
             raise ValueError(f"Could not find weekly country data for date %s", date.isoformat())
+        country_data = self.get_country_data(text[:weekly_country_end_data.start(0)], date)
 
-        country_data, prefecture_data = self.get_country_data(text[:weekly_country_end_data.start(0)], date), []
+        # Extract weekly country data
+        # Try to find "2. Απλή Αμόλυβδη Βενζίνη 95 οκτανίων"
+        weekly_prefecture_end_data = re.search(
+            r'2\. *Απλ[ήι] +Αμ ?όλ ?υβδ ?[ηθ] Β ?ε ?ν ?[ζη] ?ί ?ν ?[ηθ] +9 ?5 οκ ?τα ?ν ?ίω ?ν', text)
+        if not weekly_prefecture_end_data:
+            raise ValueError(f"Could not find weekly prefecture data for date {date.isoformat()}")
+        prefecture_data = self.get_prefecture_data(
+            text[weekly_country_end_data.end(0):weekly_prefecture_end_data.start(0)], date)
 
         return {enums.DataType.WEEKLY_COUNTRY: country_data, enums.DataType.WEEKLY_PREFECTURE: prefecture_data}
 
@@ -265,6 +275,20 @@ class WeeklyParser(Parser):
         else:
             if date <= SUPER_FINAL_DATE:
                 logger.error("Could not find Super data for date %s", date)
+
+        return data
+
+    @staticmethod
+    def get_prefecture_data(text: str, date: datetime.date):
+        """Get the weekly prefecture data.
+
+        :param text: The weekly prefecture data text.
+        :param date: The date.
+        :return: The weekly prefecture data.
+        """
+        data = []
+
+        # TODO: implement
 
         return data
 
