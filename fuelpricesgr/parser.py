@@ -15,11 +15,28 @@ from fuelpricesgr import enums
 # The module logger
 logger = logging.getLogger(__name__)
 
-# Months that can contain diesel heading data
-DIESEL_HEATING_MONTHS = {10, 11, 12, 1, 2, 3, 4, 5}
 
-# The final date for Super data
-SUPER_FINAL_DATE = datetime.date(2022, 8, 5)
+def data_should_exist(fuel_type: enums.FuelType, date: datetime.date) -> bool:
+    """Returns true if the data should exist for the specified fuel type and date.
+
+    :param fuel_type: The fuel type.
+    :param date: The date.
+    :return: True if the data should exist.
+    """
+    if fuel_type == enums.FuelType.SUPER and date >= datetime.date(2022, 8, 5):
+        # Last date with SUPER data
+        return False
+    elif fuel_type == enums.FuelType.GAS and date <= datetime.date(2012, 6, 1):
+        # There are no data for GAS for these old dates
+        return False
+    elif (
+        fuel_type == enums.FuelType.DIESEL_HEATING and
+        not ((date.month >= 10 and date.day >= 15) or (date.month <= 4))
+    ):
+        # No DIESEL_HEATING for this period
+        return False
+
+    return True
 
 
 class Parser(abc.ABC):
@@ -250,7 +267,7 @@ class WeeklyParser(Parser):
                 'number_of_stations': WeeklyParser.get_number_of_stations(match),
                 'price': WeeklyParser.get_price(match),
             })
-        else:
+        elif data_should_exist(enums.FuelType.GAS, date):
             logger.warning("Could not find Gas data for date %s", date)
 
         if match := re.search(
@@ -261,9 +278,8 @@ class WeeklyParser(Parser):
                 'number_of_stations': WeeklyParser.get_number_of_stations(match),
                 'price': WeeklyParser.get_price(match),
             })
-        else:
-            if (date.month >= 10 and date.day >= 15) or (date.month <= 4):
-                logger.error("Could not find Diesel heating data for date %s", date)
+        elif data_should_exist(enums.FuelType.DIESEL_HEATING, date):
+            logger.error("Could not find Diesel heating data for date %s", date)
 
         if match := re.search(
                 r'Super *(?P<number_of_stations>(?:\d\.)?\d{1,3})? +(?P<price>\d,[\d ]{3,4})', text):
@@ -272,9 +288,8 @@ class WeeklyParser(Parser):
                 'number_of_stations': WeeklyParser.get_number_of_stations(match),
                 'price': WeeklyParser.get_price(match),
             })
-        else:
-            if date <= SUPER_FINAL_DATE:
-                logger.error("Could not find Super data for date %s", date)
+        elif data_should_exist(enums.FuelType.SUPER, date):
+            logger.error("Could not find Super data for date %s", date)
 
         return data
 
@@ -337,7 +352,7 @@ class DailyCountryParser(Parser):
                            date.isoformat())
         if match := re.search(r'Super +([\d.,\- #ΔΙΑΡ/0!]+)', text):
             matches[enums.FuelType.SUPER] = match[1]
-        elif date < SUPER_FINAL_DATE:
+        elif data_should_exist(enums.FuelType.SUPER, date):
             logger.warning("Cannot find daily country data for %s and date %s", enums.FuelType.SUPER.description,
                            date.isoformat())
         if match := re.search(r'Die ?s ?e ?l +Κ ?ί ?ν ?[ηθ] ?[σζς] ?[ηθ] ?[ςσ] +([\d.,\- ]+)', text):
@@ -349,7 +364,7 @@ class DailyCountryParser(Parser):
                 r'Die ?s ?e ?l +Θ ?[έζ] ?ρ ?μ ?α ?ν ?[σζς] ?[ηθ] ?[ςσ] +Κ ?α ?[τη] ?΄ ?ο ?ί ?κ ?ο ?ν +([\d.,\- ]+)',
                 text):
             matches[enums.FuelType.DIESEL_HEATING] = match[1]
-        elif date.month in DIESEL_HEATING_MONTHS:
+        elif data_should_exist(enums.FuelType.DIESEL_HEATING, date):
             logger.warning("Cannot find daily country data for %s and date %s",
                            enums.FuelType.DIESEL_HEATING.description, date.isoformat())
         if match := re.search(
