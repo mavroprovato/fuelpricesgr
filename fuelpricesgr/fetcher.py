@@ -16,11 +16,6 @@ logger = logging.getLogger(__name__)
 class Fetcher:
     """Class for fetching data files
     """
-    # The link parsing regex
-    LINK_PARSING_REGEX = re.compile(
-        r'\./files/deltia/(?P<prefix>[A-Z_]+)_(?P<day>\d{1,2})_(?P<month>\d{2})_(?P<year>\d{4})[ =.?\-()\d]*.(pdf|doc)$'
-    )
-
     def __init__(self, data_file_type: enums.DataFileType):
         """Create the data fetcher.
 
