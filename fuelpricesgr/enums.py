@@ -169,10 +169,31 @@ class DataFileType(enum.Enum):
                 yield current_date
             current_date += datetime.timedelta(days=1)
 
-    def link(self, date: datetime.date) -> str | None:
-        """Return the link of the file from which we got the data for the specified date.
+    def link(self, date: datetime.date) -> str:
+        """Return the link of the file for which we should the data for the specified date.
 
         :param date: The date.
         :return: The file link.
         """
-        return f'{settings.FETCH_URL}/files/deltia/{self.prefix}_{date:%d_%m_%Y}.pdf'
+        return f'{settings.FETCH_URL}/files/deltia/{self._get_file_name(date)}'
+
+    def _get_file_name(self, date: datetime.date) -> str:
+        """Return the file name for the link, based on the date.
+
+        :param date: The date.
+        :return: The file name.
+        """
+        filename = f"{self.prefix}_{date:%d_%m_%Y}.pdf"
+        if self.value == 'weekly':
+            if date == datetime.date(2015, 3, 6):
+                filename = f"{self.prefix}_{datetime.date(2015, 3, 2):%d_%m_%Y}.pdf"
+            elif date == datetime.date(2017, 7, 7):
+                filename = f"{self.prefix}_{datetime.date(2017, 7, 10):%d_%m_%Y}.pdf"
+            elif date == datetime.date(2018, 1, 5):
+                filename = f"{self.prefix}_{date:%d_%m_%Y}..pdf"
+            elif date == datetime.date(2022, 12, 23):
+                filename = f"{self.prefix}_{datetime.date(2022, 12, 22):%d_%m_%Y}.pdf"
+            elif date == datetime.date(2024, 1, 26):
+                filename = f"{self.prefix}_{datetime.date(2024, 1, 25):%d_%m_%Y}.pdf"
+
+        return filename
