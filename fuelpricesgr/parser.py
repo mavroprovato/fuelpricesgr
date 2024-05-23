@@ -262,6 +262,7 @@ class WeeklyParser(Parser):
                         'price': WeeklyParser.get_price(match.group(index + 1)),
                     })
             else:
+                print(text)
                 raise ValueError(f"Could not find weekly prefecture data for {prefecture} and date {date}")
 
         return data
