@@ -42,59 +42,59 @@ class FuelType(enum.Enum):
 class Prefecture(enum.Enum):
     """Enumeration for greek prefectures
     """
-    ATTICA = 'ATTICA', "ΑΤΤΙΚΗΣ"
-    AETOLIA_ACARNANIA = 'AETOLIA_ACARNANIA', "ΑΙΤΩΛΙΑΣ ΚΑΙ ΑΚΑΡΝΑΝΙΑΣ"
-    ARGOLIS = 'ARGOLIS', "ΑΡΓΟΛΙΔΟΣ"
-    ARKADIAS = 'ARKADIAS', "ΑΡΚΑΔΙΑΣ"
-    ARTA = 'ARTA', "ΑΡΤΗΣ"
-    ACHAEA = 'ACHAEA', "ΑΧΑΪΑΣ"
-    BOEOTIA = 'BOEOTIA', "ΒΟΙΩΤΙΑΣ"
-    GREVENA = 'GREVENA', "ΓΡΕΒΕΝΩΝ"
-    DRAMA = 'DRAMA', "ΔΡΑΜΑΣ"
-    DODECANESE = 'DODECANESE', "ΔΩΔΕΚΑΝΗΣΟΥ"
-    EVROS = 'EVROS', "ΕΒΡΟΥ"
-    EUBOEA = 'EUBOEA', "ΕΥΒΟΙΑΣ"
-    EVRYTANIA = 'EVRYTANIA', "ΕΥΡΥΤΑΝΙΑΣ"
-    ZAKYNTHOS = 'ZAKYNTHOS', "ΖΑΚΥΝΘΟΥ"
-    ELIS = 'ELIS', "ΗΛΕΙΑΣ"
-    IMATHIA = 'IMATHIA', "ΗΜΑΘΙΑΣ"
-    HERAKLION = 'HERAKLION', "ΗΡΑΚΛΕΙΟΥ"
-    THESPROTIA = 'THESPROTIA', "ΘΕΣΠΡΩΤΙΑΣ"
-    THESSALONIKI = 'THESSALONIKI', "ΘΕΣΣΑΛΟΝΙΚΗΣ"
-    IOANNINA = 'IOANNINA', "ΙΩΑΝΝΙΝΩΝ"
-    KAVALA = 'KAVALA', "ΚΑΒΑΛΑΣ"
-    KARDITSA = 'KARDITSA', "ΚΑΡΔΙΤΣΗΣ"
-    KASTORIA = 'KASTORIA', "ΚΑΣΤΟΡΙΑΣ"
-    KERKYRA = 'KERKYRA', "ΚΕΡΚΥΡΑΣ"
-    CEPHALONIA = 'CEPHALONIA', "ΚΕΦΑΛΛΗΝΙΑΣ"
-    KILKIS = 'KILKIS', "ΚΙΛΚΙΣ"
-    KOZANI = 'KOZANI', "ΚΟΖΑΝΗΣ"
-    CORINTHIA = 'CORINTHIA', "ΚΟΡΙΝΘΙΑΣ"
-    CYCLADES = 'CYCLADES', "ΚΥΚΛΑΔΩΝ"
-    LACONIA = 'LACONIA', "ΛΑΚΩΝΙΑΣ"
-    LARISSA = 'LARISSA', "ΛΑΡΙΣΗΣ"
-    LASITHI = 'LASITHI', "ΛΑΣΙΘΙΟΥ"
-    LESBOS = 'LESBOS', "ΛΕΣΒΟΥ"
-    LEFKADA = 'LEFKADA', "ΛΕΥΚΑΔΟΣ"
-    MAGNESIA = 'MAGNESIA', "ΜΑΓΝΗΣΙΑΣ"
-    MESSENIA = 'MESSENIA', "ΜΕΣΣΗΝΙΑΣ"
-    XANTHI = 'XANTHI', "ΞΑΝΘΗΣ"
-    PELLA = 'PELLA', "ΠΕΛΛΗΣ"
-    PIERIA = 'PIERIA', "ΠΙΕΡΙΑΣ"
-    PREVEZA = 'PREVEZA', "ΠΡΕΒΕΖΗΣ"
-    RETHYMNO = 'RETHYMNO', "ΡΕΘΥΜΝΗΣ"
-    RHODOPE = 'RHODOPE', "ΡΟΔΟΠΗΣ"
-    SAMOS = 'SAMOS', "ΣΑΜΟΥ"
-    SERRES = 'SERRES', "ΣΕΡΡΩΝ"
-    TRIKALA = 'TRIKALA', "ΤΡΙΚΑΛΩΝ"
-    PHTHIOTIS = 'PHTHIOTIS', "ΦΘΙΩΤΙΔΟΣ"
-    FLORINA = 'FLORINA', "ΦΛΩΡΙΝΗΣ"
-    PHOCIS = 'PHOCIS', "ΦΩΚΙΔΟΣ"
-    CHALKIDIKI = 'CHALKIDIKI', "ΧΑΛΚΙΔΙΚΗΣ"
-    CHANIA = 'CHANIA', "ΧΑΝΙΩΝ"
-    CHIOS = 'CHIOS', "ΧΙΟΥ"
+    ATTICA = 'ATTICA', "ΑΤΤΙΚΗΣ", r'ΝΟΜΟΣ ΑΤΤΙΚ\s?ΗΣ'
+    AETOLIA_ACARNANIA = 'AETOLIA_ACARNANIA', "ΑΙΤΩΛΙΑΣ ΚΑΙ ΑΚΑΡΝΑΝΙΑΣ", r'ΝΟΜΟΣ ΑΙΤΩ\s?ΛΙΑΣ ΚΑΙ ΑΚΑΡΝΑΝ\s?ΙΑ\s?Σ'
+    ARGOLIS = 'ARGOLIS', "ΑΡΓΟΛΙΔΟΣ", r'ΝΟΜΟΣ ΑΡΓΟΛΙΔΟΣ'
+    ARKADIAS = 'ARKADIAS', "ΑΡΚΑΔΙΑΣ", r'ΝΟΜΟΣ ΑΡΚΑΔΙΑΣ'
+    ARTA = 'ARTA', "ΑΡΤΗΣ", r'ΝΟΜΟΣ ΑΡΤΗΣ'
+    ACHAEA = 'ACHAEA', "ΑΧΑΪΑΣ", r'ΝΟΜΟΣ ΑΧΑΪΑΣ'
+    BOEOTIA = 'BOEOTIA', "ΒΟΙΩΤΙΑΣ", r'ΝΟΜΟΣ ΒΟΙΩΤΙΑΣ'
+    GREVENA = 'GREVENA', "ΓΡΕΒΕΝΩΝ", r'ΝΟΜΟ\s?Σ\s{1,2}ΓΡΕ\s?ΒΕΝΩΝ'
+    DRAMA = 'DRAMA', "ΔΡΑΜΑΣ", r'ΝΟΜΟΣ ΔΡΑΜΑΣ'
+    DODECANESE = 'DODECANESE', "ΔΩΔΕΚΑΝΗΣΟΥ", r'ΝΟΜΟΣ ΔΩΔΕΚΑΝΗΣΟΥ'
+    EVROS = 'EVROS', "ΕΒΡΟΥ", r'ΝΟΜ\s?Ο\s?Σ ΕΒΡΟΥ'
+    EUBOEA = 'EUBOEA', "ΕΥΒΟΙΑΣ", r'ΝΟΜΟΣ ΕΥΒ\s?ΟΙΑΣ'
+    EVRYTANIA = 'EVRYTANIA', "ΕΥΡΥΤΑΝΙΑΣ", r'ΝΟΜΟΣ ΕΥ\s?ΡΥΤΑΝΙΑΣ'
+    ZAKYNTHOS = 'ZAKYNTHOS', "ΖΑΚΥΝΘΟΥ", r'ΝΟΜΟΣ ΖΑΚΥΝΘΟΥ'
+    ELIS = 'ELIS', "ΗΛΕΙΑΣ", r'ΝΟΜΟΣ ΗΛΕΙΑΣ'
+    IMATHIA = 'IMATHIA', "ΗΜΑΘΙΑΣ", r'ΝΟΜΟΣ ΗΜΑΘΙΑΣ'
+    HERAKLION = 'HERAKLION', "ΗΡΑΚΛΕΙΟΥ", r'ΝΟΜΟΣ ΗΡΑΚΛΕΙΟΥ'
+    THESPROTIA = 'THESPROTIA', "ΘΕΣΠΡΩΤΙΑΣ", r'ΝΟΜΟΣ Θ\s?ΕΣΠΡΩΤΙΑΣ'
+    THESSALONIKI = 'THESSALONIKI', "ΘΕΣΣΑΛΟΝΙΚΗΣ", r'ΝΟΜΟ\s?Σ ΘΕ\s?ΣΣΑ\s?Λ\s?ΟΝΙΚ\s?ΗΣ'
+    IOANNINA = 'IOANNINA', "ΙΩΑΝΝΙΝΩΝ", r'ΝΟΜΟΣ ΙΩΑΝΝΙΝΩΝ'
+    KAVALA = 'KAVALA', "ΚΑΒΑΛΑΣ", r'ΝΟΜΟΣ ΚΑΒΑΛΑΣ'
+    KARDITSA = 'KARDITSA', "ΚΑΡΔΙΤΣΗΣ", r'ΝΟΜΟΣ ΚΑΡΔΙΤΣΗΣ'
+    KASTORIA = 'KASTORIA', "ΚΑΣΤΟΡΙΑΣ", r'ΝΟΜΟΣ ΚΑΣ\s?ΤΟΡΙΑΣ'
+    KERKYRA = 'KERKYRA', "ΚΕΡΚΥΡΑΣ", r'ΝΟΜΟΣ ΚΕΡΚΥΡΑΣ'
+    CEPHALONIA = 'CEPHALONIA', "ΚΕΦΑΛΛΗΝΙΑΣ", r'ΝΟΜΟΣ ΚΕΦΑΛΛΗΝΙΑΣ'
+    KILKIS = 'KILKIS', "ΚΙΛΚΙΣ", r'ΝΟΜΟΣ ΚΙΛΚΙΣ'
+    KOZANI = 'KOZANI', "ΚΟΖΑΝΗΣ", r'ΝΟΜΟΣ ΚΟΖΑΝΗΣ'
+    CORINTHIA = 'CORINTHIA', "ΚΟΡΙΝΘΙΑΣ", r'ΝΟΜΟΣ ΚΟΡΙΝΘΙΑΣ'
+    CYCLADES = 'CYCLADES', "ΚΥΚΛΑΔΩΝ", r'ΝΟΜΟΣ ΚΥΚΛΑΔΩΝ'
+    LACONIA = 'LACONIA', "ΛΑΚΩΝΙΑΣ", r'ΝΟΜ\s?ΟΣ Λ\s?ΑΚΩ\s?Ν\s?ΙΑΣ'
+    LARISSA = 'LARISSA', "ΛΑΡΙΣΗΣ", r'ΝΟΜΟΣ ΛΑΡΙΣΗΣ'
+    LASITHI = 'LASITHI', "ΛΑΣΙΘΙΟΥ", r'ΝΟΜΟΣ ΛΑΣΙΘΙΟΥ'
+    LESBOS = 'LESBOS', "ΛΕΣΒΟΥ", r'ΝΟΜΟΣ ΛΕΣΒΟΥ'
+    LEFKADA = 'LEFKADA', "ΛΕΥΚΑΔΟΣ", r'ΝΟΜΟΣ ΛΕΥΚΑΔΟΣ'
+    MAGNESIA = 'MAGNESIA', "ΜΑΓΝΗΣΙΑΣ", r'ΝΟΜΟΣ ΜΑΓΝΗΣΙΑ\s?Σ'
+    MESSENIA = 'MESSENIA', "ΜΕΣΣΗΝΙΑΣ", r'ΝΟΜ\s?ΟΣ ΜΕΣΣΗΝΙΑΣ'
+    XANTHI = 'XANTHI', "ΞΑΝΘΗΣ", r'ΝΟΜΟΣ ΞΑΝΘΗΣ'
+    PELLA = 'PELLA', "ΠΕΛΛΗΣ", r'ΝΟΜΟΣ ΠΕΛΛΗΣ'
+    PIERIA = 'PIERIA', "ΠΙΕΡΙΑΣ", r'ΝΟΜΟΣ ΠΙΕΡΙΑΣ'
+    PREVEZA = 'PREVEZA', "ΠΡΕΒΕΖΗΣ", r'ΝΟΜΟΣ ΠΡΕΒΕΖΗΣ'
+    RETHYMNO = 'RETHYMNO', "ΡΕΘΥΜΝΗΣ", r'ΝΟΜΟΣ ΡΕΘΥΜΝΗ\s?Σ'
+    RHODOPE = 'RHODOPE', "ΡΟΔΟΠΗΣ", r'ΝΟΜΟΣ ΡΟΔΟΠΗΣ'
+    SAMOS = 'SAMOS', "ΣΑΜΟΥ", r'ΝΟΜΟΣ\s+ΣΑΜΟΥ'
+    SERRES = 'SERRES', "ΣΕΡΡΩΝ", r'ΝΟΜΟΣ ΣΕΡΡΩΝ'
+    TRIKALA = 'TRIKALA', "ΤΡΙΚΑΛΩΝ", r'ΝΟΜΟΣ ΤΡΙΚΑΛΩΝ'
+    PHTHIOTIS = 'PHTHIOTIS', "ΦΘΙΩΤΙΔΟΣ", r'ΝΟΜΟΣ ΦΘΙΩΤΙΔΟΣ'
+    FLORINA = 'FLORINA', "ΦΛΩΡΙΝΗΣ", r'ΝΟΜΟ\s?Σ Φ\s?Λ\s?ΩΡΙΝ\s?ΗΣ'
+    PHOCIS = 'PHOCIS', "ΦΩΚΙΔΟΣ", r'ΝΟΜΟΣ ΦΩΚΙΔΟΣ'
+    CHALKIDIKI = 'CHALKIDIKI', "ΧΑΛΚΙΔΙΚΗΣ", r'ΝΟΜΟΣ ΧΑΛΚΙΔΙΚΗΣ'
+    CHANIA = 'CHANIA', "ΧΑΝΙΩΝ", r'ΝΟΜΟΣ ΧΑΝΙΩΝ'
+    CHIOS = 'CHIOS', "ΧΙΟΥ", r'ΝΟΜΟΣ ΧΙΟΥ'
 
-    def __new__(cls, value: str, description: str):
+    def __new__(cls, value: str, description: str, regex: str):
         """Creates the prefecture enum.
 
         :param value: The enum value.
@@ -103,6 +103,7 @@ class Prefecture(enum.Enum):
         obj = object.__new__(cls)
         obj._value_ = value
         obj.description = description
+        obj.regex = regex
 
         return obj
 

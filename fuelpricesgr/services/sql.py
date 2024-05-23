@@ -70,9 +70,7 @@ class WeeklyPrefecture(Base):
     date = sqlalchemy.Column(sqlalchemy.Date, index=True, nullable=False)
     fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
     prefecture = sqlalchemy.Column(sqlalchemy.Enum(enums.Prefecture), nullable=False)
-    lowest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
-    highest_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
-    median_price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
+    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
 
 
 class User(Base):
