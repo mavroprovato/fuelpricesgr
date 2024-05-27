@@ -246,12 +246,11 @@ class WeeklyParser(Parser):
         data = []
 
         for prefecture in enums.Prefecture:
-            diesel_heating_exists = data_should_exist(enums.FuelType.DIESEL_HEATING, date)
             fuel_types = [
                 enums.FuelType.UNLEADED_95, enums.FuelType.UNLEADED_100, enums.FuelType.DIESEL, enums.FuelType.GAS
             ]
             regex = prefecture.regex + r' +(\d,\d ?\d ?\d) +(\d,\d ?\d ?\d) +(\d,\d ?\d ?\d) +(\d,\d ?\d ?\d)'
-            if diesel_heating_exists:
+            if data_should_exist(enums.FuelType.DIESEL_HEATING, date):
                 regex += r' +(\d,\d ?\d ?\d)'
                 fuel_types.append(enums.FuelType.DIESEL_HEATING)
             if match := re.search(regex, text):
