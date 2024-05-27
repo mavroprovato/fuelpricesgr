@@ -243,23 +243,33 @@ class WeeklyParser(Parser):
         :param date: The date.
         :return: The weekly prefecture data.
         """
-        data = []
+        # The standard fuel types included
+        fuel_types = [
+            enums.FuelType.UNLEADED_95, enums.FuelType.UNLEADED_100, enums.FuelType.DIESEL, enums.FuelType.GAS
+        ]
+        regexes = [r' +(\d,\d ?\d ?\d)', r' +(\d,\d ?\d ?\d)', r' +(\d,\d ?\d ?\d)', r' +((?:\d,\d ?\d ?\d|-))']
+        # Check if super is included
+        if re.search(r'Super', text):
+            regexes.insert(2, r' +((?:\d,\d ?\d ?\d|-|\s+))')
+            fuel_types.insert(2, enums.FuelType.SUPER)
+        # Check if diesel heating included
+        if data_should_exist(enums.FuelType.DIESEL_HEATING, date):
+            regexes.append(r' +(\d,\d ?\d ?\d)')
+            fuel_types.append(enums.FuelType.DIESEL_HEATING)
 
+        data = []
         for prefecture in enums.Prefecture:
-            fuel_types = [
-                enums.FuelType.UNLEADED_95, enums.FuelType.UNLEADED_100, enums.FuelType.DIESEL, enums.FuelType.GAS
-            ]
-            regex = prefecture.regex + r' +(\d,\d ?\d ?\d) +(\d,\d ?\d ?\d) +(\d,\d ?\d ?\d) +(\d,\d ?\d ?\d)'
-            if data_should_exist(enums.FuelType.DIESEL_HEATING, date):
-                regex += r' +(\d,\d ?\d ?\d)'
-                fuel_types.append(enums.FuelType.DIESEL_HEATING)
+            # Parse the prices
+            regex = prefecture.regex + ''.join(regexes)
             if match := re.search(regex, text):
                 for index, fuel_type in enumerate(fuel_types):
-                    data.append({
-                        'prefecture': prefecture.value,
-                        'fuel_type': fuel_type.value,
-                        'price': WeeklyParser.get_price(match.group(index + 1)),
-                    })
+                    price = WeeklyParser.get_price(match.group(index + 1))
+                    if price:
+                        data.append({
+                            'prefecture': prefecture.value,
+                            'fuel_type': fuel_type.value,
+                            'price': price,
+                        })
             else:
                 print(text)
                 raise ValueError(f"Could not find weekly prefecture data for {prefecture} and date {date}")
@@ -277,13 +287,15 @@ class WeeklyParser(Parser):
             return int(match.group('number_of_stations').replace('.', ''))
 
     @staticmethod
-    def get_price(price_text: str) -> decimal.Decimal:
+    def get_price(price_text: str) -> decimal.Decimal | None:
         """Get the price from the matched text.
 
         :param price_text: The price text.
         :return: The price.
         """
-        return decimal.Decimal(price_text.replace(' ', '').replace(',', '.'))
+        price_text = price_text.replace(' ', '').replace(',', '.').replace('-', '')
+        if price_text:
+            return decimal.Decimal(price_text)
 
 
 class DailyCountryParser(Parser):
