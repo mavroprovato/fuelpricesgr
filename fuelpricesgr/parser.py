@@ -254,7 +254,7 @@ class WeeklyParser(Parser):
             fuel_types.insert(2, enums.FuelType.SUPER)
         # Check if diesel heating included
         if data_should_exist(enums.FuelType.DIESEL_HEATING, date):
-            regexes.append(r' +(\d,\d ?\d ?\d)')
+            regexes.append(r' +((?:\d,\d ?\d ?\d|-))')
             fuel_types.append(enums.FuelType.DIESEL_HEATING)
 
         data = []
@@ -293,7 +293,7 @@ class WeeklyParser(Parser):
         :param price_text: The price text.
         :return: The price.
         """
-        price_text = price_text.replace(' ', '').replace(',', '.').replace('-', '')
+        price_text = price_text.replace(' ', '').replace(',', '.').replace('-', '').strip()
         if price_text:
             return decimal.Decimal(price_text)
 
