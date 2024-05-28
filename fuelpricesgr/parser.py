@@ -141,7 +141,7 @@ class WeeklyParser(Parser):
         if not weekly_country_end_data:
             # Try to find "Η μέση τιμή πανελλαδικά υπολογίζεται απο τον σταθμισμένο μέσο όρο"
             weekly_country_end_data = re.search(
-                r'\* *Η [μκ][έζ] ?[σςζ][ηθε] [τη][ιη][μκ] *[ήι] πα ?[νλ] ?ε[λι] ?[λι] ?αδ ?[ιη][κθ] ?ά +'
+                r'\* *Η [μκ][έζ] ?[σςζ][ηθε] +[τη][ιη][μκ] *[ήι] πα ?[νλ] ?ε[λι] ?[λι] ?αδ ?[ιη][κθ] ?ά +'
                 r'[υπ] ?π ?[ον] ?[λι] ?[ον] ?γ ?ί ?[ζηδ] ?ε ?[τη] ?α ?[ιη] +α ?π ?ό +[τη] ?[ον][νλ]\s+'
                 r'[σςζ][τη] ?α[θκζ] ?[μκ] ?[ιη] ?[ιζσς] ?[μκ] ?[έζ][νλ][ον]\s+[μκ] ?[έζ] ?[σςζ] ?[ον]\s+ό[ρξ][ον]',
                 text, re.MULTILINE)
@@ -260,7 +260,7 @@ class WeeklyParser(Parser):
         data = []
         for prefecture in enums.Prefecture:
             # Parse the prices
-            regex = prefecture.regex + ''.join(regexes)
+            regex = r'Ν ?Ο ?Μ ?Ο ?Σ\s{1,2}' + prefecture.regex + ''.join(regexes)
             if match := re.search(regex, text):
                 for index, fuel_type in enumerate(fuel_types):
                     price = WeeklyParser.get_price(match.group(index + 1))
@@ -271,7 +271,6 @@ class WeeklyParser(Parser):
                             'price': price,
                         })
             else:
-                print(text)
                 raise ValueError(f"Could not find weekly prefecture data for {prefecture} and date {date}")
 
         return data
