@@ -22,7 +22,7 @@ _FUEL_TYPE_REGEXES = {
     enums.FuelType.SUPER: r'Super',
     enums.FuelType.DIESEL: r'Diesel +Κ ?ί ?ν ?[ηθ] ?[σς] ?[ηθ] ?[ςσ]',
     enums.FuelType.DIESEL_HEATING: r'Dies ?e ?l +Θ ?[έζ] ?ρ ?μ ?α ?ν ?[σς] ?[ηθ] ?[ςσ] +Κ ?α ?τ ?΄ ?ο ?ί ?κ ?ο ?ν',
-    enums.FuelType.GAS: r'[ΥΤ]γρα[έζ]ρ ?ιο +κί ?ν ?[ηθ] ?[σς] ?[ηθ][ςσ] +\( ?A ?uto ?g ?a ?s ?\)',
+    enums.FuelType.GAS: r'[ΥΤ]γρα[έζ]ρ ?ιο +κί ?ν ?[ηθ] ?[σς] ?[ηθ][ςσ] +\( ?A ?ut ?o ?g ?a ?s ?\)',
 }
 
 
@@ -89,20 +89,6 @@ class Parser(abc.ABC):
             return None
 
         return text
-
-    @classmethod
-    def extract_prefecture(cls, prefecture_text: str) -> enums.Prefecture:
-        """Extract the prefecture from the PDF text.
-
-        :param prefecture_text: The prefecture text.
-        :return: The prefecture.
-        :raises ValueError: If the prefecture text cannot be parsed.
-        """
-        for prefecture, prefecture_regex in cls.PREFECTURE_REGEXES.items():
-            if prefecture_regex.match(prefecture_text):
-                return prefecture
-
-        raise ValueError(f"Could not parse prefecture text: {prefecture_text}")
 
     def parse(self, file: pathlib.Path) -> dict[enums.DataType, list[dict]] | None:
         """Parse the file to get the data.
