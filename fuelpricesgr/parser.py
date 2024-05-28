@@ -184,7 +184,7 @@ class WeeklyParser(Parser):
                 r'\s*(?P<number_of_stations>\d\.\d{3})? +(?P<price>\d,[\d ]{3,4})', text):
             data.append({
                 'fuel_type': enums.FuelType.UNLEADED_95.value,
-                'number_of_stations': WeeklyParser.get_number_of_stations(match),
+                'number_of_stations': WeeklyParser.get_number_of_stations(match.group('number_of_stations')),
                 'price': WeeklyParser.get_price(match.group('price')),
             })
         else:
@@ -195,7 +195,7 @@ class WeeklyParser(Parser):
                 r'\s*(?P<number_of_stations>\d\.\d{3})? +(?P<price>\d,[\d ]{3,4})', text):
             data.append({
                 'fuel_type': enums.FuelType.UNLEADED_100.value,
-                'number_of_stations': WeeklyParser.get_number_of_stations(match),
+                'number_of_stations': WeeklyParser.get_number_of_stations(match.group('number_of_stations')),
                 'price': WeeklyParser.get_price(match.group('price')),
             })
         else:
@@ -207,7 +207,7 @@ class WeeklyParser(Parser):
                 text):
             data.append({
                 'fuel_type': enums.FuelType.DIESEL.value,
-                'number_of_stations': WeeklyParser.get_number_of_stations(match),
+                'number_of_stations': WeeklyParser.get_number_of_stations(match.group('number_of_stations')),
                 'price': WeeklyParser.get_price(match.group('price')),
             })
         else:
@@ -218,7 +218,7 @@ class WeeklyParser(Parser):
                 r'\s*(?P<number_of_stations>(?:\d\.)?\d{3})? +(?P<price>\d,[\d ]{3,4})', text):
             data.append({
                 'fuel_type': enums.FuelType.GAS.value,
-                'number_of_stations': WeeklyParser.get_number_of_stations(match),
+                'number_of_stations': WeeklyParser.get_number_of_stations(match.group('number_of_stations')),
                 'price': WeeklyParser.get_price(match.group('price')),
             })
         elif data_should_exist(enums.FuelType.GAS, date):
@@ -229,7 +229,7 @@ class WeeklyParser(Parser):
                 r'\s*(?P<number_of_stations>(?:\d\.)?\d{3})? +(?P<price>\d,[\d ]{3,4})', text):
             data.append({
                 'fuel_type': enums.FuelType.DIESEL_HEATING.value,
-                'number_of_stations': WeeklyParser.get_number_of_stations(match),
+                'number_of_stations': WeeklyParser.get_number_of_stations(match.group('number_of_stations')),
                 'price': WeeklyParser.get_price(match.group('price')),
             })
         elif data_should_exist(enums.FuelType.DIESEL_HEATING, date):
@@ -240,7 +240,7 @@ class WeeklyParser(Parser):
                 r'\s*(?P<number_of_stations>(?:\d\.)?\d{1,3})? +(?P<price>\d,[\d ]{3,4})', text):
             data.append({
                 'fuel_type': enums.FuelType.SUPER.value,
-                'number_of_stations': WeeklyParser.get_number_of_stations(match),
+                'number_of_stations': WeeklyParser.get_number_of_stations(match.group('number_of_stations')),
                 'price': WeeklyParser.get_price(match.group('price')),
             })
         elif data_should_exist(enums.FuelType.SUPER, date):
@@ -289,14 +289,14 @@ class WeeklyParser(Parser):
         return data
 
     @staticmethod
-    def get_number_of_stations(match: re.Match) -> int | None:
+    def get_number_of_stations(number_of_stations_text: str) -> int | None:
         """Get the number of stations from the matched text.
 
-        :param match: The matched text.
+        :param number_of_stations_text: The number of stations text.
         :return: The number of stations, if they can be found.
         """
-        if match.group('number_of_stations'):
-            return int(match.group('number_of_stations').replace('.', ''))
+        if number_of_stations_text:
+            return int(number_of_stations_text.replace('.', ''))
 
     @staticmethod
     def get_price(price_text: str) -> decimal.Decimal | None:
