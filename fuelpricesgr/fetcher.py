@@ -37,16 +37,20 @@ class Fetcher:
         if not file.exists() or skip_cache:
             # Download the file
             file_url = self.data_file_type.link(date)
-            logger.info("Fetching file from %s", file_url)
+            logger.debug("Downloading file from %s", file_url)
             try:
                 response = requests.get(file_url, stream=True, timeout=settings.REQUESTS_TIMEOUT)
                 response.raise_for_status()
             except requests.RequestException as ex:
-                logger.error("Could not fetch URL for date %s", date.isoformat(), exc_info=ex)
+                logger.error("Could not download URL for date %s", date.isoformat(), exc_info=ex)
                 return {}
 
             # Check if response is a PDF file
-            if response.headers['content-type'] != 'application/pdf':
+            if response.headers['content-type'].startswith('text/html'):
+                logger.error("Could not find file for date %s", date.isoformat())
+                return {}
+            elif response.headers['content-type'] != 'application/pdf':
+                print(response.headers['content-type'])
                 logger.error("File is not PDF for date %s", date.isoformat())
                 return {}
 

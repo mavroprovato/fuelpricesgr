@@ -76,7 +76,7 @@ class Parser(abc.ABC):
         :param file: The file.
         :return: The extracted text.
         """
-        logger.info("Parsing file %s", file)
+        logger.debug("Parsing file %s", file)
         try:
             reader = pypdf.PdfReader(file)
         except pypdf.errors.PdfReadError:
