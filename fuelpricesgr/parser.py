@@ -15,6 +15,16 @@ from fuelpricesgr import enums
 # The module logger
 logger = logging.getLogger(__name__)
 
+# The fuel type regexes
+_FUEL_TYPE_REGEXES = {
+    enums.FuelType.UNLEADED_95: r'Αμόλ ?[υσ]βδ ?[ηθ] +9 ?5 +ο ?κ ?τ ?\.',
+    enums.FuelType.UNLEADED_100: r'Αμόλ[υσ] ?β ?δ[ηθ] 100 οκτ\.',
+    enums.FuelType.SUPER: r'Super',
+    enums.FuelType.DIESEL: r'Diesel +Κ ?ίν[ηθ][σς][ηθ][ςσ]',
+    enums.FuelType.DIESEL_HEATING: r'Diesel Θ[έζ]ρμαν[σς][ηθ][ςσ] (?:Κατ΄ο ?ίκο ?ν)?',
+    enums.FuelType.GAS: r'[ΥΤ]γρα[έζ]ρ ?ιο +κίν ?[ηθ][σς][ηθ][ςσ] \(Auto ?g ?a ?s ?\)',
+}
+
 
 def data_should_exist(fuel_type: enums.FuelType, date: datetime.date) -> bool:
     """Returns true if the data should exist for the specified fuel type and date.
@@ -170,8 +180,8 @@ class WeeklyParser(Parser):
         """
         data = []
         if match := re.search(
-                r'Αμόλ ?[υσ]βδ ?[ηθ] +9 ?5 +ο ?κ ?τ ?\. *(?P<number_of_stations>\d\.\d{3})? +(?P<price>\d,[\d ]{3,4})',
-                text):
+                _FUEL_TYPE_REGEXES[enums.FuelType.UNLEADED_95] +
+                r'\s*(?P<number_of_stations>\d\.\d{3})? +(?P<price>\d,[\d ]{3,4})', text):
             data.append({
                 'fuel_type': enums.FuelType.UNLEADED_95.value,
                 'number_of_stations': WeeklyParser.get_number_of_stations(match),
@@ -181,7 +191,8 @@ class WeeklyParser(Parser):
             logger.error("Could not find Unleaded 95 data for date %s", date)
 
         if match := re.search(
-                r'Αμόλ[υσ] ?β ?δ[ηθ] 100 οκτ\. *(?P<number_of_stations>\d\.\d{3})? +(?P<price>\d,[\d ]{3,4})', text):
+                _FUEL_TYPE_REGEXES[enums.FuelType.UNLEADED_100] +
+                r'\s*(?P<number_of_stations>\d\.\d{3})? +(?P<price>\d,[\d ]{3,4})', text):
             data.append({
                 'fuel_type': enums.FuelType.UNLEADED_100.value,
                 'number_of_stations': WeeklyParser.get_number_of_stations(match),
@@ -191,7 +202,8 @@ class WeeklyParser(Parser):
             logger.error("Could not find Unleaded 100 data for date %s", date)
 
         if match := re.search(
-                r'Diesel +Κ ?ίν[ηθ][σς][ηθ][ςσ] *(?P<number_of_stations>(?:\d\.)?\d{3})? +(?P<price>\d,[\d ]{3,4})',
+                _FUEL_TYPE_REGEXES[enums.FuelType.DIESEL] +
+                r'\s*(?P<number_of_stations>(?:\d\.)?\d{3})? +(?P<price>\d,[\d ]{3,4})',
                 text):
             data.append({
                 'fuel_type': enums.FuelType.DIESEL.value,
@@ -202,8 +214,8 @@ class WeeklyParser(Parser):
             logger.warning("Could not find Diesel data for date %s", date)
 
         if match := re.search(
-                r'[ΥΤ]γρα[έζ]ρ ?ιο +κίν ?[ηθ][σς][ηθ][ςσ] \(Auto ?g ?a ?s ?\) *'
-                r'(?P<number_of_stations>(?:\d\.)?\d{3})? +(?P<price>\d,[\d ]{3,4})', text):
+                _FUEL_TYPE_REGEXES[enums.FuelType.GAS] +
+                r'\s*(?P<number_of_stations>(?:\d\.)?\d{3})? +(?P<price>\d,[\d ]{3,4})', text):
             data.append({
                 'fuel_type': enums.FuelType.GAS.value,
                 'number_of_stations': WeeklyParser.get_number_of_stations(match),
@@ -213,8 +225,8 @@ class WeeklyParser(Parser):
             logger.warning("Could not find Gas data for date %s", date)
 
         if match := re.search(
-                r'Diesel Θ[έζ]ρμαν[σς][ηθ][ςσ] (?:Κατ΄ο ?ίκο ?ν)? *'
-                r'(?P<number_of_stations>(?:\d\.)?\d{3})? +(?P<price>\d,[\d ]{3,4})', text):
+                _FUEL_TYPE_REGEXES[enums.FuelType.DIESEL_HEATING] +
+                r'\s*(?P<number_of_stations>(?:\d\.)?\d{3})? +(?P<price>\d,[\d ]{3,4})', text):
             data.append({
                 'fuel_type': enums.FuelType.DIESEL_HEATING.value,
                 'number_of_stations': WeeklyParser.get_number_of_stations(match),
@@ -224,7 +236,8 @@ class WeeklyParser(Parser):
             logger.error("Could not find Diesel heating data for date %s", date)
 
         if match := re.search(
-                r'Super *(?P<number_of_stations>(?:\d\.)?\d{1,3})? +(?P<price>\d,[\d ]{3,4})', text):
+                _FUEL_TYPE_REGEXES[enums.FuelType.SUPER] +
+                r'\s*(?P<number_of_stations>(?:\d\.)?\d{1,3})? +(?P<price>\d,[\d ]{3,4})', text):
             data.append({
                 'fuel_type': enums.FuelType.SUPER.value,
                 'number_of_stations': WeeklyParser.get_number_of_stations(match),
