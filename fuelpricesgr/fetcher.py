@@ -49,7 +49,6 @@ class Fetcher:
                 logger.error("Could not find file for date %s", date.isoformat())
                 return {}
             elif response.headers['content-type'] != 'application/pdf':
-                print(response.headers['content-type'])
                 logger.error("File is not PDF for date %s", date.isoformat())
                 return {}
 
