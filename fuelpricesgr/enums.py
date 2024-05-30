@@ -42,59 +42,59 @@ class FuelType(enum.Enum):
 class Prefecture(enum.Enum):
     """Enumeration for greek prefectures
     """
-    ATTICA = 'ATTICA', "ΑΤΤΙΚΗΣ", r'Α\s?Τ\s?Τ\s?Ι\s?Κ\s?Η\s?Σ'
-    AETOLIA_ACARNANIA = 'AETOLIA_ACARNANIA', "ΑΙΤΩΛΙΑΣ ΚΑΙ ΑΚΑΡΝΑΝΙΑΣ", r'Α\s?Ι\s?Τ\s?Ω\s?Λ\s?Ι\s?Α\s?Σ\s{1,2}Κ\s?Α\s?Ι\s{1,2}Α\s?Κ\s?Α\s?Ρ\s?Ν\s?Α\s?Ν\s?Ι\s?Α\s?Σ'
-    ARGOLIS = 'ARGOLIS', "ΑΡΓΟΛΙΔΟΣ", r'Α\s?Ρ\s?Γ\s?Ο\s?Λ\s?Ι\s?Δ\s?Ο\s?Σ'
-    ARKADIAS = 'ARKADIAS', "ΑΡΚΑΔΙΑΣ", r'ΑΡΚ\s?Α\s?ΔΙΑ\s?Σ'
-    ARTA = 'ARTA', "ΑΡΤΗΣ", r'Α\s?Ρ\s?Τ\s?ΗΣ'
-    ACHAEA = 'ACHAEA', "ΑΧΑΪΑΣ", r'Α\s?Χ\s?Α\s?Ϊ\s?Α\s?Σ'
-    BOEOTIA = 'BOEOTIA', "ΒΟΙΩΤΙΑΣ", r'Β\s?Ο\s?Ι\s?Ω\s?Τ\s?Ι\s?Α\s?Σ'
-    GREVENA = 'GREVENA', "ΓΡΕΒΕΝΩΝ", r'Γ\s?Ρ\s?Ε\s?Β\s?Ε\s?Ν\s?Ω\s?Ν'
-    DRAMA = 'DRAMA', "ΔΡΑΜΑΣ", r'Δ\s?Ρ\s?Α\s?Μ\s?Α\s?Σ'
-    DODECANESE = 'DODECANESE', "ΔΩΔΕΚΑΝΗΣΟΥ", r'Δ\s?Ω\s?Δ\s?Ε\s?ΚΑ\s?Ν\s?Η\s?ΣΟ\s?Υ'
-    EVROS = 'EVROS', "ΕΒΡΟΥ", r'Ε\s?Β\s?Ρ\s?Ο\s?Υ'
-    EUBOEA = 'EUBOEA', "ΕΥΒΟΙΑΣ", r'Ε\s?Υ\s?Β\s?Ο\s?Ι\s?Α\s?Σ'
-    EVRYTANIA = 'EVRYTANIA', "ΕΥΡΥΤΑΝΙΑΣ", r'ΕΥ\s?Ρ\s?Υ\s?Τ\s?Α\s?Ν\s?ΙΑΣ'
-    ZAKYNTHOS = 'ZAKYNTHOS', "ΖΑΚΥΝΘΟΥ", r'Ζ\s?Α\s?Κ\s?Υ\s?Ν\s?Θ\s?Ο\s?Υ'
-    ELIS = 'ELIS', "ΗΛΕΙΑΣ", r'Η\s?Λ\s?Ε\s?ΙΑ\s?Σ'
-    IMATHIA = 'IMATHIA', "ΗΜΑΘΙΑΣ", r'Η\s?Μ\s?Α\s?Θ\s?Ι\s?Α\s?Σ'
-    HERAKLION = 'HERAKLION', "ΗΡΑΚΛΕΙΟΥ", r'Η\s?Ρ\s?Α\s?Κ\s?Λ\s?Ε\s?Ι\s?Ο\s?Υ'
-    THESPROTIA = 'THESPROTIA', "ΘΕΣΠΡΩΤΙΑΣ", r'Θ\s?Ε\s?Σ\s?Π\s?Ρ\s?ΩΤ\s?Ι\s?Α\s?Σ'
-    THESSALONIKI = 'THESSALONIKI', "ΘΕΣΣΑΛΟΝΙΚΗΣ", r'Θ\s?Ε\s?Σ\s?Σ\s?Α\s?Λ\s?Ο\s?Ν\s?Ι\s?Κ\s?Η\s?Σ'
-    IOANNINA = 'IOANNINA', "ΙΩΑΝΝΙΝΩΝ", r'Ι\s?Ω\s?Α\s?Ν\s?Ν\s?Ι\s?Ν\s?Ω\s?Ν'
-    KAVALA = 'KAVALA', "ΚΑΒΑΛΑΣ", r'ΚΑ\s?Β\s?Α\s?Λ\s?Α\s?Σ'
-    KARDITSA = 'KARDITSA', "ΚΑΡΔΙΤΣΗΣ", r'Κ\s?Α\s?Ρ\s?Δ\s?Ι\s?Τ\s?Σ\s?Η\s?Σ'
-    KASTORIA = 'KASTORIA', "ΚΑΣΤΟΡΙΑΣ", r'Κ\s?Α\s?Σ\s?Τ\s?Ο\s?Ρ\s?Ι\s?Α\s?Σ'
-    KERKYRA = 'KERKYRA', "ΚΕΡΚΥΡΑΣ", r'Κ\s?Ε\s?Ρ\s?ΚΥ\s?ΡΑΣ'
-    CEPHALONIA = 'CEPHALONIA', "ΚΕΦΑΛΛΗΝΙΑΣ", r'Κ\s?ΕΦ\s?Α\s?Λ\s?ΛΗ\s?ΝΙ\s?Α\s?Σ'
-    KILKIS = 'KILKIS', "ΚΙΛΚΙΣ", r'Κ\s?Ι\s?Λ\s?Κ\s?Ι\s?Σ'
-    KOZANI = 'KOZANI', "ΚΟΖΑΝΗΣ", r'Κ\s?Ο\s?Ζ\s?Α\s?Ν\s?Η\s?Σ'
-    CORINTHIA = 'CORINTHIA', "ΚΟΡΙΝΘΙΑΣ", r'Κ\s?Ο\s?Ρ\s?Ι\s?Ν\s?Θ\s?Ι\s?Α\s?Σ'
-    CYCLADES = 'CYCLADES', "ΚΥΚΛΑΔΩΝ", r'Κ\s?Υ\s?Κ\s?Λ\s?Α\s?Δ\s?Ω\s?Ν'
-    LACONIA = 'LACONIA', "ΛΑΚΩΝΙΑΣ", r'Λ\s?Α\s?Κ\s?Ω\s?Ν\s?Ι\s?Α\s?Σ'
-    LARISSA = 'LARISSA', "ΛΑΡΙΣΗΣ", r'ΛΑ\s?Ρ\s?Ι\s?ΣΗ\s?Σ'
-    LASITHI = 'LASITHI', "ΛΑΣΙΘΙΟΥ", r'Λ\s?Α\s?Σ\s?Ι\s?Θ\s?Ι\s?Ο\s?Υ'
-    LESBOS = 'LESBOS', "ΛΕΣΒΟΥ", r'Λ\s?Ε\s?ΣΒ\s?Ο\s?Υ'
-    LEFKADA = 'LEFKADA', "ΛΕΥΚΑΔΟΣ", r'Λ\s?Ε\s?Υ\s?Κ\s?Α\s?Δ\s?Ο\s?Σ'
-    MAGNESIA = 'MAGNESIA', "ΜΑΓΝΗΣΙΑΣ", r'Μ\s?Α\s?Γ\s?Ν\s?Η\s?Σ\s?Ι\s?Α\s?Σ'
-    MESSENIA = 'MESSENIA', "ΜΕΣΣΗΝΙΑΣ", r'ΜΕ\s?ΣΣ\s?Η\s?ΝΙΑ\s?Σ'
-    XANTHI = 'XANTHI', "ΞΑΝΘΗΣ", r'Ξ\s?Α\s?Ν\s?Θ\s?Η\s?Σ'
-    PELLA = 'PELLA', "ΠΕΛΛΗΣ", r'Π\s?Ε\s?Λ\s?Λ\s?Η\s?Σ'
-    PIERIA = 'PIERIA', "ΠΙΕΡΙΑΣ", r'Π\s?Ι\s?Ε\s?Ρ\s?Ι\s?Α\s?Σ'
-    PREVEZA = 'PREVEZA', "ΠΡΕΒΕΖΗΣ", r'Π\s?Ρ\s?Ε\s?Β\s?ΕΖ\s?Η\s?Σ'
-    RETHYMNO = 'RETHYMNO', "ΡΕΘΥΜΝΗΣ", r'Ρ\s?Ε\s?Θ\s?Υ\s?Μ\s?Ν\s?Η\s?Σ'
-    RHODOPE = 'RHODOPE', "ΡΟΔΟΠΗΣ", r'ΡΟ\s?ΔΟ\s?Π\s?Η\s?Σ'
-    SAMOS = 'SAMOS', "ΣΑΜΟΥ", r'Σ\s?Α\s?Μ\s?Ο\s?Υ'
-    SERRES = 'SERRES', "ΣΕΡΡΩΝ", r'Σ\s?Ε\s?Ρ\s?Ρ\s?Ω\s?Ν'
-    TRIKALA = 'TRIKALA', "ΤΡΙΚΑΛΩΝ", r'Τ\s?Ρ\s?Ι\s?Κ\s?Α\s?Λ\s?Ω\s?Ν'
-    PHTHIOTIS = 'PHTHIOTIS', "ΦΘΙΩΤΙΔΟΣ", r'Φ\s?Θ\s?Ι\s?Ω\s?Τ\s?Ι\s?Δ\s?Ο\s?Σ'
-    FLORINA = 'FLORINA', "ΦΛΩΡΙΝΗΣ", r'Φ\s?Λ\s?ΩΡ\s?Ι\s?Ν\s?Η\s?Σ'
-    PHOCIS = 'PHOCIS', "ΦΩΚΙΔΟΣ", r'Φ\s?Ω\s?Κ\s?Ι\s?Δ\s?Ο\s?Σ'
-    CHALKIDIKI = 'CHALKIDIKI', "ΧΑΛΚΙΔΙΚΗΣ", r'Χ\s?Α\s?Λ\s?Κ\s?Ι\s?Δ\s?Ι\s?Κ\s?Η\s?Σ'
-    CHANIA = 'CHANIA', "ΧΑΝΙΩΝ", r'Χ\s?ΑΝ\s?Ι\s?Ω\s?Ν'
-    CHIOS = 'CHIOS', "ΧΙΟΥ", r'Χ\s?Ι\s?Ο\s?Υ'
+    ATTICA = 'ATTICA', "ΑΤΤΙΚΗΣ"
+    AETOLIA_ACARNANIA = 'AETOLIA_ACARNANIA', "ΑΙΤΩΛΙΑΣ ΚΑΙ ΑΚΑΡΝΑΝΙΑΣ"
+    ARGOLIS = 'ARGOLIS', "ΑΡΓΟΛΙΔΟΣ"
+    ARKADIAS = 'ARKADIAS', "ΑΡΚΑΔΙΑΣ"
+    ARTA = 'ARTA', "ΑΡΤΗΣ"
+    ACHAEA = 'ACHAEA', "ΑΧΑΪΑΣ"
+    BOEOTIA = 'BOEOTIA', "ΒΟΙΩΤΙΑΣ"
+    GREVENA = 'GREVENA', "ΓΡΕΒΕΝΩΝ"
+    DRAMA = 'DRAMA', "ΔΡΑΜΑΣ"
+    DODECANESE = 'DODECANESE', "ΔΩΔΕΚΑΝΗΣΟΥ"
+    EVROS = 'EVROS', "ΕΒΡΟΥ"
+    EUBOEA = 'EUBOEA', "ΕΥΒΟΙΑΣ"
+    EVRYTANIA = 'EVRYTANIA', "ΕΥΡΥΤΑΝΙΑΣ"
+    ZAKYNTHOS = 'ZAKYNTHOS', "ΖΑΚΥΝΘΟΥ"
+    ELIS = 'ELIS', "ΗΛΕΙΑΣ"
+    IMATHIA = 'IMATHIA', "ΗΜΑΘΙΑΣ"
+    HERAKLION = 'HERAKLION', "ΗΡΑΚΛΕΙΟΥ"
+    THESPROTIA = 'THESPROTIA', "ΘΕΣΠΡΩΤΙΑΣ"
+    THESSALONIKI = 'THESSALONIKI', "ΘΕΣΣΑΛΟΝΙΚΗΣ"
+    IOANNINA = 'IOANNINA', "ΙΩΑΝΝΙΝΩΝ"
+    KAVALA = 'KAVALA', "ΚΑΒΑΛΑΣ"
+    KARDITSA = 'KARDITSA', "ΚΑΡΔΙΤΣΗΣ"
+    KASTORIA = 'KASTORIA', "ΚΑΣΤΟΡΙΑΣ"
+    KERKYRA = 'KERKYRA', "ΚΕΡΚΥΡΑΣ"
+    CEPHALONIA = 'CEPHALONIA', "ΚΕΦΑΛΛΗΝΙΑΣ"
+    KILKIS = 'KILKIS', "ΚΙΛΚΙΣ"
+    KOZANI = 'KOZANI', "ΚΟΖΑΝΗΣ"
+    CORINTHIA = 'CORINTHIA', "ΚΟΡΙΝΘΙΑΣ"
+    CYCLADES = 'CYCLADES', "ΚΥΚΛΑΔΩΝ"
+    LACONIA = 'LACONIA', "ΛΑΚΩΝΙΑΣ"
+    LARISSA = 'LARISSA', "ΛΑΡΙΣΗΣ"
+    LASITHI = 'LASITHI', "ΛΑΣΙΘΙΟΥ"
+    LESBOS = 'LESBOS', "ΛΕΣΒΟΥ"
+    LEFKADA = 'LEFKADA', "ΛΕΥΚΑΔΟΣ"
+    MAGNESIA = 'MAGNESIA', "ΜΑΓΝΗΣΙΑΣ"
+    MESSENIA = 'MESSENIA', "ΜΕΣΣΗΝΙΑΣ"
+    XANTHI = 'XANTHI', "ΞΑΝΘΗΣ"
+    PELLA = 'PELLA', "ΠΕΛΛΗΣ"
+    PIERIA = 'PIERIA', "ΠΙΕΡΙΑΣ"
+    PREVEZA = 'PREVEZA', "ΠΡΕΒΕΖΗΣ"
+    RETHYMNO = 'RETHYMNO', "ΡΕΘΥΜΝΗΣ"
+    RHODOPE = 'RHODOPE', "ΡΟΔΟΠΗΣ"
+    SAMOS = 'SAMOS', "ΣΑΜΟΥ"
+    SERRES = 'SERRES', "ΣΕΡΡΩΝ"
+    TRIKALA = 'TRIKALA', "ΤΡΙΚΑΛΩΝ"
+    PHTHIOTIS = 'PHTHIOTIS', "ΦΘΙΩΤΙΔΟΣ"
+    FLORINA = 'FLORINA', "ΦΛΩΡΙΝΗΣ"
+    PHOCIS = 'PHOCIS', "ΦΩΚΙΔΟΣ"
+    CHALKIDIKI = 'CHALKIDIKI', "ΧΑΛΚΙΔΙΚΗΣ"
+    CHANIA = 'CHANIA', "ΧΑΝΙΩΝ"
+    CHIOS = 'CHIOS', "ΧΙΟΥ"
 
-    def __new__(cls, value: str, description: str, regex: str):
+    def __new__(cls, value: str, description: str):
         """Creates the prefecture enum.
 
         :param value: The enum value.
@@ -103,7 +103,6 @@ class Prefecture(enum.Enum):
         obj = object.__new__(cls)
         obj._value_ = value
         obj.description = description
-        obj.regex = regex
 
         return obj
 
