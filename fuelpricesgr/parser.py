@@ -266,8 +266,6 @@ class WeeklyParser(Parser):
         :param date: The date for the file.
         :return: The data.
         """
-        logger.info("Extracting weekly data from file %s", date.isoformat())
-
         # Extract weekly country data
         # Try to find "Μέσες τιμές λιανικής πώλησης καυσίμων ανά Νομό"
         weekly_country_end_data = re.search(
