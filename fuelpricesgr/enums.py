@@ -136,20 +136,27 @@ class DataType(enum.Enum):
 class DataFileType(enum.Enum):
     """Enumeration for the different data file types.
     """
-    WEEKLY = 'weekly', 'deltia.view', (DataType.WEEKLY_COUNTRY, DataType.WEEKLY_PREFECTURE), 'EBDOM_DELTIO'
-    DAILY_COUNTRY = 'daily_country', 'deltia_d.view', (DataType.DAILY_COUNTRY, ), 'IMERISIO_DELTIO_PANELLINIO'
-    DAILY_PREFECTURE = 'daily_prefecture', 'deltia_dn.view', (DataType.DAILY_PREFECTURE, ), 'IMERISIO_DELTIO_ANA_NOMO'
+    WEEKLY = 'weekly', 'Weekly', 'deltia.view', (DataType.WEEKLY_COUNTRY, DataType.WEEKLY_PREFECTURE), 'EBDOM_DELTIO'
+    DAILY_COUNTRY = (
+        'daily_country', 'Daily Country', 'deltia_d.view', (DataType.DAILY_COUNTRY, ), 'IMERISIO_DELTIO_PANELLINIO'
+    )
+    DAILY_PREFECTURE = (
+        'daily_prefecture', 'Daily Prefecture', 'deltia_dn.view', (DataType.DAILY_PREFECTURE, ),
+        'IMERISIO_DELTIO_ANA_NOMO'
+    )
 
-    def __new__(cls, value: str, page: str, data_types: collections.abc.Iterable[DataType], prefix: str):
+    def __new__(cls, value: str, description: str, page: str, data_types: collections.abc.Iterable[DataType], prefix: str):
         """Creates the enum.
 
         :param value: The enum value.
+        :param value: The enum description.
         :param page: The path, relative to the base URL, from which we will fetch the data.
         :param data_types: The data types that this page contains.
         :param prefix: The prefix for the data link.
         """
         obj = object.__new__(cls)
         obj._value_ = value
+        obj.description = description
         obj.page = page
         obj.data_types = data_types
         obj.prefix = prefix

@@ -193,11 +193,12 @@ class Parser(abc.ABC):
         """
 
     @staticmethod
-    def extract_country_data(text: str, date: datetime.date):
-        """Extract the weekly country data.
+    def extract_country_data(text: str, date: datetime.date, weekly: bool):
+        """Extract the country data.
 
-        :param text: The weekly country data text.
+        :param text: The country data text.
         :param date: The date.
+        :param weekly: True if the data are weekly.
         :return: The weekly country data.
         """
         data = []
@@ -210,7 +211,8 @@ class Parser(abc.ABC):
                 'price': Parser.get_price(match.group('price')),
             })
         else:
-            logger.error("Could not find Unleaded 95 country data for date %s", date)
+            logger.error("Could not find %s %s country data for date %s", enums.FuelType.UNLEADED_95.description,
+                         "weekly" if weekly else "daily", date)
 
         if match := re.search(
                 _FUEL_TYPE_REGEXES[enums.FuelType.UNLEADED_100] +
@@ -221,7 +223,8 @@ class Parser(abc.ABC):
                 'price': Parser.get_price(match.group('price')),
             })
         else:
-            logger.error("Could not find Unleaded 100 country data for date %s", date)
+            logger.error("Could not find %s %s country data for date %s", enums.FuelType.UNLEADED_100.description,
+                         "weekly" if weekly else "daily", date)
 
         if match := re.search(
                 _FUEL_TYPE_REGEXES[enums.FuelType.DIESEL] +
@@ -233,7 +236,8 @@ class Parser(abc.ABC):
                 'price': Parser.get_price(match.group('price')),
             })
         else:
-            logger.warning("Could not find Diesel country data for date %s", date)
+            logger.error("Could not find %s %s country data for date %s", enums.FuelType.DIESEL.description,
+                         "weekly" if weekly else "daily", date)
 
         if match := re.search(
                 _FUEL_TYPE_REGEXES[enums.FuelType.GAS] +
@@ -244,7 +248,8 @@ class Parser(abc.ABC):
                 'price': Parser.get_price(match.group('price')),
             })
         elif data_should_exist(enums.FuelType.GAS, date):
-            logger.warning("Could not find Gas country data for date %s", date)
+            logger.error("Could not find %s %s country data for date %s", enums.FuelType.GAS.description,
+                         "weekly" if weekly else "daily", date)
 
         if match := re.search(
                 _FUEL_TYPE_REGEXES[enums.FuelType.DIESEL_HEATING] +
@@ -255,7 +260,8 @@ class Parser(abc.ABC):
                 'price': Parser.get_price(match.group('price')),
             })
         elif data_should_exist(enums.FuelType.DIESEL_HEATING, date):
-            logger.error("Could not find Diesel heating country data for date %s", date)
+            logger.error("Could not find %s %s country data for date %s", enums.FuelType.DIESEL_HEATING.description,
+                         "weekly" if weekly else "daily", date)
 
         if match := re.search(
                 _FUEL_TYPE_REGEXES[enums.FuelType.SUPER] +
@@ -266,16 +272,18 @@ class Parser(abc.ABC):
                 'price': Parser.get_price(match.group('price')),
             })
         elif data_should_exist(enums.FuelType.SUPER, date):
-            logger.error("Could not find Super country data for date %s", date)
+            logger.error("Could not find %s %s country data for date %s", enums.FuelType.SUPER.description,
+                         "weekly" if weekly else "daily", date)
 
         return data
 
     @staticmethod
-    def extract_prefecture_data(text: str, date: datetime.date):
+    def extract_prefecture_data(text: str, date: datetime.date, weekly: bool):
         """Extract the weekly prefecture data.
 
         :param text: The weekly prefecture data text.
         :param date: The date.
+        :param weekly: The date.
         :return: The weekly prefecture data.
         """
         # The standard fuel types included
@@ -306,7 +314,8 @@ class Parser(abc.ABC):
                             'price': price,
                         })
             else:
-                logger.error("Could not find weekly prefecture data for %s and date %s", prefecture, date)
+                logger.error("Could not find %s prefecture data for %s and date %s", 'weekly' if weekly else 'daily',
+                             prefecture.description, date)
 
         return data
 
@@ -335,7 +344,7 @@ class WeeklyParser(Parser):
                 text, re.MULTILINE)
         if not weekly_country_end_data:
             raise ValueError(f"Could not find weekly country data for date %s", date.isoformat())
-        country_data = self.extract_country_data(text[:weekly_country_end_data.start(0)], date)
+        country_data = self.extract_country_data(text[:weekly_country_end_data.start(0)], date, True)
 
         # Extract weekly country data
         # Try to find "2. Απλή Αμόλυβδη Βενζίνη 95 οκτανίων"
@@ -344,7 +353,7 @@ class WeeklyParser(Parser):
         if not weekly_prefecture_end_data:
             raise ValueError(f"Could not find weekly prefecture data for date {date.isoformat()}")
         prefecture_data = self.extract_prefecture_data(
-            text[weekly_country_end_data.end(0):weekly_prefecture_end_data.start(0)], date)
+            text[weekly_country_end_data.end(0):weekly_prefecture_end_data.start(0)], date, True)
 
         return {enums.DataType.WEEKLY_COUNTRY: country_data, enums.DataType.WEEKLY_PREFECTURE: prefecture_data}
 
@@ -359,7 +368,7 @@ class DailyCountryParser(Parser):
         :param date: The date for the file.
         :return: The data.
         """
-        return {enums.DataType.DAILY_COUNTRY: self.extract_country_data(text, date)}
+        return {enums.DataType.DAILY_COUNTRY: self.extract_country_data(text, date, False)}
 
 
 class DailyPrefectureParser(Parser):
@@ -372,4 +381,4 @@ class DailyPrefectureParser(Parser):
         :param date: The date for the file.
         :return: The data.
         """
-        return {enums.DataType.DAILY_PREFECTURE: self.extract_prefecture_data(text, date)}
+        return {enums.DataType.DAILY_PREFECTURE: self.extract_prefecture_data(text, date, False)}

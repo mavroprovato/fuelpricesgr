@@ -76,7 +76,7 @@ def import_data(service: services.base.BaseService, args: argparse.Namespace) ->
                     args.start_date = min(dates)
             if args.end_date is None:
                 args.end_date = datetime.date.today()
-            logger.info("Fetching %s data between %s and %s", data_file_type.value, args.start_date, args.end_date)
+            logger.info("Fetching %s data between %s and %s", data_file_type.description, args.start_date, args.end_date)
             for date in data_file_type.dates(start_date=args.start_date, end_date=args.end_date):
                 if args.update or not service.data_exists(data_file_type=data_file_type, date=date):
                     file_data = data_fetcher.data(date=date, skip_cache=args.skip_cache)
