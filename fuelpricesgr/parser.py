@@ -25,6 +25,16 @@ _FUEL_TYPE_REGEXES = {
     enums.FuelType.GAS: r'[ΥΤ]γρα[έζ]ρ ?ιο +κί ?ν ?[ηθ] ?[σς] ?[ηθ][ςσ] +\( ?A ?ut ?o ?g ?a ?s ?\)',
 }
 
+# The fuel type values regexes
+_FUEL_TYPE_VALUES_REGEXES = {
+    enums.FuelType.UNLEADED_95: r'\s*(?P<number_of_stations>\d\.\d{3})? +(?P<price>\d,[\d ]{3,4})',
+    enums.FuelType.UNLEADED_100: r'\s*(?P<number_of_stations>\d\.\d{3})? +(?P<price>\d,[\d ]{3,4})',
+    enums.FuelType.DIESEL: r'\s*(?P<number_of_stations>(?:\d\.)?\d{3})? +(?P<price>\d,[\d ]{3,4})',
+    enums.FuelType.GAS: r'\s*(?P<number_of_stations>(?:\d\.)?\d{3})? +(?P<price>\d,[\d ]{3,4})',
+    enums.FuelType.DIESEL_HEATING: r'\s*(?P<number_of_stations>(?:\d\.)?\d{3})? +(?P<price>\d,[\d ]{3,4})',
+    enums.FuelType.SUPER: r'\s*(?P<number_of_stations>(?:\d\.)?\d{1,3})? +(?P<price>\d[,.][\d ]{3,4})'
+}
+
 # The prefecture regexes
 _PREFECTURE_REGEXES = {
     enums.Prefecture.ATTICA: r'Α\s?Τ\s?Τ\s?Ι\s?Κ\s?Η\s?Σ',
@@ -205,9 +215,8 @@ class Parser(abc.ABC):
         data = []
 
         for fuel_type in enums.FuelType:
-            if match := re.search(
-                    _FUEL_TYPE_REGEXES[fuel_type] +
-                    r'\s*(?P<number_of_stations>(?:\d\.)?\d{1,3})? +(?P<price>\d[,.][\d ]{3,4})', text):
+            regex = _FUEL_TYPE_REGEXES[fuel_type] + _FUEL_TYPE_VALUES_REGEXES[fuel_type]
+            if match := re.search(regex, text):
                 data.append({
                     'fuel_type': fuel_type.value,
                     'number_of_stations': Parser.get_number_of_stations(match.group('number_of_stations')),
