@@ -21,7 +21,7 @@ _FUEL_TYPE_REGEXES = {
     enums.FuelType.UNLEADED_100: r'Αμόλ[υσ] ?β ?δ[ηθ] 100 οκτ\.',
     enums.FuelType.SUPER: r'Super',
     enums.FuelType.DIESEL: r'Diesel +Κ ?ί ?ν ?[ηθ] ?[σς] ?[ηθ] ?[ςσ]',
-    enums.FuelType.DIESEL_HEATING: r'Dies ?e ?l +Θ ?[έζ] ?ρ ?μ ?α ?ν ?[σς] ?[ηθ] ?[ςσ] +Κ ?α ?τ ?΄ ?ο ?ί ?κ ?ο ?ν',
+    enums.FuelType.DIESEL_HEATING: r'Dies ?e ?l +Θ ?[έζ] ?ρ ?μ ?α ?ν ?[σς] ?[ηθ] ?[ςσ] +(?:Κ ?α ?τ ?΄ ?ο ?ί ?κ ?ο ?ν)?',
     enums.FuelType.GAS: r'[ΥΤ]γρα[έζ]ρ ?ιο +κί ?ν ?[ηθ] ?[σς] ?[ηθ][ςσ] +\( ?A ?ut ?o ?g ?a ?s ?\)',
 }
 
@@ -204,7 +204,7 @@ class Parser(abc.ABC):
         """
 
     @staticmethod
-    def extract_country_data(text: str, date: datetime.date, weekly: bool):
+    def extract_country_data(text: str, date: datetime.date, weekly: bool) -> list[dict[str, object]]:
         """Extract the country data.
 
         :param text: The country data text.
@@ -229,7 +229,7 @@ class Parser(abc.ABC):
         return data
 
     @staticmethod
-    def extract_prefecture_data(text: str, date: datetime.date, weekly: bool):
+    def extract_prefecture_data(text: str, date: datetime.date, weekly: bool) -> list[dict[str, object]]:
         """Extract the weekly prefecture data.
 
         :param text: The weekly prefecture data text.
@@ -282,6 +282,7 @@ class WeeklyParser(Parser):
         :return: The data.
         """
         # Extract weekly country data
+        country_data = []
         # Try to find "Μέσες τιμές λιανικής πώλησης καυσίμων ανά Νομό"
         weekly_country_end_data = re.search(
             r'Μέσες τιμές λ ?ιανι ?κή ?ς +πώ ?λη ?σης ?κ ?α ?υ ?σ ?ί ?μ ?ω ?ν +α ?ν ?ά [Νν] ?ο ?μ ?ό', text,
@@ -293,18 +294,21 @@ class WeeklyParser(Parser):
                 r'[υπ] ?π ?[ον] ?[λι] ?[ον] ?γ ?ί ?[ζηδ] ?ε ?[τη] ?α ?[ιη] +α ?π ?ό +[τη] ?[ον][νλ]\s+'
                 r'[σςζ][τη] ?α[θκζ] ?[μκ] ?[ιη] ?[ιζσς] ?[μκ] ?[έζ][νλ][ον]\s+[μκ] ?[έζ] ?[σςζ] ?[ον]\s+ό[ρξ][ον]',
                 text, re.MULTILINE)
-        if not weekly_country_end_data:
-            raise ValueError(f"Could not find weekly country data for date %s", date.isoformat())
-        country_data = self.extract_country_data(text[:weekly_country_end_data.start(0)], date, True)
+        if weekly_country_end_data:
+            country_data = self.extract_country_data(text[:weekly_country_end_data.start(0)], date, True)
+        else:
+            logger.error("Could not find weekly country data for date %s", date)
 
-        # Extract weekly country data
+        # Extract weekly prefecture data
+        prefecture_data = []
         # Try to find "2. Απλή Αμόλυβδη Βενζίνη 95 οκτανίων"
         weekly_prefecture_end_data = re.search(
             r'2\. *Απλ[ήι] +Αμ ?όλ ?υβδ ?[ηθ] Β ?ε ?ν ?[ζη] ?ί ?ν ?[ηθ] +9 ?5 οκ ?τα ?ν ?ίω ?ν', text)
-        if not weekly_prefecture_end_data:
-            raise ValueError(f"Could not find weekly prefecture data for date {date.isoformat()}")
-        prefecture_data = self.extract_prefecture_data(
-            text[weekly_country_end_data.end(0):weekly_prefecture_end_data.start(0)], date, True)
+        if weekly_prefecture_end_data:
+            prefecture_data = self.extract_prefecture_data(
+                text[weekly_country_end_data.end(0):weekly_prefecture_end_data.start(0)], date, True)
+        else:
+            logger.error("Could not find weekly prefecture data for date %s", date)
 
         return {enums.DataType.WEEKLY_COUNTRY: country_data, enums.DataType.WEEKLY_PREFECTURE: prefecture_data}
 

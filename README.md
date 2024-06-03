@@ -5,6 +5,13 @@ are regularly uploaded at the [Παρατηρητήριο Τιμών Υγρών 
 Government, but the data are published as PDF files. In order to process the data more easily, this project fetches
 those PDF files, extracts the data from them, inserts them in a database, and exposes them in an API.
 
+Data are available since:
+
+* 2012-04-27 for weekly country data
+* TODO for weekly prefecture data
+* TODO for daily country data
+* TODO for daily prefecture data
+
 ## Running the API
 
 The backend API is a [Python](https://www.python.org) based project, built with [FastAPI](https://fastapi.tiangolo.com),
