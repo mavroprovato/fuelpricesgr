@@ -37,58 +37,60 @@ _FUEL_TYPE_VALUES_REGEXES = {
 
 # The prefecture regexes
 _PREFECTURE_REGEXES = {
-    enums.Prefecture.ATTICA: r'Α\s?Τ\s?Τ\s?Ι\s?Κ\s?Η\s?Σ',
+    enums.Prefecture.ATTICA: r'Α\s?[ΤΣ]\s?[ΤΣ]\s?[ΙΗ]\s?Κ\s?[ΗΖ]\s?[Σ΢]',
     enums.Prefecture.AETOLIA_ACARNANIA:
-        r'Α\s?Ι\s?Τ\s?Ω\s?Λ\s?Ι\s?Α\s?Σ\s{1,2}Κ\s?Α\s?Ι\s{1,2}Α\s?Κ\s?Α\s?Ρ\s?Ν\s?Α\s?Ν\s?Ι\s?Α\s?Σ',
-    enums.Prefecture.ARGOLIS: r'Α\s?Ρ\s?Γ\s?Ο\s?Λ\s?Ι\s?Δ\s?Ο\s?Σ',
-    enums.Prefecture.ARKADIAS: r'ΑΡΚ\s?Α\s?ΔΙΑ\s?Σ',
-    enums.Prefecture.ARTA: r'Α\s?Ρ\s?Τ\s?ΗΣ',
-    enums.Prefecture.ACHAEA: r'Α\s?Χ\s?Α\s?Ϊ\s?Α\s?Σ',
-    enums.Prefecture.BOEOTIA: r'Β\s?Ο\s?Ι\s?Ω\s?Τ\s?Ι\s?Α\s?Σ',
-    enums.Prefecture.GREVENA: r'Γ\s?Ρ\s?Ε\s?Β\s?Ε\s?Ν\s?Ω\s?Ν',
-    enums.Prefecture.DRAMA: r'Δ\s?Ρ\s?Α\s?Μ\s?Α\s?Σ',
-    enums.Prefecture.DODECANESE: r'Δ\s?Ω\s?Δ\s?Ε\s?ΚΑ\s?Ν\s?Η\s?ΣΟ\s?Υ',
-    enums.Prefecture.EVROS: r'Ε\s?Β\s?Ρ\s?Ο\s?Υ',
-    enums.Prefecture.EUBOEA: r'Ε\s?Υ\s?Β\s?Ο\s?Ι\s?Α\s?Σ',
-    enums.Prefecture.EVRYTANIA: r'ΕΥ\s?Ρ\s?Υ\s?Τ\s?Α\s?Ν\s?ΙΑΣ',
-    enums.Prefecture.ZAKYNTHOS: r'Ζ\s?Α\s?Κ\s?Υ\s?Ν\s?Θ\s?Ο\s?Υ',
-    enums.Prefecture.ELIS: r'Η\s?Λ\s?Ε\s?ΙΑ\s?Σ',
-    enums.Prefecture.IMATHIA: r'Η\s?Μ\s?Α\s?Θ\s?Ι\s?Α\s?Σ',
-    enums.Prefecture.HERAKLION: r'Η\s?Ρ\s?Α\s?Κ\s?Λ\s?Ε\s?Ι\s?Ο\s?Υ',
-    enums.Prefecture.THESPROTIA: r'Θ\s?Ε\s?Σ\s?Π\s?Ρ\s?ΩΤ\s?Ι\s?Α\s?Σ',
-    enums.Prefecture.THESSALONIKI: r'Θ\s?Ε\s?Σ\s?Σ\s?Α\s?Λ\s?Ο\s?Ν\s?Ι\s?Κ\s?Η\s?Σ',
-    enums.Prefecture.IOANNINA: r'Ι\s?Ω\s?Α\s?Ν\s?Ν\s?Ι\s?Ν\s?Ω\s?Ν',
-    enums.Prefecture.KAVALA: r'ΚΑ\s?Β\s?Α\s?Λ\s?Α\s?Σ',
-    enums.Prefecture.KARDITSA: r'Κ\s?Α\s?Ρ\s?Δ\s?Ι\s?Τ\s?Σ\s?Η\s?Σ',
-    enums.Prefecture.KASTORIA: r'Κ\s?Α\s?Σ\s?Τ\s?Ο\s?Ρ\s?Ι\s?Α\s?Σ',
-    enums.Prefecture.KERKYRA: r'Κ\s?Ε\s?Ρ\s?ΚΥ\s?ΡΑΣ',
-    enums.Prefecture.CEPHALONIA: r'Κ\s?ΕΦ\s?Α\s?Λ\s?ΛΗ\s?ΝΙ\s?Α\s?Σ',
-    enums.Prefecture.KILKIS: r'Κ\s?Ι\s?Λ\s?Κ\s?Ι\s?Σ',
-    enums.Prefecture.KOZANI: r'Κ\s?Ο\s?Ζ\s?Α\s?Ν\s?Η\s?Σ',
-    enums.Prefecture.CORINTHIA: r'Κ\s?Ο\s?Ρ\s?Ι\s?Ν\s?Θ\s?Ι\s?Α\s?Σ',
-    enums.Prefecture.CYCLADES: r'Κ\s?Υ\s?Κ\s?Λ\s?Α\s?Δ\s?Ω\s?Ν',
-    enums.Prefecture.LACONIA: r'Λ\s?Α\s?Κ\s?Ω\s?Ν\s?Ι\s?Α\s?Σ',
-    enums.Prefecture.LARISSA: r'ΛΑ\s?Ρ\s?Ι\s?ΣΗ\s?Σ',
-    enums.Prefecture.LASITHI: r'Λ\s?Α\s?Σ\s?Ι\s?Θ\s?Ι\s?Ο\s?Υ',
-    enums.Prefecture.LESBOS: r'Λ\s?Ε\s?ΣΒ\s?Ο\s?Υ',
-    enums.Prefecture.LEFKADA: r'Λ\s?Ε\s?Υ\s?Κ\s?Α\s?Δ\s?Ο\s?Σ',
-    enums.Prefecture.MAGNESIA: r'Μ\s?Α\s?Γ\s?Ν\s?Η\s?Σ\s?Ι\s?Α\s?Σ',
-    enums.Prefecture.MESSENIA: r'ΜΕ\s?ΣΣ\s?Η\s?ΝΙΑ\s?Σ',
-    enums.Prefecture.XANTHI: r'Ξ\s?Α\s?Ν\s?Θ\s?Η\s?Σ',
-    enums.Prefecture.PELLA: r'Π\s?Ε\s?Λ\s?Λ\s?Η\s?Σ',
-    enums.Prefecture.PIERIA: r'Π\s?Ι\s?Ε\s?Ρ\s?Ι\s?Α\s?Σ',
-    enums.Prefecture.PREVEZA: r'Π\s?Ρ\s?Ε\s?Β\s?ΕΖ\s?Η\s?Σ',
-    enums.Prefecture.RETHYMNO: r'Ρ\s?Ε\s?Θ\s?Υ\s?Μ\s?Ν\s?Η\s?Σ',
-    enums.Prefecture.RHODOPE: r'ΡΟ\s?ΔΟ\s?Π\s?Η\s?Σ',
-    enums.Prefecture.SAMOS: r'Σ\s?Α\s?Μ\s?Ο\s?Υ',
-    enums.Prefecture.SERRES: r'Σ\s?Ε\s?Ρ\s?Ρ\s?Ω\s?Ν',
-    enums.Prefecture.TRIKALA: r'Τ\s?Ρ\s?Ι\s?Κ\s?Α\s?Λ\s?Ω\s?Ν',
-    enums.Prefecture.PHTHIOTIS: r'Φ\s?Θ\s?Ι\s?Ω\s?Τ\s?Ι\s?Δ\s?Ο\s?Σ',
-    enums.Prefecture.FLORINA: r'Φ\s?Λ\s?ΩΡ\s?Ι\s?Ν\s?Η\s?Σ',
-    enums.Prefecture.PHOCIS: r'Φ\s?Ω\s?Κ\s?Ι\s?Δ\s?Ο\s?Σ',
-    enums.Prefecture.CHALKIDIKI: r'Χ\s?Α\s?Λ\s?Κ\s?Ι\s?Δ\s?Ι\s?Κ\s?Η\s?Σ',
-    enums.Prefecture.CHANIA: r'Χ\s?ΑΝ\s?Ι\s?Ω\s?Ν',
-    enums.Prefecture.CHIOS: r'Χ\s?Ι\s?Ο\s?Υ',
+        r'Α\s?[ΙΗ]\s?[ΤΣ]\s?Ω\s?Λ\s?[ΙΗ]\s?Α\s?[Σ΢]\s{1,2}'
+        r'Κ\s?Α\s?[ΙΗ]\s{1,2}'
+        r'Α\s?Κ\s?Α\s?Ρ\s?Ν\s?Α\s?Ν\s?[ΙΗ]\s?Α\s?[Σ΢]',
+    enums.Prefecture.ARGOLIS: r'Α\s?Ρ\s?Γ\s?Ο\s?Λ\s?[ΙΗ]\s?[ΔΓ]\s?Ο\s?[Σ΢]',
+    enums.Prefecture.ARKADIAS: r'ΑΡΚ\s?Α\s?[ΔΓ][ΙΗ]Α\s?[Σ΢]',
+    enums.Prefecture.ARTA: r'Α\s?Ρ\s?[ΤΣ]\s?[ΗΖ]\s?[Σ΢]',
+    enums.Prefecture.ACHAEA: r'Α\s?[ΧΥ]\s?Α\s?Ϊ\s?Α\s?[Σ΢]',
+    enums.Prefecture.BOEOTIA: r'Β\s?Ο\s?[ΙΗ]\s?Ω\s?[ΤΣ]\s?[ΙΗ]\s?Α\s?[Σ΢]',
+    enums.Prefecture.GREVENA: r'Γ\s?Ρ\s?[ΕΔ]\s?Β\s?[ΕΔ]\s?Ν\s?Ω\s?Ν',
+    enums.Prefecture.DRAMA: r'[ΔΓ]\s?Ρ\s?Α\s?Μ\s?Α\s?[Σ΢]',
+    enums.Prefecture.DODECANESE: r'[ΔΓ]\s?Ω\s?[ΔΓ]\s?[ΕΔ]\s?ΚΑ\s?Ν\s?[ΗΖ]\s?[Σ΢]Ο\s?[ΥΤ]',
+    enums.Prefecture.EVROS: r'[ΕΔ]\s?Β\s?Ρ\s?Ο\s?[ΥΤ]',
+    enums.Prefecture.EUBOEA: r'[ΕΔ]\s?[ΥΤ]\s?Β\s?Ο\s?[ΙΗ]\s?Α\s?[Σ΢]',
+    enums.Prefecture.EVRYTANIA: r'[ΕΔ]\s?[ΥΤ]\s?Ρ\s?[ΥΤ]\s?[ΤΣ]\s?Α\s?Ν\s?[ΙΗ]Α\s?[Σ΢]',
+    enums.Prefecture.ZAKYNTHOS: r'[ΖΕ]\s?Α\s?Κ\s?[ΥΤ]\s?Ν\s?Θ\s?Ο\s?[ΥΤ]',
+    enums.Prefecture.ELIS: r'[ΗΖ]\s?Λ\s?[ΕΔ]\s?[ΙΗ]Α\s?[Σ΢]',
+    enums.Prefecture.IMATHIA: r'[ΗΖ]\s?Μ\s?Α\s?Θ\s?[ΙΗ]\s?Α\s?[Σ΢]',
+    enums.Prefecture.HERAKLION: r'[ΗΖ]\s?Ρ\s?Α\s?Κ\s?Λ\s?[ΕΔ]\s?[ΙΗ]\s?Ο\s?[ΥΤ]',
+    enums.Prefecture.THESPROTIA: r'Θ\s?[ΕΔ]\s?[Σ΢]\s?Π\s?Ρ\s?Ω\s?[ΤΣ]\s?[ΙΗ]\s?Α\s?[Σ΢]',
+    enums.Prefecture.THESSALONIKI: r'Θ\s?[ΕΔ]\s?[Σ΢]\s?[Σ΢]\s?Α\s?Λ\s?Ο\s?Ν\s?[ΙΗ]\s?Κ\s?[ΗΖ]\s?[Σ΢]',
+    enums.Prefecture.IOANNINA: r'[ΙΗ]\s?Ω\s?Α\s?Ν\s?Ν\s?[ΙΗ]\s?Ν\s?Ω\s?Ν',
+    enums.Prefecture.KAVALA: r'Κ\s?Α\s?Β\s?Α\s?Λ\s?Α\s?[Σ΢]',
+    enums.Prefecture.KARDITSA: r'Κ\s?Α\s?Ρ\s?[ΔΓ]\s?[ΙΗ]\s?[ΤΣ]\s?[Σ΢]\s?[ΗΖ]\s?[Σ΢]',
+    enums.Prefecture.KASTORIA: r'Κ\s?Α\s?[Σ΢]\s?[ΤΣ]\s?Ο\s?Ρ\s?[ΙΗ]\s?Α\s?[Σ΢]',
+    enums.Prefecture.KERKYRA: r'Κ\s?[ΕΔ]\s?Ρ\s?Κ\s?[ΥΤ]\s?ΡΑ\s?[Σ΢]',
+    enums.Prefecture.CEPHALONIA: r'Κ\s?[ΕΔ]\s?Φ\s?Α\s?Λ\s?Λ\s?[ΗΖ]\s?Ν\s?[ΙΗ]\s?Α\s?[Σ΢]',
+    enums.Prefecture.KILKIS: r'Κ\s?[ΙΗ]\s?Λ\s?Κ\s?[ΙΗ]\s?[Σ΢]',
+    enums.Prefecture.KOZANI: r'Κ\s?Ο\s?[ΖΕ]\s?Α\s?Ν\s?[ΗΖ]\s?[Σ΢]',
+    enums.Prefecture.CORINTHIA: r'Κ\s?Ο\s?Ρ\s?[ΙΗ]\s?Ν\s?Θ\s?[ΙΗ]\s?Α\s?[Σ΢]',
+    enums.Prefecture.CYCLADES: r'Κ\s?[ΥΤ]\s?Κ\s?Λ\s?Α\s?[ΔΓ]\s?Ω\s?Ν',
+    enums.Prefecture.LACONIA: r'Λ\s?Α\s?Κ\s?Ω\s?Ν\s?[ΙΗ]\s?Α\s?[Σ΢]',
+    enums.Prefecture.LARISSA: r'Λ\s?Α\s?Ρ\s?[ΙΗ]\s?[Σ΢][ΗΖ]\s?[Σ΢]',
+    enums.Prefecture.LASITHI: r'Λ\s?Α\s?[Σ΢]\s?[ΙΗ]\s?Θ\s?[ΙΗ]\s?Ο\s?[ΥΤ]',
+    enums.Prefecture.LESBOS: r'Λ\s?[ΕΔ]\s?[Σ΢]Β\s?Ο\s?[ΥΤ]',
+    enums.Prefecture.LEFKADA: r'Λ\s?[ΕΔ]\s?[ΥΤ]\s?Κ\s?Α\s?[ΔΓ]\s?Ο\s?[Σ΢]',
+    enums.Prefecture.MAGNESIA: r'Μ\s?Α\s?Γ\s?Ν\s?[ΗΖ]\s?[Σ΢]\s?[ΙΗ]\s?Α\s?[Σ΢]',
+    enums.Prefecture.MESSENIA: r'Μ\s?[ΕΔ]\s?[Σ΢]\s?[Σ΢]\s?[ΗΖ]\s?Ν\s?[ΙΗ]\s?Α\s?[Σ΢]',
+    enums.Prefecture.XANTHI: r'Ξ\s?Α\s?Ν\s?Θ\s?[ΗΖ]\s?[Σ΢]',
+    enums.Prefecture.PELLA: r'Π\s?[ΕΔ]\s?Λ\s?Λ\s?[ΗΖ]\s?[Σ΢]',
+    enums.Prefecture.PIERIA: r'Π\s?[ΙΗ]\s?[ΕΔ]\s?Ρ\s?[ΙΗ]\s?Α\s?[Σ΢]',
+    enums.Prefecture.PREVEZA: r'Π\s?Ρ\s?[ΕΔ]\s?Β\s?[ΕΔ]\s?[ΖΕ]\s?[ΗΖ]\s?[Σ΢]',
+    enums.Prefecture.RETHYMNO: r'Ρ\s?[ΕΔ]\s?Θ\s?[ΥΤ]\s?Μ\s?Ν\s?[ΗΖ]\s?[Σ΢]',
+    enums.Prefecture.RHODOPE: r'Ρ\s?Ο\s?[ΔΓ]\s?Ο\s?Π\s?[ΗΖ]\s?[Σ΢]',
+    enums.Prefecture.SAMOS: r'[Σ΢]\s?Α\s?Μ\s?Ο\s?[ΥΤ]',
+    enums.Prefecture.SERRES: r'[Σ΢]\s?[ΕΔ]\s?Ρ\s?Ρ\s?Ω\s?Ν',
+    enums.Prefecture.TRIKALA: r'[ΤΣ]\s?Ρ\s?[ΙΗ]\s?Κ\s?Α\s?Λ\s?Ω\s?Ν',
+    enums.Prefecture.PHTHIOTIS: r'Φ\s?Θ\s?[ΙΗ]\s?Ω\s?[ΤΣ]\s?[ΙΗ]\s?[ΔΓ]Ο\s?[Σ΢]',
+    enums.Prefecture.FLORINA: r'Φ\s?Λ\s?ΩΡ\s?[ΙΗ]\s?Ν\s?[ΗΖ]\s?[Σ΢]',
+    enums.Prefecture.PHOCIS: r'Φ\s?Ω\s?Κ\s?[ΙΗ]\s?[ΔΓ]\s?Ο\s?[Σ΢]',
+    enums.Prefecture.CHALKIDIKI: r'[ΧΥ]\s?Α\s?Λ\s?Κ\s?[ΙΗ]\s?[ΔΓ]\s?[ΙΗ]\s?Κ\s?[ΗΖ]\s?[Σ΢]',
+    enums.Prefecture.CHANIA: r'[ΧΥ]\s?Α\s?Ν\s?[ΙΗ]\s?Ω\s?Ν',
+    enums.Prefecture.CHIOS: r'[ΧΥ]\s?[ΙΗ]\s?Ο\s?[ΥΤ]',
 }
 
 
@@ -248,13 +250,13 @@ class Parser(abc.ABC):
             fuel_types.insert(2, enums.FuelType.SUPER)
         # Check if diesel heating is included
         if data_should_exist(enums.FuelType.DIESEL_HEATING, date):
-            regexes.append(r' +((?:\d,\d ?\d ?\d|-))')
+            regexes.append(r' +((?:\d, ?\d ?\d ?\d|-))')
             fuel_types.append(enums.FuelType.DIESEL_HEATING)
 
         data = []
         for prefecture in enums.Prefecture:
             # Parse the prices
-            regex = r'Ν ?Ο ?Μ ?Ο ?Σ\s{1,2}' + _PREFECTURE_REGEXES[prefecture] + ''.join(regexes)
+            regex = r'Ν\s?Ο\s?Μ\s?Ο\s?[Σ΢]\s{1,2}' + _PREFECTURE_REGEXES[prefecture] + ''.join(regexes)
             if match := re.search(regex, text):
                 for index, fuel_type in enumerate(fuel_types):
                     price = WeeklyParser.get_price(match.group(index + 1))
