@@ -145,7 +145,8 @@ class DataFileType(enum.Enum):
         'IMERISIO_DELTIO_ANA_NOMO'
     )
 
-    def __new__(cls, value: str, description: str, page: str, data_types: collections.abc.Iterable[DataType], prefix: str):
+    def __new__(cls, value: str, description: str, page: str, data_types: collections.abc.Iterable[DataType],
+                prefix: str):
         """Creates the enum.
 
         :param value: The enum value.

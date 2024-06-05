@@ -105,10 +105,10 @@ def data_should_exist(fuel_type: enums.FuelType, date: datetime.date) -> bool:
     if fuel_type == enums.FuelType.SUPER and date >= datetime.date(2022, 8, 5):
         # Last date with SUPER data
         return False
-    elif fuel_type == enums.FuelType.GAS and date <= datetime.date(2012, 6, 1):
+    if fuel_type == enums.FuelType.GAS and date <= datetime.date(2012, 6, 1):
         # There are no data for GAS for these old dates
         return False
-    elif (
+    if (
         fuel_type == enums.FuelType.DIESEL_HEATING and
         not ((date.month >= 10 and date.day >= 15) or (date.month <= 4))
     ):
@@ -176,6 +176,8 @@ class Parser(abc.ABC):
         if text:
             return self.extract_data(text=text, date=date)
 
+        return None
+
     @staticmethod
     def get_number_of_stations(number_of_stations_text: str) -> int | None:
         """Get the number of stations from the matched text.
@@ -185,6 +187,8 @@ class Parser(abc.ABC):
         """
         if number_of_stations_text:
             return int(number_of_stations_text.replace('.', ''))
+
+        return None
 
     @staticmethod
     def get_price(price_text: str) -> decimal.Decimal | None:
@@ -196,6 +200,8 @@ class Parser(abc.ABC):
         price_text = price_text.replace(' ', '').replace(',', '.').replace('-', '').strip()
         if price_text:
             return decimal.Decimal(price_text)
+
+        return None
 
     @abc.abstractmethod
     def extract_data(self, text: str, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:

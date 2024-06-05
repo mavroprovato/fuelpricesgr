@@ -104,7 +104,7 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
         username, password = form['username'], form['password']
 
         # Check user credentials
-        with services.sql.SqlService() as service:
+        with services.get_service() as service:
             service.authenticate(email=username, password=password)
 
         request.session.update({"username": username})

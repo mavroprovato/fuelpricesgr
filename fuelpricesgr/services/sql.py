@@ -1,3 +1,5 @@
+"""The SQL service
+"""
 from collections.abc import Iterable, Mapping
 import datetime
 import itertools
@@ -342,6 +344,8 @@ class SqlService(base.BaseService):
             return False
         try:
             argon2.PasswordHasher().verify(user.password, password)
+
+            return True
         except argon2.exceptions.VerifyMismatchError:
             return False
 

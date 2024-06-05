@@ -1,3 +1,5 @@
+"""Base module for services
+"""
 import abc
 from collections.abc import Iterable, Mapping
 import contextlib
@@ -33,7 +35,6 @@ class BaseService(abc.ABC):
     def close(self):
         """Release the resources.
         """
-        pass
 
     @abc.abstractmethod
     def status(self) -> Mapping[str, object]:
