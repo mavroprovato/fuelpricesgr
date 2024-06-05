@@ -8,8 +8,8 @@ those PDF files, extracts the data from them, inserts them in a database, and ex
 Data are available since:
 
 * 2012-04-27 for weekly country data
-* TODO for weekly prefecture data
-* TODO for daily country data
+* 2012-04-27 for weekly prefecture data
+* 2017-08-28 for daily country data
 * TODO for daily prefecture data
 
 ## Running the API

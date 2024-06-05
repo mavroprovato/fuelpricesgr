@@ -17,12 +17,13 @@ logger = logging.getLogger(__name__)
 
 # The fuel type regexes
 _FUEL_TYPE_REGEXES = {
-    enums.FuelType.UNLEADED_95: r'Αμόλ ?[υσ]βδ ?[ηθ] +9 ?5 +ο ?κ ?τ ?\.',
-    enums.FuelType.UNLEADED_100: r'Αμόλ[υσ] ?β ?δ[ηθ] 100 οκτ\.',
+    enums.FuelType.UNLEADED_95: r'Αμόλ ?[υσ]βδ ?[ηθ] +9 ?5 +ο ?κ ?[τη] ?\.',
+    enums.FuelType.UNLEADED_100: r'Αμόλ?[υσ] ?β ?δ ?[ηθ] 10 ?0 +ο ?κ ?[τη]\.',
     enums.FuelType.SUPER: r'Super',
-    enums.FuelType.DIESEL: r'Diesel +Κ ?ί ?ν ?[ηθ] ?[σς] ?[ηθ] ?[ςσ]',
-    enums.FuelType.DIESEL_HEATING: r'Dies ?e ?l +Θ ?[έζ] ?ρ ?μ ?α ?ν ?[σς] ?[ηθ] ?[ςσ] +(?:Κ ?α ?τ ?΄ ?ο ?ί ?κ ?ο ?ν)?',
-    enums.FuelType.GAS: r'[ΥΤ]γρα[έζ]ρ ?ιο +κί ?ν ?[ηθ] ?[σς] ?[ηθ][ςσ] +\( ?A ?ut ?o ?g ?a ?s ?\)',
+    enums.FuelType.DIESEL: r'Dies ?el +Κ ?ί ?ν ?[ηθ] ?[σςζ] ?[ηθ] ?[ςσ]',
+    enums.FuelType.DIESEL_HEATING: r'Dies ?e ?l +Θ ?[έζ] ?ρ ?μ ?α ?ν ?[σςζ] ?[ηθ] ?[ςσ] +'
+                                   r'(?:Κ ?α ?[τη] ?΄ ?ο ?ί ?κ ?ο ?ν)?',
+    enums.FuelType.GAS: r'[ΥΤ]γρα[έζ] ?ρ ?ιο +κί ?ν ?[ηθ] ?[σςζ] ?[ηθ][ςσ]\s+\( ?A ?ut ?o ?g ?a ?s ?\)',
 }
 
 # The fuel type values regexes
