@@ -74,12 +74,11 @@ def date_range(data_type: enums.DataType) -> Mapping[str, datetime.date | None]:
         return {'start_date': start_date, 'end_date': end_date}
 
 
-
 @router.get(
     path="/data/weekly/country",
     summary="Weekly country data",
     description="Return the weekly country data",
-    response_model=list[schemas.Weekly]
+    response_model=list[schemas.WeeklyCountry]
 )
 @caching.cache
 def weekly_country_data(
@@ -150,7 +149,7 @@ def daily_prefecture_data(
     path="/data/weekly/prefectures/{prefecture}",
     summary="Weekly prefecture data",
     description="Return the weekly prefecture data",
-    response_model=list[schemas.Weekly]
+    response_model=list[schemas.WeeklyPrefecture]
 )
 @caching.cache
 def weekly_prefecture_data(
