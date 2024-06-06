@@ -212,6 +212,8 @@ class Parser(abc.ABC):
         :return: The data.
         """
 
+
+class CountryParser:
     @staticmethod
     def extract_country_data(text: str, date: datetime.date, weekly: bool) -> list[dict[str, object]]:
         """Extract the country data.
@@ -237,6 +239,8 @@ class Parser(abc.ABC):
 
         return data
 
+
+class PrefectureParser:
     @staticmethod
     def extract_prefecture_data(text: str, date: datetime.date, weekly: bool) -> list[dict[str, object]]:
         """Extract the weekly prefecture data.
@@ -280,7 +284,7 @@ class Parser(abc.ABC):
         return data
 
 
-class WeeklyParser(Parser):
+class WeeklyParser(Parser, CountryParser, PrefectureParser):
     """Parser for weekly data files
     """
     def extract_data(self, text: str, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:
@@ -322,7 +326,7 @@ class WeeklyParser(Parser):
         return {enums.DataType.WEEKLY_COUNTRY: country_data, enums.DataType.WEEKLY_PREFECTURE: prefecture_data}
 
 
-class DailyCountryParser(Parser):
+class DailyCountryParser(Parser, CountryParser):
     """Parser for daily country data files
     """
     def extract_data(self, text: str, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:
@@ -335,7 +339,7 @@ class DailyCountryParser(Parser):
         return {enums.DataType.DAILY_COUNTRY: self.extract_country_data(text, date, False)}
 
 
-class DailyPrefectureParser(Parser):
+class DailyPrefectureParser(Parser, PrefectureParser):
     """Parser for daily prefecture data files
     """
     def extract_data(self, text: str, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:
