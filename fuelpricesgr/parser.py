@@ -179,7 +179,7 @@ class Parser(abc.ABC):
         return None
 
     @staticmethod
-    def get_number_of_stations(number_of_stations_text: str) -> int | None:
+    def parse_number_of_stations(number_of_stations_text: str) -> int | None:
         """Get the number of stations from the matched text.
 
         :param number_of_stations_text: The number of stations text.
@@ -191,7 +191,7 @@ class Parser(abc.ABC):
         return None
 
     @staticmethod
-    def get_price(price_text: str) -> decimal.Decimal | None:
+    def parse_price(price_text: str) -> decimal.Decimal | None:
         """Get the price from the matched text.
 
         :param price_text: The price text.
@@ -228,8 +228,8 @@ class Parser(abc.ABC):
             if match := re.search(regex, text):
                 data.append({
                     'fuel_type': fuel_type.value,
-                    'number_of_stations': Parser.get_number_of_stations(match.group('number_of_stations')),
-                    'price': Parser.get_price(match.group('price')),
+                    'number_of_stations': Parser.parse_number_of_stations(match.group('number_of_stations')),
+                    'price': Parser.parse_price(match.group('price')),
                 })
             elif data_should_exist(fuel_type, date):
                 logger.error("Could not find %s %s country data for date %s", fuel_type.description,
@@ -266,7 +266,7 @@ class Parser(abc.ABC):
             regex = r'Ν\s?Ο\s?Μ\s?Ο\s?[Σ΢]\s{1,2}' + _PREFECTURE_REGEXES[prefecture] + ''.join(regexes)
             if match := re.search(regex, text):
                 for index, fuel_type in enumerate(fuel_types):
-                    price = WeeklyParser.get_price(match.group(index + 1))
+                    price = WeeklyParser.parse_price(match.group(index + 1))
                     if price:
                         data.append({
                             'prefecture': prefecture.value,
