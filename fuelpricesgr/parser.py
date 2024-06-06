@@ -16,29 +16,6 @@ from fuelpricesgr import enums
 logger = logging.getLogger(__name__)
 
 
-def data_should_exist(fuel_type: enums.FuelType, date: datetime.date) -> bool:
-    """Returns true if the data should exist for the specified fuel type and date.
-
-    :param fuel_type: The fuel type.
-    :param date: The date.
-    :return: True if the data should exist.
-    """
-    if fuel_type == enums.FuelType.SUPER and date >= datetime.date(2022, 8, 5):
-        # Last date with SUPER data
-        return False
-    if fuel_type == enums.FuelType.GAS and date <= datetime.date(2012, 6, 1):
-        # There are no data for GAS for these old dates
-        return False
-    if (
-        fuel_type == enums.FuelType.DIESEL_HEATING and
-        not ((date.month >= 10 and date.day >= 15) or (date.month <= 4))
-    ):
-        # No DIESEL_HEATING for this period
-        return False
-
-    return True
-
-
 class Parser(abc.ABC):
     """Class to parse data files
     """
@@ -124,6 +101,29 @@ class Parser(abc.ABC):
 
         return None
 
+    @staticmethod
+    def data_should_exist(fuel_type: enums.FuelType, date: datetime.date) -> bool:
+        """Returns true if the data should exist for the specified fuel type and date.
+
+        :param fuel_type: The fuel type.
+        :param date: The date.
+        :return: True if the data should exist.
+        """
+        if fuel_type == enums.FuelType.SUPER and date >= datetime.date(2022, 8, 5):
+            # Last date with SUPER data
+            return False
+        if fuel_type == enums.FuelType.GAS and date <= datetime.date(2012, 6, 1):
+            # There are no data for GAS for these old dates
+            return False
+        if (
+                fuel_type == enums.FuelType.DIESEL_HEATING and
+                not ((date.month >= 10 and date.day >= 15) or (date.month <= 4))
+        ):
+            # No DIESEL_HEATING for this period
+            return False
+
+        return True
+
     @abc.abstractmethod
     def extract_data(self, text: str, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:
         """Extract weekly country and prefecture data.
@@ -175,7 +175,7 @@ class CountryParser:
                     'number_of_stations': Parser.parse_number_of_stations(match.group('number_of_stations')),
                     'price': Parser.parse_price(match.group('price')),
                 })
-            elif data_should_exist(fuel_type, date):
+            elif Parser.data_should_exist(fuel_type, date):
                 logger.error("Could not find %s %s country data for date %s", fuel_type.description,
                              "weekly" if weekly else "daily", date)
 
@@ -260,7 +260,7 @@ class PrefectureParser:
             regexes.insert(2, r' +((?:\d(?:,|\.)\d ?\d ?\d|-|\s+))')
             fuel_types.insert(2, enums.FuelType.SUPER)
         # Check if diesel heating is included
-        if data_should_exist(enums.FuelType.DIESEL_HEATING, date):
+        if Parser.data_should_exist(enums.FuelType.DIESEL_HEATING, date):
             regexes.append(r' +((?:\d, ?\d ?\d ?\d|-))')
             fuel_types.append(enums.FuelType.DIESEL_HEATING)
 
