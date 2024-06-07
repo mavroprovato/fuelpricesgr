@@ -261,7 +261,10 @@ class PrefectureParser:
             fuel_types.insert(2, enums.FuelType.SUPER)
         # Check if diesel heating is included
         if Parser.data_should_exist(enums.FuelType.DIESEL_HEATING, date):
-            regexes.append(r'(\d,\d\d\s?\d|-)') if date.year > 2020 else regexes.insert(-1, r'(\d,\d\d\s?\d|-)')
+            if date.year > 2020:
+                regexes.append(r'(\d,\d\d\s?\d|-)')
+            else:
+                regexes.insert(-1, r'(\d,\d\d\s?\d|-)')
             fuel_types.append(enums.FuelType.DIESEL_HEATING)
 
         data = []
