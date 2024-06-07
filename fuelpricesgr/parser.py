@@ -191,7 +191,7 @@ class PrefectureParser:
             r'Κ\s?Α\s?[ΙΗ]\s{1,2}'
             r'Α\s?Κ\s?Α\s?Ρ\s?Ν\s?Α\s?Ν\s?[ΙΗ]\s?Α\s?[Σ΢]',
         enums.Prefecture.ARGOLIS: r'Α\s?Ρ\s?Γ\s?Ο\s?Λ\s?[ΙΗ]\s?[ΔΓ]\s?Ο\s?[Σ΢]',
-        enums.Prefecture.ARKADIAS: r'Α\s?Ρ\s?Κ\s?Α\s?[ΔΓ][ΙΗ]Α\s?[Σ΢]',
+        enums.Prefecture.ARKADIAS: r'Α\s?Ρ\s?Κ\s?Α\s?[ΔΓ]\s?[ΙΗ]Α\s?[Σ΢]',
         enums.Prefecture.ARTA: r'Α\s?Ρ\s?[ΤΣ]\s?[ΗΖ]\s?[Σ΢]',
         enums.Prefecture.ACHAEA: r'Α\s?[ΧΥ]\s?Α\s?Ϊ\s?Α\s?[Σ΢]',
         enums.Prefecture.BOEOTIA: r'Β\s?Ο\s?[ΙΗ]\s?Ω\s?[ΤΣ]\s?[ΙΗ]\s?Α\s?[Σ΢]',
@@ -254,20 +254,20 @@ class PrefectureParser:
         fuel_types = [
             enums.FuelType.UNLEADED_95, enums.FuelType.UNLEADED_100, enums.FuelType.DIESEL, enums.FuelType.GAS
         ]
-        regexes = [r' +(\d,\d ?\d ?\d)', r' +((?:\d,\d ?\d ?\d|-))', r' +(\d,\d ?\d ?\d)', r' +((?:\d,\d ?\d ?\d|-))']
+        regexes = [r'(\d,\d\d\s?\d)', r'(\d,\d\d\s?\d|-)', r'(\d,\d\s?\d\s?\d)', r'(\d[,.]\s?\d\s?\d\s?\d|-)']
         # Check if super is included
         if re.search(r'Super', text):
-            regexes.insert(2, r' +((?:\d(?:,|\.)\d ?\d ?\d|-|\s+))')
+            regexes.insert(2, r'(\d[,.]\d\d\s?\d|-|\s?)')
             fuel_types.insert(2, enums.FuelType.SUPER)
         # Check if diesel heating is included
         if Parser.data_should_exist(enums.FuelType.DIESEL_HEATING, date):
-            regexes.append(r' +((?:\d, ?\d ?\d ?\d|-))')
+            regexes.append(r'(\d,\d\d\s?\d|-)') if date.year > 2020 else regexes.insert(-1, r'(\d,\d\d\s?\d|-)')
             fuel_types.append(enums.FuelType.DIESEL_HEATING)
 
         data = []
         for prefecture in enums.Prefecture:
             # Parse the prices
-            regex = r'Ν\s?Ο\s?Μ\s?Ο\s?[Σ΢]\s{1,2}' + cls.PREFECTURE_REGEXES[prefecture] + ''.join(regexes)
+            regex = r'Ν\s?Ο\s?Μ\s?Ο\s?[Σ΢]\s{1,2}' + cls.PREFECTURE_REGEXES[prefecture] + r'\s+' + r'\s+'.join(regexes)
             if match := re.search(regex, text):
                 for index, fuel_type in enumerate(fuel_types):
                     price = WeeklyParser.parse_price(match.group(index + 1))
