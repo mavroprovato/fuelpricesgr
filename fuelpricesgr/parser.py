@@ -46,8 +46,8 @@ class Parser(abc.ABC):
         logger.debug("Parsing file %s", file)
         try:
             reader = pypdf.PdfReader(file)
-        except pypdf.errors.PdfReadError:
-            logger.error("Could not extract text from file %s", file, exc_info=True)
+        except (pypdf.errors.PdfReadError, pypdf.errors.EmptyFileError):
+            logger.error("Could not extract text from file %s", file)
             return None
 
         text = ''.join(page.extract_text() for page in reader.pages)
