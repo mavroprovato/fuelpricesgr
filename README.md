@@ -42,3 +42,18 @@ uvicorn fuelpricesgr.main:app
 
 The API is now available at http://localhost:8000. The documentation for the API is available at
 http://localhost:8000/docs.
+
+
+## Running with docker
+
+In order to build the Docker image run
+
+```
+docker build -t mavroprovato/fuelpricesgr .
+```
+
+In order to run the docker image run
+
+```
+docker run -p 8000:8000 mavroprovato/fuelpricesgr
+```
