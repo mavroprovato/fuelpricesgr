@@ -104,9 +104,9 @@ def get_fetch_date_range(
     if start_date is None:
         dates = []
         for data_type in data_file_type.data_types:
-            _, end_date = service.date_range(data_type=data_type)
-            if end_date is not None:
-                dates.append(end_date)
+            _, data_end_date = service.date_range(data_type=data_type)
+            if data_end_date is not None:
+                dates.append(data_end_date)
         if dates:
             start_date = min(dates)
         else:
