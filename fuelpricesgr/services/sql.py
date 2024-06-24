@@ -31,6 +31,7 @@ class WeeklyCountry(Base):
     """The weekly country database model
     """
     __tablename__ = 'weekly_country'
+    __table_args__ = (sqlalchemy.UniqueConstraint('date', 'fuel_type'), )
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
     date = sqlalchemy.Column(sqlalchemy.Date, index=True)
@@ -43,9 +44,10 @@ class DailyCountry(Base):
     """The daily country database model
     """
     __tablename__ = 'daily_country'
+    __table_args__ = (sqlalchemy.UniqueConstraint('date', 'fuel_type'), )
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
-    date = sqlalchemy.Column(sqlalchemy.Date, index=True, nullable=False)
+    date = sqlalchemy.Column(sqlalchemy.Date, nullable=False)
     fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
     number_of_stations = sqlalchemy.Column(sqlalchemy.SmallInteger, nullable=False)
     price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
@@ -55,11 +57,12 @@ class DailyPrefecture(Base):
     """The daily prefecture database model
     """
     __tablename__ = 'daily_prefecture'
+    __table_args__ = (sqlalchemy.UniqueConstraint('date', 'prefecture', 'fuel_type'), )
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
-    date = sqlalchemy.Column(sqlalchemy.Date, index=True)
-    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
+    date = sqlalchemy.Column(sqlalchemy.Date, nullable=False)
     prefecture = sqlalchemy.Column(sqlalchemy.Enum(enums.Prefecture), nullable=False)
+    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
     price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
 
 
@@ -67,11 +70,12 @@ class WeeklyPrefecture(Base):
     """The weekly prefecture database model
     """
     __tablename__ = 'weekly_prefecture'
+    __table_args__ = (sqlalchemy.UniqueConstraint('date', 'prefecture', 'fuel_type'), )
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
-    date = sqlalchemy.Column(sqlalchemy.Date, index=True, nullable=False)
-    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
+    date = sqlalchemy.Column(sqlalchemy.Date, nullable=False)
     prefecture = sqlalchemy.Column(sqlalchemy.Enum(enums.Prefecture), nullable=False)
+    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
     price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
 
 
@@ -81,7 +85,7 @@ class User(Base):
     __tablename__ = 'users'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
-    email = sqlalchemy.Column(sqlalchemy.String(collation='NOCASE'), index=True)
+    email = sqlalchemy.Column(sqlalchemy.String(collation='NOCASE'), index=True, unique=True)
     password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     active = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=True)
     admin = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=False)
