@@ -8,7 +8,7 @@ import sqlalchemy.orm
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
-from fuelpricesgr import services
+from fuelpricesgr.services.storage import sql
 
 
 class BaseAdmin(sqladmin.ModelView):
@@ -27,7 +27,7 @@ class BaseAdmin(sqladmin.ModelView):
         return {attr: attr.key.replace('_', ' ').capitalize() for attr in sqlalchemy.inspect(self.model).attrs}
 
 
-class DailyCountryAdmin(BaseAdmin, model=services.sql.DailyCountry):
+class DailyCountryAdmin(BaseAdmin, model=sql.DailyCountry):
     """The daily country admin.
     """
     name = "Daily Country Data"
@@ -38,7 +38,7 @@ class DailyCountryAdmin(BaseAdmin, model=services.sql.DailyCountry):
     column_default_sort = [('date', True), ('fuel_type', False)]
 
 
-class DailyPrefectureAdmin(BaseAdmin, model=services.sql.DailyPrefecture):
+class DailyPrefectureAdmin(BaseAdmin, model=sql.DailyPrefecture):
     """The daily country admin.
     """
     name = "Daily Prefecture Data"
@@ -52,7 +52,7 @@ class DailyPrefectureAdmin(BaseAdmin, model=services.sql.DailyPrefecture):
     column_default_sort = [('date', True), ('prefecture', False), ('fuel_type', False)]
 
 
-class WeeklyCountryAdmin(BaseAdmin, model=services.sql.WeeklyCountry):
+class WeeklyCountryAdmin(BaseAdmin, model=sql.WeeklyCountry):
     """The daily country admin.
     """
     name = "Weekly Country Data"
@@ -63,7 +63,7 @@ class WeeklyCountryAdmin(BaseAdmin, model=services.sql.WeeklyCountry):
     column_default_sort = [('date', True), ('fuel_type', False)]
 
 
-class WeeklyPrefectureAdmin(BaseAdmin, model=services.sql.WeeklyPrefecture):
+class WeeklyPrefectureAdmin(BaseAdmin, model=sql.WeeklyPrefecture):
     """The daily country admin.
     """
     name = "Weekly Prefecture Data"
@@ -77,7 +77,7 @@ class WeeklyPrefectureAdmin(BaseAdmin, model=services.sql.WeeklyPrefecture):
     column_default_sort = [('date', True), ('prefecture', False), ('fuel_type', True)]
 
 
-class UserAdmin(BaseAdmin, model=services.sql.User):
+class UserAdmin(BaseAdmin, model=sql.User):
     """The user admin.
     """
     column_searchable_list = ('email', )

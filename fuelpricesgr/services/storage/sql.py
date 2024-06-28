@@ -1,4 +1,4 @@
-"""The SQL service
+"""The SQLAlchemy service
 """
 from collections.abc import Iterable, Mapping
 import datetime
@@ -13,7 +13,7 @@ import sqlalchemy.exc
 import sqlalchemy.orm
 
 from fuelpricesgr import enums, settings
-from . import base
+from .base import BaseService
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -96,7 +96,7 @@ class User(Base):
     last_login = sqlalchemy.Column(sqlalchemy.DateTime)
 
 
-class SqlService(base.BaseService):
+class SqlService(BaseService):
     """Service implementation based on SQL Alchemy.
     """
     def __init__(self):
@@ -141,8 +141,19 @@ class SqlService(base.BaseService):
         :param data_type: The data type.
         :return: The date range as a tuple. The first element is the minimum date and the second the maximum.
         """
+        model = None
+        match data_type:
+            case enums.DataType.WEEKLY_COUNTRY:
+                model = WeeklyCountry
+            case enums.DataType.WEEKLY_PREFECTURE:
+                model = WeeklyPrefecture
+            case enums.DataType.DAILY_COUNTRY:
+                model = DailyCountry
+            case enums.DataType.DAILY_PREFECTURE:
+                model = DailyPrefecture
+
         return self.db.query(
-            sqlalchemy.func.min(data_type.model().date), sqlalchemy.func.max(data_type.model().date)
+            sqlalchemy.func.min(model.date), sqlalchemy.func.max(model.date)
         ).one()
 
     def daily_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:

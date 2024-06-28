@@ -19,7 +19,7 @@ router = fastapi.APIRouter()
 def status() -> Mapping[str, object]:
     """Return the status of the application.
     """
-    with services.get_service() as service:
+    with services.storage.get_service() as service:
         return service.status()
 
 
@@ -64,11 +64,7 @@ def date_range(data_type: enums.DataType) -> Mapping[str, datetime.date | None]:
     :param data_type: The data type.
     :return: The available data date range for a data type.
     """
-    model = data_type.model()
-    if not model:
-        raise fastapi.HTTPException(status_code=404, detail="Not found")
-
-    with services.get_service() as service:
+    with services.storage.get_service() as service:
         start_date, end_date = service.date_range(data_type=data_type)
 
         return {'start_date': start_date, 'end_date': end_date}
@@ -141,7 +137,7 @@ def daily_prefecture_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    with services.get_service() as service:
+    with services.storage.get_service() as service:
         return service.daily_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date)
 
 

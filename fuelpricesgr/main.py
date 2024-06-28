@@ -34,7 +34,9 @@ app = fastapi.FastAPI(
 app.include_router(views.api.router)
 
 admin = sqladmin.Admin(
-    app, services.sql.engine, authentication_backend=views.admin.AuthenticationBackend(secret_key=settings.SECRET_KEY))
+    app, services.storage.sql.engine,
+    authentication_backend=views.admin.AuthenticationBackend(secret_key=settings.SECRET_KEY)
+)
 admin.add_view(views.admin.DailyCountryAdmin)
 admin.add_view(views.admin.DailyPrefectureAdmin)
 admin.add_view(views.admin.WeeklyCountryAdmin)

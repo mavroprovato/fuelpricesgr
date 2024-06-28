@@ -11,8 +11,7 @@ from fuelpricesgr import enums
 def init_service():
     """Initialize the service.
     """
-    from .sql import Base, engine
-    Base.metadata.create_all(engine)
+    pass
 
 
 @contextlib.contextmanager
@@ -21,8 +20,8 @@ def get_service() -> 'BaseService':
 
     :return: The service.
     """
-    from .sql import SqlService
-    service = SqlService()
+    from .firebase import FirebaseService
+    service = FirebaseService()
     try:
         yield service
     finally:

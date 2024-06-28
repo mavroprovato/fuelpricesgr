@@ -60,7 +60,7 @@ def parse_arguments() -> argparse.Namespace:
     return arg_parser.parse_args()
 
 
-def import_data(service: services.base.BaseService, args: argparse.Namespace) -> bool:
+def import_data(service: services.storage.BaseService, args: argparse.Namespace) -> bool:
     """Import data based on the command line arguments.
 
     :param service: The database service.
@@ -87,7 +87,7 @@ def import_data(service: services.base.BaseService, args: argparse.Namespace) ->
 
 
 def get_fetch_date_range(
-        service: services.base.BaseService, args: argparse.Namespace, data_file_type: enums.DataFileType
+        service: services.storage.BaseService, args: argparse.Namespace, data_file_type: enums.DataFileType
 ) -> tuple[datetime.date, datetime.date]:
     """Get the date range for which to fetch data, based on the passed arguments. If the start date is not provided,
     then the last available date for the data file type is set as the start date. If there are no available data, then
@@ -152,8 +152,8 @@ def main():
     )
 
     # Import data
-    services.init_service()
-    with services.get_service() as service:
+    services.storage.init_service()
+    with services.storage.get_service() as service:
         error = import_data(service=service, args=args)
 
     # Clear cache
