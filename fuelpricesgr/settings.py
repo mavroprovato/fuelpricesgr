@@ -25,6 +25,8 @@ CORS_ALLOW_ORIGINS = os.getenv('CORS_ALLOW_ORIGINS', 'http://127.0.0.1:8080,http
 SECRET_KEY = os.getenv('SECRET_KEY', ''.join(
     secrets.choice(string.ascii_letters + string.punctuation) for _ in range(64)))
 
+SQL_ALCHEMY_URL = os.getenv('SQL_ALCHEMY_URL', f"sqlite:///{(DATA_PATH / 'db.sqlite')}")
+
 # The maximum number of days to return from the API
 MAX_DAYS = 365
 
