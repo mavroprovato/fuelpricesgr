@@ -93,8 +93,8 @@ class User(Base):
     last_login = sqlalchemy.Column(sqlalchemy.DateTime)
 
 
-class SqlService(base.BaseService):
-    """Service implementation based on SQL Alchemy.
+class SqlAlchemyStorage(base.BaseStorage):
+    """Storage implementation based on SQL Alchemy.
     """
     def __init__(self):
         """Class constructor.

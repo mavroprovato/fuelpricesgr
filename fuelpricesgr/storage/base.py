@@ -1,4 +1,4 @@
-"""Base module for services
+"""Base module for storage
 """
 import abc
 from collections.abc import Iterable, Mapping
@@ -11,25 +11,25 @@ from fuelpricesgr import enums
 def init_service():
     """Initialize the service.
     """
-    from .sql import Base, engine
+    from .sql_alchemy import Base, engine
     Base.metadata.create_all(engine)
 
 
 @contextlib.contextmanager
-def get_service() -> 'BaseService':
+def get_storage() -> 'BaseStorage':
     """Get the service.
 
     :return: The service.
     """
-    from .sql import SqlService
-    service = SqlService()
+    from .sql_alchemy import SqlAlchemyStorage
+    service = SqlAlchemyStorage()
     try:
         yield service
     finally:
         service.close()
 
 
-class BaseService(abc.ABC):
+class BaseStorage(abc.ABC):
     """The abstract base class for the service.
     """
     def close(self):
