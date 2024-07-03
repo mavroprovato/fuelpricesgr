@@ -19,9 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Initialize SQL Alchemy
 os.makedirs(settings.DATA_PATH, exist_ok=True)
-engine = sqlalchemy.create_engine(
-    settings.SQL_ALCHEMY_URL, connect_args={"check_same_thread": False}, echo=settings.SHOW_SQL
-)
+engine = sqlalchemy.create_engine(settings.SQL_ALCHEMY_URL, echo=settings.SHOW_SQL)
 SessionLocal = sqlalchemy.orm.sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = sqlalchemy.orm.declarative_base()
 
@@ -84,7 +82,7 @@ class User(Base):
     __tablename__ = 'users'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
-    email = sqlalchemy.Column(sqlalchemy.String(collation='NOCASE'), index=True, unique=True)
+    email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True)
     password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     active = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=True)
     admin = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=False)
@@ -116,10 +114,7 @@ class SqlService(base.BaseService):
         # Check the database status
         db_status = enums.ApplicationStatus.OK
         try:
-            result = self.db.execute(sqlalchemy.sql.text("SELECT COUNT(*) FROM sqlite_master"))
-            if next(result)[0] == 0:
-                logger.error("Database tables do not exist")
-                db_status = enums.ApplicationStatus.ERROR
+            self.db.execute(sqlalchemy.sql.text("SELECT 1"))
         except sqlalchemy.exc.OperationalError as ex:
             logger.error("Could not connect to the database", exc_info=ex)
             db_status = enums.ApplicationStatus.ERROR

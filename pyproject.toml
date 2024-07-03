@@ -20,6 +20,7 @@ sqladmin = "^0.18.0"
 SQLAlchemy = "^2.0.3"
 uvicorn = "^0.30.0"
 environs = "^11.0.0"
+psycopg2 = "^2.9.9"
 
 [tool.poetry.dev-dependencies]
 coverage = "^7.1.0"
