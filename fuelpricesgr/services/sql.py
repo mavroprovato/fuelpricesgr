@@ -126,12 +126,13 @@ class SqlService(base.BaseService):
             db_status = enums.ApplicationStatus.ERROR
         # Check the cache status
         cache_status = enums.ApplicationStatus.OK
-        try:
-            conn = redis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
-            conn.ping()
-        except redis.exceptions.RedisError as ex:
-            logger.error("Could not connect to the cache", exc_info=ex)
-            cache_status = enums.ApplicationStatus.ERROR
+        if settings.CACHING:
+            try:
+                conn = redis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
+                conn.ping()
+            except redis.exceptions.RedisError as ex:
+                logger.error("Could not connect to the cache", exc_info=ex)
+                cache_status = enums.ApplicationStatus.ERROR
 
         return {'db_status': db_status, 'cache_status': cache_status}
 

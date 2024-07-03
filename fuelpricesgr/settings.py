@@ -35,7 +35,9 @@ try:
     CACHING = os.getenv('CACHING', 'False').lower() == 'true'
 except ValueError:
     CACHING = False
-REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost')
+
+if CACHING:
+    REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost')
 
 # The base URL from which to fetch the PDF data
 FETCH_URL = 'http://www.fuelprices.gr'

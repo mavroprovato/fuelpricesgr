@@ -8,7 +8,8 @@ import redis
 
 from fuelpricesgr import settings
 
-redis_conn = redis.from_url(settings.REDIS_URL, encoding='utf8')
+if settings.CACHING:
+    redis_conn = redis.from_url(settings.REDIS_URL, encoding='utf8')
 
 # The cache prefix
 CACHE_PREFIX = 'fuelpricesgr:'
@@ -50,8 +51,9 @@ def cache(func):
 def clear_cache():
     """Deletes all the cache keys.
     """
-    try:
-        for key in redis_conn.scan_iter(CACHE_PREFIX + "*"):
-            redis_conn.delete(key)
-    except redis.ConnectionError:
-        pass
+    if settings.CACHING:
+        try:
+            for key in redis_conn.scan_iter(CACHE_PREFIX + "*"):
+                redis_conn.delete(key)
+        except redis.ConnectionError:
+            pass
