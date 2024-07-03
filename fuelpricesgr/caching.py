@@ -47,14 +47,14 @@ def cache(func):
         :param kwargs: The keyword arguments.
         :return: Returns the function result.
         """
-        cache_key = hashlib.md5(str(f"{func.__module__}:{func.__name__}:{args}:{kwargs}").encode()).hexdigest()
+        cache_key = f"{func.__module__}:{func.__name__}:{hashlib.md5(str(f'{args}:{kwargs}').encode()).hexdigest()}"
         cache_value = backend.get(cache_key)
 
         if cache_value:
             return pickle.loads(cache_value)
 
         result = func(*args, **kwargs)
-        backend.set(cache_key, pickle.dumps(result))
+        backend.set(key=cache_key, value=pickle.dumps(result), timeout=settings.CACHE['TIMEOUT'])
 
         return result
 

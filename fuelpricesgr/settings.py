@@ -28,7 +28,8 @@ MAX_DAYS = 365
 # Set the caching parameters
 CACHE = {
     'BACKEND': env('CACHE_CLASS', 'cachelib.redis.RedisCache'),
-    'PARAMETERS': env.dict('CACHE_PARAMETERS', {})
+    'PARAMETERS': env.dict('CACHE_PARAMETERS', {}),
+    'TIMEOUT': env.int('CACHE_TIMEOUT', 3600)
 }
 
 # The timeout for fetching data in seconds
