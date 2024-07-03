@@ -3,11 +3,15 @@
 import functools
 import hashlib
 import importlib
+import logging
 import pickle
 
 import cachelib
 
 from fuelpricesgr import enums, settings
+
+# The module logger
+logger = logging.getLogger(__name__)
 
 
 def create_backend() -> cachelib.base.BaseCache:
@@ -29,8 +33,15 @@ def status() -> enums.ApplicationStatus:
 
     :return: The cache status.
     """
-    # TODO: implement
-    return enums.ApplicationStatus.OK
+    cache_status = enums.ApplicationStatus.OK
+    if settings.CACHE['BACKEND'] == 'cachelib.redis.RedisCache':
+        try:
+            backend._read_client.ping()
+        except Exception as ex:
+            logger.exception(ex)
+            cache_status = enums.ApplicationStatus.ERROR
+
+    return cache_status
 
 
 def cache(func):
