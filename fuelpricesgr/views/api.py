@@ -20,7 +20,7 @@ def status() -> Mapping[str, object]:
     """Return the status of the application.
     """
     with services.get_service() as service:
-        return service.status()
+        return {'db_status': service.status(), 'cache_status': caching.status()}
 
 
 @router.get(

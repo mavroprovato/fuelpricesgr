@@ -31,13 +31,15 @@ SQL_ALCHEMY_URL = os.getenv('SQL_ALCHEMY_URL', f"sqlite:///{(DATA_PATH / 'db.sql
 MAX_DAYS = 365
 
 # Set the caching parameters
-try:
-    CACHING = os.getenv('CACHING', 'False').lower() == 'true'
-except ValueError:
-    CACHING = False
-
-if CACHING:
-    REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost')
+CACHE = {
+    'BACKEND': 'cachelib.redis.RedisCache',
+    'PARAMETERS': {
+        'host': 'localhost',
+        'port': 6379,
+        'db': 0,
+        'key_prefix': 'fuelpricesgr:'
+    }
+}
 
 # The timeout for fetching data in seconds
 REQUESTS_TIMEOUT = 5

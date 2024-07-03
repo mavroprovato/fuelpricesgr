@@ -7,7 +7,6 @@ import logging
 import os
 
 import argon2
-import redis
 import sqlalchemy
 import sqlalchemy.exc
 import sqlalchemy.orm
@@ -109,7 +108,7 @@ class SqlService(base.BaseService):
         """
         self.db.close()
 
-    def status(self) -> Mapping[str, object]:
+    def status(self) -> enums.ApplicationStatus:
         """Return the status of the database storages.
 
         :return: The status of the application storages.
@@ -124,17 +123,8 @@ class SqlService(base.BaseService):
         except sqlalchemy.exc.OperationalError as ex:
             logger.error("Could not connect to the database", exc_info=ex)
             db_status = enums.ApplicationStatus.ERROR
-        # Check the cache status
-        cache_status = enums.ApplicationStatus.OK
-        if settings.CACHING:
-            try:
-                conn = redis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
-                conn.ping()
-            except redis.exceptions.RedisError as ex:
-                logger.error("Could not connect to the cache", exc_info=ex)
-                cache_status = enums.ApplicationStatus.ERROR
 
-        return {'db_status': db_status, 'cache_status': cache_status}
+        return db_status
 
     def date_range(self, data_type: enums.DataType) -> (datetime.date | None, datetime.date | None):
         """Return the date range for a data type.
