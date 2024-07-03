@@ -2,6 +2,7 @@
 """
 import functools
 import hashlib
+import importlib
 import pickle
 
 import cachelib
@@ -14,7 +15,10 @@ def create_backend() -> cachelib.base.BaseCache:
 
     :return: The cache backend.
     """
-    return cachelib.redis.RedisCache(**settings.CACHE['PARAMETERS'])
+    cache_module = importlib.import_module('.'.join(settings.CACHE['BACKEND'].split('.')[:-1]))
+    cache_class = getattr(cache_module, settings.CACHE['BACKEND'].split('.')[-1])
+
+    return cache_class(**settings.CACHE['PARAMETERS'])
 
 
 backend = create_backend()
