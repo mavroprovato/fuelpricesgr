@@ -32,9 +32,6 @@ CACHE = {
     'TIMEOUT': env.int('CACHE_TIMEOUT', 3600)
 }
 
-# The timeout for fetching data in seconds
-REQUESTS_TIMEOUT = 5
-
 # AWS configuration
 AWS_REGION = env('AWS_REGION', None)
 

@@ -15,6 +15,9 @@ logger = logging.getLogger(__name__)
 class Fetcher:
     """Class for fetching data files
     """
+    # The timeout for fetching data in seconds
+    REQUESTS_TIMEOUT = 5
+
     def __init__(self, data_file_type: enums.DataFileType):
         """Create the data fetcher.
 
@@ -38,7 +41,7 @@ class Fetcher:
             file_url = self.data_file_type.link(date)
             logger.debug("Downloading file from %s", file_url)
             try:
-                response = requests.get(file_url, stream=True, timeout=settings.REQUESTS_TIMEOUT)
+                response = requests.get(file_url, stream=True, timeout=self.REQUESTS_TIMEOUT)
                 response.raise_for_status()
             except requests.RequestException as ex:
                 logger.error("Could not download URL for date %s", date.isoformat(), exc_info=ex)
