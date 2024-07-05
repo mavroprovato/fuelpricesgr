@@ -24,9 +24,6 @@ SHOW_SQL = env.bool('SHOW_SQL', False)
 # The SQL Alchemy URL
 SQL_ALCHEMY_URL = env('SQL_ALCHEMY_URL', f"sqlite:///{(DATA_PATH / 'db.sqlite')}")
 
-# The maximum number of days to return from the API
-MAX_DAYS = 365
-
 # Set the caching parameters
 CACHE = {
     'BACKEND': env('CACHE_CLASS', 'cachelib.redis.RedisCache'),
