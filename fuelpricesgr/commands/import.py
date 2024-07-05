@@ -1,7 +1,7 @@
 """Command to import data into the database.
 """
 import argparse
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 import datetime
 import io
 import logging
@@ -13,10 +13,11 @@ from fuelpricesgr import caching, fetcher, enums, mail, storage, settings
 logger = logging.getLogger(__name__)
 
 # The minimum file type dates
-_MIN_FILE_TYPE_DATES = {
-    enums.DataFileType.WEEKLY: datetime.date(2012, 4, 27),
-    enums.DataFileType.DAILY_COUNTRY: datetime.date(2017, 3, 14),
-    enums.DataFileType.DAILY_PREFECTURE: datetime.date(2017, 3, 14),
+_MIN_FILE_TYPE_DATES: Mapping[enums.DataType, datetime.date] = {
+    enums.DataType.WEEKLY_COUNTRY: datetime.date(2012, 4, 27),
+    enums.DataType.WEEKLY_PREFECTURE: datetime.date(2012, 4, 27),
+    enums.DataType.DAILY_COUNTRY: datetime.date(2017, 3, 14),
+    enums.DataType.DAILY_PREFECTURE: datetime.date(2017, 3, 14),
 }
 
 
@@ -72,13 +73,13 @@ def import_data(s: storage.base.BaseStorage, args: argparse.Namespace) -> bool:
         data_file_types = enums.DataFileType if args.types is None else args.types
         for data_file_type in data_file_types:
             data_fetcher = fetcher.Fetcher(data_file_type=data_file_type)
-            start_date, end_date = get_fetch_date_range(s=s, args=args, data_file_type=data_file_type)
-            logger.info("Fetching %s data between %s and %s", data_file_type.description, start_date, end_date)
-            for date in data_file_type.dates(start_date=start_date, end_date=end_date):
-                if args.update or not s.data_exists(data_file_type=data_file_type, date=date):
-                    file_data = data_fetcher.data(date=date, skip_cache=args.skip_cache)
-                    for data_type, fuel_type_data in file_data.items():
-                        s.update_data(date=date, data_type=data_type, data=fuel_type_data)
+            for data_type in data_file_type.data_types:
+                start_date, end_date = get_fetch_date_range(s=s, args=args, data_type=data_type)
+                logger.info("Fetching %s data between %s and %s", data_file_type.description, start_date, end_date)
+                for date in data_file_type.dates(start_date=start_date, end_date=end_date):
+                    if args.update or not s.data_exists(data_file_type=data_file_type, date=date):
+                        file_data = data_fetcher.data(date=date, skip_cache=args.skip_cache)
+                        s.update_data(date=date, data_type=data_type, data=file_data.get(data_type, []))
     except Exception as ex:
         logger.exception("Error while importing data", exc_info=ex)
         error = True
@@ -87,7 +88,7 @@ def import_data(s: storage.base.BaseStorage, args: argparse.Namespace) -> bool:
 
 
 def get_fetch_date_range(
-        s: storage.base.BaseStorage, args: argparse.Namespace, data_file_type: enums.DataFileType
+        s: storage.base.BaseStorage, args: argparse.Namespace, data_type: enums.DataType
 ) -> tuple[datetime.date, datetime.date]:
     """Get the date range for which to fetch data, based on the passed arguments. If the start date is not provided,
     then the last available date for the data file type is set as the start date. If there are no available data, then
@@ -96,21 +97,15 @@ def get_fetch_date_range(
 
     :param s: The storage service.
     :param args: The command line arguments.
-    :param data_file_type: The data file type.
+    :param data_type: The data type.
     :return: The start and a
     """
     start_date, end_date = args.start_date, args.end_date
 
     if start_date is None:
-        dates = []
-        for data_type in data_file_type.data_types:
-            _, data_end_date = s.date_range(data_type=data_type)
-            if data_end_date is not None:
-                dates.append(data_end_date)
-        if dates:
-            start_date = min(dates)
-        else:
-            start_date = _MIN_FILE_TYPE_DATES[data_file_type]
+        _, start_date = s.date_range(data_type=data_type)
+        if not start_date:
+            start_date = _MIN_FILE_TYPE_DATES[data_type]
 
     if end_date is None:
         end_date = datetime.date.today()
