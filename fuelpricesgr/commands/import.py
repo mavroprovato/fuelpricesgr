@@ -64,7 +64,7 @@ def parse_arguments() -> argparse.Namespace:
 def import_data(s: storage.base.BaseStorage, args: argparse.Namespace) -> bool:
     """Import data based on the command line arguments.
 
-    :param s: The storage service.
+    :param s: The storage.
     :param args: The command line arguments.
     :return: True if an error occurred, False otherwise.
     """
@@ -95,7 +95,7 @@ def get_fetch_date_range(
     the first available data date on the site is set as the start date. If the end date is not provided, then today's
     date is set as the end date.
 
-    :param s: The storage service.
+    :param s: The storage.
     :param args: The command line arguments.
     :param data_type: The data type.
     :return: The start and a
@@ -147,7 +147,7 @@ def main():
     )
 
     # Import data
-    storage.init_service()
+    storage.init_storage()
     with storage.get_storage() as s:
         error = import_data(s=s, args=args)
 

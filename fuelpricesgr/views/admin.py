@@ -104,8 +104,8 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
         username, password = form['username'], form['password']
 
         # Check user credentials
-        with storage.get_service() as service:
-            service.authenticate(email=username, password=password)
+        with storage.get_storage() as s:
+            s.authenticate(email=username, password=password)
 
         request.session.update({"username": username})
 
@@ -131,8 +131,8 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
             return RedirectResponse(request.url_for("admin:login"), status_code=302)
 
         # Check user is active
-        with storage.get_service() as service:
-            user = service.get_user(email=username)
+        with storage.get_storage() as s:
+            user = s.get_user(email=username)
             if user is None or not user.active or not user.admin:
                 return RedirectResponse(request.url_for("admin:login"), status_code=302)
 

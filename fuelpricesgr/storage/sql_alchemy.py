@@ -1,4 +1,4 @@
-"""The SQL service
+"""The SQL Alchemy storage
 """
 from collections.abc import Iterable, Mapping
 import datetime

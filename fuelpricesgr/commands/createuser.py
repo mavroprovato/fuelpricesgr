@@ -24,8 +24,8 @@ def create_user(args: argparse.Namespace):
 
     :param args: The command line arguments.
     """
-    with storage.get_service() as service:
-        user_exists = service.user_exists(email=args.email)
+    with storage.get_storage() as s:
+        user_exists = s.user_exists(email=args.email)
         if user_exists:
             raise ValueError(f"User with email {args.email} already exists")
 
@@ -36,7 +36,7 @@ def create_user(args: argparse.Namespace):
             raise ValueError("Passwords do not match")
 
         # Create user
-        service.create_user(email=args.email, password=password1, admin=args.admin)
+        s.create_user(email=args.email, password=password1, admin=args.admin)
 
 
 def main():

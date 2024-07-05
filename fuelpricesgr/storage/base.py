@@ -8,8 +8,8 @@ import datetime
 from fuelpricesgr import enums
 
 
-def init_service():
-    """Initialize the service.
+def init_storage():
+    """Initialize the storage.
     """
     from .sql_alchemy import Base, engine
     Base.metadata.create_all(engine)
@@ -17,23 +17,23 @@ def init_service():
 
 @contextlib.contextmanager
 def get_storage() -> 'BaseStorage':
-    """Get the service.
+    """Get the storage.
 
-    :return: The service.
+    :return: The storage.
     """
     from .sql_alchemy import SqlAlchemyStorage
-    service = SqlAlchemyStorage()
+    s = SqlAlchemyStorage()
     try:
-        yield service
+        yield s
     finally:
-        service.close()
+        s.close()
 
 
 class BaseStorage(abc.ABC):
-    """The abstract base class for the service.
+    """The abstract base class for the storage.
     """
     def close(self):
-        """Release the resources.
+        """Release the resources. By default, do nothing
         """
 
     @abc.abstractmethod

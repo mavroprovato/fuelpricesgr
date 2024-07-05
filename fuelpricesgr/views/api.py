@@ -23,8 +23,8 @@ MAX_DAYS = 365
 def status() -> Mapping[str, object]:
     """Return the status of the application.
     """
-    with storage.get_storage() as service:
-        return {'db_status': service.status(), 'cache_status': caching.status()}
+    with storage.get_storage() as s:
+        return {'db_status': s.status(), 'cache_status': caching.status()}
 
 
 @router.get(
