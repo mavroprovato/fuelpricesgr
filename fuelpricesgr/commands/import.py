@@ -60,10 +60,10 @@ def parse_arguments() -> argparse.Namespace:
     return arg_parser.parse_args()
 
 
-def import_data(service: storage.base.BaseService, args: argparse.Namespace) -> bool:
+def import_data(s: storage.base.BaseStorage, args: argparse.Namespace) -> bool:
     """Import data based on the command line arguments.
 
-    :param service: The database service.
+    :param s: The storage service.
     :param args: The command line arguments.
     :return: True if an error occurred, False otherwise.
     """
@@ -72,13 +72,13 @@ def import_data(service: storage.base.BaseService, args: argparse.Namespace) -> 
         data_file_types = enums.DataFileType if args.types is None else args.types
         for data_file_type in data_file_types:
             data_fetcher = fetcher.Fetcher(data_file_type=data_file_type)
-            start_date, end_date = get_fetch_date_range(service=service, args=args, data_file_type=data_file_type)
+            start_date, end_date = get_fetch_date_range(s=s, args=args, data_file_type=data_file_type)
             logger.info("Fetching %s data between %s and %s", data_file_type.description, start_date, end_date)
             for date in data_file_type.dates(start_date=start_date, end_date=end_date):
-                if args.update or not service.data_exists(data_file_type=data_file_type, date=date):
+                if args.update or not s.data_exists(data_file_type=data_file_type, date=date):
                     file_data = data_fetcher.data(date=date, skip_cache=args.skip_cache)
                     for data_type, fuel_type_data in file_data.items():
-                        service.update_data(date=date, data_type=data_type, data=fuel_type_data)
+                        s.update_data(date=date, data_type=data_type, data=fuel_type_data)
     except Exception as ex:
         logger.exception("Error while importing data", exc_info=ex)
         error = True
@@ -87,14 +87,14 @@ def import_data(service: storage.base.BaseService, args: argparse.Namespace) -> 
 
 
 def get_fetch_date_range(
-        service: storage.base.BaseService, args: argparse.Namespace, data_file_type: enums.DataFileType
+        s: storage.base.BaseStorage, args: argparse.Namespace, data_file_type: enums.DataFileType
 ) -> tuple[datetime.date, datetime.date]:
     """Get the date range for which to fetch data, based on the passed arguments. If the start date is not provided,
     then the last available date for the data file type is set as the start date. If there are no available data, then
     the first available data date on the site is set as the start date. If the end date is not provided, then today's
     date is set as the end date.
 
-    :param service: The service.
+    :param s: The storage service.
     :param args: The command line arguments.
     :param data_file_type: The data file type.
     :return: The start and a
@@ -104,7 +104,7 @@ def get_fetch_date_range(
     if start_date is None:
         dates = []
         for data_type in data_file_type.data_types:
-            _, data_end_date = service.date_range(data_type=data_type)
+            _, data_end_date = s.date_range(data_type=data_type)
             if data_end_date is not None:
                 dates.append(data_end_date)
         if dates:
@@ -153,8 +153,8 @@ def main():
 
     # Import data
     storage.init_service()
-    with storage.get_service() as service:
-        error = import_data(service=service, args=args)
+    with storage.get_storage() as s:
+        error = import_data(s=s, args=args)
 
     # Clear cache
     caching.clear_cache()
