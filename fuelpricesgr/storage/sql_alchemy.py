@@ -344,3 +344,10 @@ class SqlAlchemyStorage(base.BaseStorage):
         :return: The user information.
         """
         return self.db.scalar(sqlalchemy.select(User).where(User.email == email))
+
+    def get_admin_user_emails(self) -> list[str]:
+        """Get the emails of the admin users.
+
+        :return: The emails of the admin users as a list of strings.
+        """
+        return [str(row.email) for row in self.db.query(User).filter(User.admin)]

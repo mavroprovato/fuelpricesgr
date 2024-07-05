@@ -156,3 +156,11 @@ class BaseStorage(abc.ABC):
         :return: The user information.
         """
         raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_admin_user_emails(self) -> list[str]:
+        """Get the emails of the admin users.
+
+        :return: The emails of the admin users as a list of strings.
+        """
+        raise NotImplementedError()

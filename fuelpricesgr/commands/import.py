@@ -128,9 +128,7 @@ def send_mail(log_stream: io.StringIO, error: bool):
         </html>
     '''
     mail_sender = mail.MailSender()
-    mail_sender.send(
-        to_recipients=[settings.MAIL_RECIPIENT], subject='[fuelpricesgr] Fetching data completed',
-        html_content=content)
+    mail_sender.send(subject='[fuelpricesgr] Fetching data completed', html_content=content)
 
 
 def main():
@@ -155,7 +153,7 @@ def main():
     caching.clear_cache()
 
     # Send mail
-    if args.send_mail and settings.MAIL_RECIPIENT:
+    if args.send_mail:
         send_mail(log_stream=log_stream, error=error)
 
 

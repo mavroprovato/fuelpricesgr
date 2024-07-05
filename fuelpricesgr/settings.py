@@ -36,4 +36,3 @@ AWS_REGION = env('AWS_REGION', None)
 
 # Mail configuration
 MAIL_SENDER = env('MAIL_SENDER', None)
-MAIL_RECIPIENT = env('MAIL_RECIPIENT', None)
