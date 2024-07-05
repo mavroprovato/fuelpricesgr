@@ -105,7 +105,8 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
 
         # Check user credentials
         with storage.get_storage() as s:
-            s.authenticate(email=username, password=password)
+            if not s.authenticate(email=username, password=password):
+                return False
 
         request.session.update({"username": username})
 
@@ -118,6 +119,7 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
         :return: True if the logout attempt was successful.
         """
         request.session.clear()
+
         return True
 
     async def authenticate(self, request: Request) -> RedirectResponse | bool:

@@ -129,15 +129,6 @@ class BaseStorage(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def user_exists(self, email: str) -> bool:
-        """Check if a user exists.
-
-        :param email: The user email.
-        :return: True if the user exists, False otherwise.
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
     def create_user(self, email: str, password: str, admin: bool = False):
         """Create a user.
 

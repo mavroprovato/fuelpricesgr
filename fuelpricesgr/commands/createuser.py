@@ -12,8 +12,8 @@ def parse_arguments() -> argparse.Namespace:
 
     :return:
     """
-    parser = argparse.ArgumentParser(description='Create a user.')
-    parser.add_argument('--admin', default=False, action="store_true", help="Set the user as an administrator.")
+    parser = argparse.ArgumentParser(description='Create a user')
+    parser.add_argument('--admin', default=False, action="store_true", help="Set the user as an administrator")
     parser.add_argument("email", help="The user email")
 
     return parser.parse_args()
@@ -25,8 +25,8 @@ def create_user(args: argparse.Namespace):
     :param args: The command line arguments.
     """
     with storage.get_storage() as s:
-        user_exists = s.user_exists(email=args.email)
-        if user_exists:
+        user = s.get_user(email=args.email)
+        if user is not None:
             raise ValueError(f"User with email {args.email} already exists")
 
         # Get password

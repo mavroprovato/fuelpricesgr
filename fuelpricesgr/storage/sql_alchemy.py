@@ -327,7 +327,7 @@ class SqlAlchemyStorage(base.BaseStorage):
         :param password: The user password.
         :return: True if the user is authenticated, False otherwise.
         """
-        user = self.db.scalar(sqlalchemy.select(User).where(User.email == email))
+        user = self.get_user(email=email)
         if user is None:
             return False
         try:
