@@ -18,7 +18,7 @@ class SESMailSender(mail.MailSender):
         """
         super().__init__()
 
-        self.client = boto3.client('ses', region_name=settings.AWS_REGION)
+        self.client = boto3.client('ses', region_name=settings.MAIL['PARAMETERS']['AWS_REGION'])
 
     def send(self, subject: str, html_content: str):
         """Send an email.

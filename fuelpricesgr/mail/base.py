@@ -9,7 +9,7 @@ class MailSender:
     def __init__(self) -> None:
         """Create the mail sender object.
         """
-        self.sender = settings.MAIL_SENDER
+        self.sender = settings.MAIL['SENDER']
         self.recipients = self.get_recipients()
 
     @staticmethod
