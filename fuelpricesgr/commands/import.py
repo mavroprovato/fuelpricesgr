@@ -7,7 +7,7 @@ import io
 import logging
 import sys
 
-from fuelpricesgr import caching, fetcher, enums, mail, storage, settings
+from fuelpricesgr import caching, fetcher, enums, mail, storage
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -127,7 +127,7 @@ def send_mail(log_stream: io.StringIO, error: bool):
             <p><pre>{log_stream.getvalue()}</pre></p>
         </html>
     '''
-    mail_sender = mail.MailSender()
+    mail_sender = mail.SESMailSender()
     mail_sender.send(subject='[fuelpricesgr] Fetching data completed', html_content=content)
 
 
