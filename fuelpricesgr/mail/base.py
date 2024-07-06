@@ -71,3 +71,4 @@ class MailSender:
         :param subject: The mail subject.
         :param html_content: The HTML content of the message.
         """
+        raise NotImplementedError()
