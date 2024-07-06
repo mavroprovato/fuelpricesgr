@@ -127,7 +127,7 @@ def send_mail(log_stream: io.StringIO, error: bool):
             <p><pre>{log_stream.getvalue()}</pre></p>
         </html>
     '''
-    mail_sender = mail.SESMailSender()
+    mail_sender = mail.get_mail_sender()
     mail_sender.send(subject='[fuelpricesgr] Fetching data completed', html_content=content)
 
 

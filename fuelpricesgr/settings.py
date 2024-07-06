@@ -36,6 +36,7 @@ AWS_REGION = env('AWS_REGION', None)
 
 # Mail configuration
 MAIL = {
+    'BACKEND': env('MAIL_BACKEND', 'fuelpricesgr.mail.ses.SESMailSender'),
     'SENDER': env('MAIL_SENDER', None),
     'PARAMETERS': env.dict('MAIL_PARAMETERS', {}),
 }

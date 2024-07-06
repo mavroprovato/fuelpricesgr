@@ -1,11 +1,24 @@
 """Module containing base mail classes
 """
+import importlib
 import logging
 
 from fuelpricesgr import settings, storage
 
 # The module logger
 logger = logging.getLogger(__name__)
+
+
+def get_mail_sender() -> 'MailSender':
+    """Return the configured mail sender.
+
+    :return: The configured mail sender.
+    """
+    mail_sender_class = settings.MAIL['BACKEND']
+    module_name, class_name = mail_sender_class.rsplit('.', 1)
+    class_ = getattr(importlib.import_module(module_name), class_name)
+
+    return class_()
 
 
 class MailSender:
