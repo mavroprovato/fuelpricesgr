@@ -5,9 +5,13 @@ import datetime
 
 import fastapi
 
-from fuelpricesgr import caching, enums, schemas, services, settings
+from fuelpricesgr import caching, enums, schemas, storage
 
+# The router
 router = fastapi.APIRouter()
+
+# The maximum number of days to return from the API
+MAX_DAYS = 365
 
 
 @router.get(
@@ -19,8 +23,8 @@ router = fastapi.APIRouter()
 def status() -> Mapping[str, object]:
     """Return the status of the application.
     """
-    with services.storage.get_service() as service:
-        return service.status()
+    with storage.get_storage() as s:
+        return {'db_status': s.status(), 'cache_status': caching.status()}
 
 
 @router.get(
@@ -64,7 +68,7 @@ def date_range(data_type: enums.DataType) -> Mapping[str, datetime.date | None]:
     :param data_type: The data type.
     :return: The available data date range for a data type.
     """
-    with services.storage.get_service() as service:
+    with storage.get_storage() as service:
         start_date, end_date = service.date_range(data_type=data_type)
 
         return {'start_date': start_date, 'end_date': end_date}
@@ -89,8 +93,8 @@ def weekly_country_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    with services.get_service() as service:
-        return service.weekly_country_data(start_date=start_date, end_date=end_date)
+    with storage.get_storage() as s:
+        return s.weekly_country_data(start_date=start_date, end_date=end_date)
 
 
 @router.get(
@@ -112,8 +116,8 @@ def daily_country_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    with services.get_service() as service:
-        return service.daily_country_data(start_date=start_date, end_date=end_date)
+    with storage.get_storage() as s:
+        return s.daily_country_data(start_date=start_date, end_date=end_date)
 
 
 @router.get(
@@ -137,8 +141,8 @@ def daily_prefecture_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    with services.storage.get_service() as service:
-        return service.daily_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date)
+    with storage.get_storage() as s:
+        return s.daily_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date)
 
 
 @router.get(
@@ -162,8 +166,8 @@ def weekly_prefecture_data(
     """
     start_date, end_date = get_date_range(start_date, end_date)
 
-    with services.get_service() as service:
-        return service.weekly_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date)
+    with storage.get_storage() as s:
+        return s.weekly_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date)
 
 
 @router.get(
@@ -179,8 +183,8 @@ def country_data(date: datetime.date = fastapi.Path(title="The date")) -> Mappin
     :param date: The date.
     :return: The country data.
     """
-    with services.get_service() as service:
-        return service.country_data(date=date)
+    with storage.get_storage() as s:
+        return s.country_data(date=date)
 
 
 def get_date_range(start_date: datetime.date, end_date: datetime.date) -> tuple[datetime.date, datetime.date]:
@@ -193,15 +197,15 @@ def get_date_range(start_date: datetime.date, end_date: datetime.date) -> tuple[
     # Make sure that we don't get more days than MAX_DAYS
     if start_date is None and end_date is None:
         end_date = datetime.date.today()
-        start_date = end_date - datetime.timedelta(days=settings.MAX_DAYS)
+        start_date = end_date - datetime.timedelta(days=MAX_DAYS)
     elif start_date is None:
-        start_date = end_date - datetime.timedelta(days=settings.MAX_DAYS)
+        start_date = end_date - datetime.timedelta(days=MAX_DAYS)
     elif end_date is None:
-        end_date = start_date + datetime.timedelta(days=settings.MAX_DAYS)
+        end_date = start_date + datetime.timedelta(days=MAX_DAYS)
     elif start_date > end_date:
         raise fastapi.HTTPException(status_code=400, detail="Start date must be before end date")
     else:
         days = (end_date - start_date).days
-        start_date = end_date - datetime.timedelta(days=min(days, settings.MAX_DAYS))
+        start_date = end_date - datetime.timedelta(days=min(days, MAX_DAYS))
 
     return start_date, end_date

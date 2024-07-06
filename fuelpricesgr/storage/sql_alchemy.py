@@ -1,4 +1,4 @@
-"""The SQLAlchemy service
+"""The SQL Alchemy storage
 """
 from collections.abc import Iterable, Mapping
 import datetime
@@ -7,22 +7,19 @@ import logging
 import os
 
 import argon2
-import redis
 import sqlalchemy
 import sqlalchemy.exc
 import sqlalchemy.orm
 
 from fuelpricesgr import enums, settings
-from .base import BaseService
+from . import base
 
 # The module logger
 logger = logging.getLogger(__name__)
 
 # Initialize SQL Alchemy
 os.makedirs(settings.DATA_PATH, exist_ok=True)
-engine = sqlalchemy.create_engine(
-    f"sqlite:///{(settings.DATA_PATH / 'db.sqlite')}", connect_args={"check_same_thread": False}, echo=settings.SHOW_SQL
-)
+engine = sqlalchemy.create_engine(settings.SQL_ALCHEMY_URL, echo=settings.SHOW_SQL)
 SessionLocal = sqlalchemy.orm.sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = sqlalchemy.orm.declarative_base()
 
@@ -85,7 +82,7 @@ class User(Base):
     __tablename__ = 'users'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
-    email = sqlalchemy.Column(sqlalchemy.String(collation='NOCASE'), index=True, unique=True)
+    email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True)
     password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     active = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=True)
     admin = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=False)
@@ -96,8 +93,8 @@ class User(Base):
     last_login = sqlalchemy.Column(sqlalchemy.DateTime)
 
 
-class SqlService(BaseService):
-    """Service implementation based on SQL Alchemy.
+class SqlAlchemyStorage(base.BaseStorage):
+    """Storage implementation based on SQL Alchemy.
     """
     def __init__(self):
         """Class constructor.
@@ -109,7 +106,7 @@ class SqlService(BaseService):
         """
         self.db.close()
 
-    def status(self) -> Mapping[str, object]:
+    def status(self) -> enums.ApplicationStatus:
         """Return the status of the database storages.
 
         :return: The status of the application storages.
@@ -117,23 +114,12 @@ class SqlService(BaseService):
         # Check the database status
         db_status = enums.ApplicationStatus.OK
         try:
-            result = self.db.execute(sqlalchemy.sql.text("SELECT COUNT(*) FROM sqlite_master"))
-            if next(result)[0] == 0:
-                logger.error("Database tables do not exist")
-                db_status = enums.ApplicationStatus.ERROR
+            self.db.execute(sqlalchemy.sql.text("SELECT 1"))
         except sqlalchemy.exc.OperationalError as ex:
             logger.error("Could not connect to the database", exc_info=ex)
             db_status = enums.ApplicationStatus.ERROR
-        # Check the cache status
-        cache_status = enums.ApplicationStatus.OK
-        try:
-            conn = redis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
-            conn.ping()
-        except redis.exceptions.RedisError as ex:
-            logger.error("Could not connect to the cache", exc_info=ex)
-            cache_status = enums.ApplicationStatus.ERROR
 
-        return {'db_status': db_status, 'cache_status': cache_status}
+        return db_status
 
     def date_range(self, data_type: enums.DataType) -> (datetime.date | None, datetime.date | None):
         """Return the date range for a data type.
@@ -141,20 +127,9 @@ class SqlService(BaseService):
         :param data_type: The data type.
         :return: The date range as a tuple. The first element is the minimum date and the second the maximum.
         """
-        model = None
-        match data_type:
-            case enums.DataType.WEEKLY_COUNTRY:
-                model = WeeklyCountry
-            case enums.DataType.WEEKLY_PREFECTURE:
-                model = WeeklyPrefecture
-            case enums.DataType.DAILY_COUNTRY:
-                model = DailyCountry
-            case enums.DataType.DAILY_PREFECTURE:
-                model = DailyPrefecture
+        model = self._get_model(data_type)
 
-        return self.db.query(
-            sqlalchemy.func.min(model.date), sqlalchemy.func.max(model.date)
-        ).one()
+        return self.db.query(sqlalchemy.func.min(model.date), sqlalchemy.func.max(model.date)).one()
 
     def daily_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
         """Return the daily country data, grouped by date.
@@ -301,7 +276,7 @@ class SqlService(BaseService):
         """Check if data exists for the data file type for the date.
 
         :param data_file_type: The data file type.
-        :param date: The data
+        :param date: The data.
         :return: True, if data exists for the date and for all data types for the data file type.
         """
         return all(
@@ -317,9 +292,10 @@ class SqlService(BaseService):
         :param data: The file data.
         """
         # Delete existing data
-        self.db.query(data_type.model()).filter(data_type.model().date == date).delete()
+        model = self._get_model(data_type)
+        self.db.query(model).filter(model.date == date).delete()
         for row in data:
-            data = data_type.model()(**row)
+            data = model(**row)
             data.date = date
             self.db.add(data)
 
@@ -352,7 +328,7 @@ class SqlService(BaseService):
         :param password: The user password.
         :return: True if the user is authenticated, False otherwise.
         """
-        user = self.db.scalar(sqlalchemy.select(User).where(User.email == email))
+        user = self.get_user(email=email)
         if user is None:
             return False
         try:
@@ -369,3 +345,24 @@ class SqlService(BaseService):
         :return: The user information.
         """
         return self.db.scalar(sqlalchemy.select(User).where(User.email == email))
+
+    def get_admin_user_emails(self) -> list[str]:
+        """Get the emails of the admin users.
+
+        :return: The emails of the admin users as a list of strings.
+        """
+        return [str(row.email) for row in self.db.query(User).filter(User.admin)]
+
+    @staticmethod
+    def _get_model(data_type: enums.DataType):
+        match data_type:
+            case enums.DataType.WEEKLY_COUNTRY:
+                return WeeklyCountry
+            case enums.DataType.WEEKLY_PREFECTURE:
+                return WeeklyPrefecture
+            case enums.DataType.DAILY_COUNTRY:
+                return DailyCountry
+            case enums.DataType.DAILY_PREFECTURE:
+                return DailyPrefecture
+            case _:
+                raise ValueError(f"Cannot handle data type {data_type}")

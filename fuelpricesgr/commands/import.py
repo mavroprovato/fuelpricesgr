@@ -1,22 +1,23 @@
 """Command to import data into the database.
 """
 import argparse
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 import datetime
 import io
 import logging
 import sys
 
-from fuelpricesgr import caching, fetcher, enums, mail, services, settings
+from fuelpricesgr import caching, fetcher, enums, mail, storage
 
 # The module logger
 logger = logging.getLogger(__name__)
 
 # The minimum file type dates
-_MIN_FILE_TYPE_DATES = {
-    enums.DataFileType.WEEKLY: datetime.date(2012, 4, 27),
-    enums.DataFileType.DAILY_COUNTRY: datetime.date(2017, 3, 14),
-    enums.DataFileType.DAILY_PREFECTURE: datetime.date(2017, 3, 14),
+_MIN_FILE_TYPE_DATES: Mapping[enums.DataType, datetime.date] = {
+    enums.DataType.WEEKLY_COUNTRY: datetime.date(2012, 4, 27),
+    enums.DataType.WEEKLY_PREFECTURE: datetime.date(2012, 4, 27),
+    enums.DataType.DAILY_COUNTRY: datetime.date(2017, 3, 14),
+    enums.DataType.DAILY_PREFECTURE: datetime.date(2017, 3, 14),
 }
 
 
@@ -40,7 +41,7 @@ def parse_arguments() -> argparse.Namespace:
 
     :return:
     """
-    arg_parser = argparse.ArgumentParser(description='Fetch the data from the site and insert them to the database.')
+    arg_parser = argparse.ArgumentParser(description='Fetch the data from the site and insert them to the database')
     arg_parser.add_argument('--types', type=parse_data_file_type,
                             help=f"Comma separated data files to fetch. Available types are "
                             f"{','.join(fdt.name for fdt in enums.DataFileType)}")
@@ -50,20 +51,20 @@ def parse_arguments() -> argparse.Namespace:
     arg_parser.add_argument('--end-date', type=datetime.date.fromisoformat, default=datetime.date.today().isoformat(),
                             help="The end date for the data to fetch. The date must be in ISO date format (YYYY-MM-DD)")
     arg_parser.add_argument('--skip-cache', default=False, action="store_true",
-                            help="Skip the file cache. By default, the cache is used.")
+                            help="Skip the file cache. By default, the cache is used")
     arg_parser.add_argument('--update', default=False, action="store_true",
-                            help="Update existing data. By default existing data are not updated.")
-    arg_parser.add_argument('--verbose', default=False, action="store_true", help="Verbose logging.")
+                            help="Update existing data. By default existing data are not updated")
+    arg_parser.add_argument('--verbose', default=False, action="store_true", help="Verbose logging")
     arg_parser.add_argument('--send-mail', default=False, action="store_true",
-                            help="Send mail after running the command.")
+                            help="Send mail after running the command")
 
     return arg_parser.parse_args()
 
 
-def import_data(service: services.storage.BaseService, args: argparse.Namespace) -> bool:
+def import_data(s: storage.base.BaseStorage, args: argparse.Namespace) -> bool:
     """Import data based on the command line arguments.
 
-    :param service: The database service.
+    :param s: The storage.
     :param args: The command line arguments.
     :return: True if an error occurred, False otherwise.
     """
@@ -72,13 +73,13 @@ def import_data(service: services.storage.BaseService, args: argparse.Namespace)
         data_file_types = enums.DataFileType if args.types is None else args.types
         for data_file_type in data_file_types:
             data_fetcher = fetcher.Fetcher(data_file_type=data_file_type)
-            start_date, end_date = get_fetch_date_range(service=service, args=args, data_file_type=data_file_type)
-            logger.info("Fetching %s data between %s and %s", data_file_type.description, start_date, end_date)
-            for date in data_file_type.dates(start_date=start_date, end_date=end_date):
-                if args.update or not service.data_exists(data_file_type=data_file_type, date=date):
-                    file_data = data_fetcher.data(date=date, skip_cache=args.skip_cache)
-                    for data_type, fuel_type_data in file_data.items():
-                        service.update_data(date=date, data_type=data_type, data=fuel_type_data)
+            for data_type in data_file_type.data_types:
+                start_date, end_date = get_fetch_date_range(s=s, args=args, data_type=data_type)
+                logger.info("Fetching %s data between %s and %s", data_file_type.description, start_date, end_date)
+                for date in data_file_type.dates(start_date=start_date, end_date=end_date):
+                    if args.update or not s.data_exists(data_file_type=data_file_type, date=date):
+                        file_data = data_fetcher.data(date=date, skip_cache=args.skip_cache)
+                        s.update_data(date=date, data_type=data_type, data=file_data.get(data_type, []))
     except Exception as ex:
         logger.exception("Error while importing data", exc_info=ex)
         error = True
@@ -87,30 +88,24 @@ def import_data(service: services.storage.BaseService, args: argparse.Namespace)
 
 
 def get_fetch_date_range(
-        service: services.storage.BaseService, args: argparse.Namespace, data_file_type: enums.DataFileType
+        s: storage.base.BaseStorage, args: argparse.Namespace, data_type: enums.DataType
 ) -> tuple[datetime.date, datetime.date]:
     """Get the date range for which to fetch data, based on the passed arguments. If the start date is not provided,
     then the last available date for the data file type is set as the start date. If there are no available data, then
     the first available data date on the site is set as the start date. If the end date is not provided, then today's
     date is set as the end date.
 
-    :param service: The service.
+    :param s: The storage.
     :param args: The command line arguments.
-    :param data_file_type: The data file type.
+    :param data_type: The data type.
     :return: The start and a
     """
     start_date, end_date = args.start_date, args.end_date
 
     if start_date is None:
-        dates = []
-        for data_type in data_file_type.data_types:
-            _, data_end_date = service.date_range(data_type=data_type)
-            if data_end_date is not None:
-                dates.append(data_end_date)
-        if dates:
-            start_date = min(dates)
-        else:
-            start_date = _MIN_FILE_TYPE_DATES[data_file_type]
+        _, start_date = s.date_range(data_type=data_type)
+        if not start_date:
+            start_date = _MIN_FILE_TYPE_DATES[data_type]
 
     if end_date is None:
         end_date = datetime.date.today()
@@ -132,10 +127,8 @@ def send_mail(log_stream: io.StringIO, error: bool):
             <p><pre>{log_stream.getvalue()}</pre></p>
         </html>
     '''
-    mail_sender = mail.MailSender()
-    mail_sender.send(
-        to_recipients=[settings.MAIL_RECIPIENT], subject='[fuelpricesgr] Fetching data completed',
-        html_content=content)
+    mail_sender = mail.get_mail_sender()
+    mail_sender.send(subject='[fuelpricesgr] Fetching data completed', html_content=content)
 
 
 def main():
@@ -152,15 +145,15 @@ def main():
     )
 
     # Import data
-    services.storage.init_service()
-    with services.storage.get_service() as service:
-        error = import_data(service=service, args=args)
+    storage.init_storage()
+    with storage.get_storage() as s:
+        error = import_data(s=s, args=args)
 
     # Clear cache
     caching.clear_cache()
 
     # Send mail
-    if args.send_mail and settings.MAIL_RECIPIENT:
+    if args.send_mail:
         send_mail(log_stream=log_stream, error=error)
 
 

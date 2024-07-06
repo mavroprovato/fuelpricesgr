@@ -1,49 +1,42 @@
 """Application settings module
 """
-import os
 import pathlib
 import secrets
 import string
 
-import dotenv
+import environs
 
-dotenv.load_dotenv()
+env = environs.Env()
+env.read_env()
 
 # The base data path
 DATA_PATH = pathlib.Path(__file__).parent.parent / 'var'
 
-# Flag to show SQL
-try:
-    SHOW_SQL = os.getenv('SHOW_SQL', 'False').lower() == 'true'
-except ValueError:
-    SHOW_SQL = False
-
 # CORS allow origins
-CORS_ALLOW_ORIGINS = os.getenv('CORS_ALLOW_ORIGINS', 'http://127.0.0.1:8080,http://localhost:8080').split(',')
+CORS_ALLOW_ORIGINS = env('CORS_ALLOW_ORIGINS', 'http://127.0.0.1:8080,http://localhost:8080').split(',')
 
 # Secret key for cryptographic signing
-SECRET_KEY = os.getenv('SECRET_KEY', ''.join(
-    secrets.choice(string.ascii_letters + string.punctuation) for _ in range(64)))
+SECRET_KEY = env('SECRET_KEY', ''.join(secrets.choice(string.ascii_letters + string.punctuation) for _ in range(64)))
 
-# The maximum number of days to return from the API
-MAX_DAYS = 365
+# Flag to show SQL
+SHOW_SQL = env.bool('SHOW_SQL', False)
+
+# The SQL Alchemy URL
+SQL_ALCHEMY_URL = env('SQL_ALCHEMY_URL', f"sqlite:///{(DATA_PATH / 'db.sqlite')}")
 
 # Set the caching parameters
-try:
-    CACHING = os.getenv('CACHING', 'False').lower() == 'true'
-except ValueError:
-    CACHING = False
-REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost')
-
-# The base URL from which to fetch the PDF data
-FETCH_URL = 'http://www.fuelprices.gr'
-
-# The timeout for fetching data in seconds
-REQUESTS_TIMEOUT = 5
+CACHE = {
+    'BACKEND': env('CACHE_CLASS', 'cachelib.redis.RedisCache'),
+    'PARAMETERS': env.dict('CACHE_PARAMETERS', {}),
+    'TIMEOUT': env.int('CACHE_TIMEOUT', 3600)
+}
 
 # AWS configuration
-AWS_REGION = os.getenv('AWS_REGION')
+AWS_REGION = env('AWS_REGION', None)
 
 # Mail configuration
-MAIL_SENDER = os.getenv('MAIL_SENDER')
-MAIL_RECIPIENT = os.getenv('MAIL_RECIPIENT')
+MAIL = {
+    'BACKEND': env('MAIL_BACKEND', 'fuelpricesgr.mail.ses.SESMailSender'),
+    'SENDER': env('MAIL_SENDER', None),
+    'PARAMETERS': env.dict('MAIL_PARAMETERS', {}),
+}

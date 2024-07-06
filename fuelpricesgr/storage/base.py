@@ -1,4 +1,4 @@
-"""Base module for services
+"""Base module for storage
 """
 import abc
 from collections.abc import Iterable, Mapping
@@ -8,31 +8,32 @@ import datetime
 from fuelpricesgr import enums
 
 
-def init_service():
-    """Initialize the service.
+def init_storage():
+    """Initialize the storage.
     """
-    pass
+    from .sql_alchemy import Base, engine
+    Base.metadata.create_all(engine)
 
 
 @contextlib.contextmanager
-def get_service() -> 'BaseService':
-    """Get the service.
+def get_storage() -> 'BaseStorage':
+    """Get the storage.
 
-    :return: The service.
+    :return: The storage.
     """
-    from .firebase import FirebaseService
-    service = FirebaseService()
+    from .sql_alchemy import SqlAlchemyStorage
+    s = SqlAlchemyStorage()
     try:
-        yield service
+        yield s
     finally:
-        service.close()
+        s.close()
 
 
-class BaseService(abc.ABC):
-    """The abstract base class for the service.
+class BaseStorage(abc.ABC):
+    """The abstract base class for the storage.
     """
     def close(self):
-        """Release the resources.
+        """Release the resources. By default, do nothing
         """
 
     @abc.abstractmethod
@@ -128,15 +129,6 @@ class BaseService(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def user_exists(self, email: str) -> bool:
-        """Check if a user exists.
-
-        :param email: The user email.
-        :return: True if the user exists, False otherwise.
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
     def create_user(self, email: str, password: str, admin: bool = False):
         """Create a user.
 
@@ -162,5 +154,13 @@ class BaseService(abc.ABC):
 
         :param email: The user email.
         :return: The user information.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_admin_user_emails(self) -> list[str]:
+        """Get the emails of the admin users.
+
+        :return: The emails of the admin users as a list of strings.
         """
         raise NotImplementedError()

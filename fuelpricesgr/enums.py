@@ -5,8 +5,6 @@ import datetime
 import enum
 from collections.abc import Generator
 
-from fuelpricesgr import settings
-
 
 class ApplicationStatus(enum.Enum):
     """Enumeration for the application status.
@@ -165,7 +163,7 @@ class DataFileType(enum.Enum):
         :param date: The date.
         :return: The file link.
         """
-        return f'{settings.FETCH_URL}/files/deltia/{self._get_file_name(date)}'
+        return f'http://www.fuelprices.gr/files/deltia/{self._get_file_name(date)}'
 
     def _get_file_name(self, date: datetime.date) -> str:
         """Return the file name for the link, based on the date.

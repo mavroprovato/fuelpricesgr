@@ -2,16 +2,46 @@
 """
 import functools
 import hashlib
+import importlib
+import logging
 import pickle
 
-import redis
+import cachelib
 
-from fuelpricesgr import settings
+from fuelpricesgr import enums, settings
 
-redis_conn = redis.from_url(settings.REDIS_URL, encoding='utf8')
+# The module logger
+logger = logging.getLogger(__name__)
 
-# The cache prefix
-CACHE_PREFIX = 'fuelpricesgr:'
+
+def create_backend() -> cachelib.base.BaseCache:
+    """Creates the cache backend.
+
+    :return: The cache backend.
+    """
+    cache_module = importlib.import_module('.'.join(settings.CACHE['BACKEND'].split('.')[:-1]))
+    cache_class = getattr(cache_module, settings.CACHE['BACKEND'].split('.')[-1])
+
+    return cache_class(**settings.CACHE['PARAMETERS'])
+
+
+backend = create_backend()
+
+
+def status() -> enums.ApplicationStatus:
+    """Return the cache status.
+
+    :return: The cache status.
+    """
+    cache_status = enums.ApplicationStatus.OK
+    if settings.CACHE['BACKEND'] == 'cachelib.redis.RedisCache':
+        try:
+            backend._read_client.ping()
+        except Exception as ex:
+            logger.exception(ex)
+            cache_status = enums.ApplicationStatus.ERROR
+
+    return cache_status
 
 
 def cache(func):
@@ -28,21 +58,16 @@ def cache(func):
         :param kwargs: The keyword arguments.
         :return: Returns the function result.
         """
-        if settings.CACHING:
-            cache_key = CACHE_PREFIX + hashlib.md5(
-                str(f"{func.__module__}:{func.__name__}:{args}:{kwargs}").encode()).hexdigest()
+        cache_key = f"{func.__module__}:{func.__name__}:{hashlib.md5(str(f'{args}:{kwargs}').encode()).hexdigest()}"
+        cache_value = backend.get(cache_key)
 
-            if redis_conn.get(cache_key):
-                result = redis_conn.get(cache_key)
+        if cache_value:
+            return pickle.loads(cache_value)
 
-                return pickle.loads(result)
+        result = func(*args, **kwargs)
+        backend.set(key=cache_key, value=pickle.dumps(result), timeout=settings.CACHE['TIMEOUT'])
 
-            result = func(*args, **kwargs)
-            redis_conn.set(cache_key, pickle.dumps(result))
-
-            return result
-
-        return func(*args, **kwargs)
+        return result
 
     return wrapper
 
@@ -50,8 +75,4 @@ def cache(func):
 def clear_cache():
     """Deletes all the cache keys.
     """
-    try:
-        for key in redis_conn.scan_iter(CACHE_PREFIX + "*"):
-            redis_conn.delete(key)
-    except redis.ConnectionError:
-        pass
+    backend.clear()

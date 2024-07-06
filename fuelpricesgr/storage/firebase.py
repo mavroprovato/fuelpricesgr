@@ -5,11 +5,10 @@ from typing import Mapping, Iterable
 import firebase_admin
 import firebase_admin.firestore
 
-from fuelpricesgr import enums
-from fuelpricesgr.services.storage import base
+from fuelpricesgr import enums, storage
 
 
-class FirebaseService(base.BaseService):
+class FirebaseService(storage.BaseStorage):
     def __init__(self):
         cred = firebase_admin.credentials.Certificate('/home/kostas/firebase.json')
         firebase_admin.initialize_app(cred)
@@ -53,9 +52,6 @@ class FirebaseService(base.BaseService):
                 document[key] = value if not isinstance(value, decimal.Decimal) else str(value)
             collection.document(self._get_document_name(date=date, row=row)).set(document)
 
-    def user_exists(self, email: str) -> bool:
-        raise NotImplementedError()
-
     def create_user(self, email: str, password: str, admin: bool = False):
         raise NotImplementedError()
 
@@ -63,6 +59,9 @@ class FirebaseService(base.BaseService):
         raise NotImplementedError()
 
     def get_user(self, email: str):
+        raise NotImplementedError()
+
+    def get_admin_user_emails(self) -> list[str]:
         raise NotImplementedError()
 
     @staticmethod
