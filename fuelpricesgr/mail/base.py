@@ -1,6 +1,11 @@
 """Module containing base mail classes
 """
+import logging
+
 from fuelpricesgr import settings, storage
+
+# The module logger
+logger = logging.getLogger(__name__)
 
 
 class MailSender:
@@ -9,8 +14,22 @@ class MailSender:
     def __init__(self) -> None:
         """Create the mail sender object.
         """
-        self.sender = settings.MAIL['SENDER']
-        self.recipients = self.get_recipients()
+        self.sender = None
+        self.initialized = self.initialize()
+
+    def initialize(self) -> bool:
+        """Initialize the mail class.
+
+        :return: True if the mail class was initialized.
+        """
+        if 'SENDER' in settings.MAIL:
+            self.sender = settings.MAIL['SENDER']
+        else:
+            logger.error("Sender not set")
+
+            return False
+
+        return True
 
     @staticmethod
     def get_recipients() -> list[str]:
@@ -27,4 +46,15 @@ class MailSender:
         :param subject: The mail subject.
         :param html_content: The HTML content of the message.
         """
-        return NotImplementedError()
+        if not self.initialized:
+            return
+
+        self.do_send(recipients=self.get_recipients(), subject=subject, html_content=html_content)
+
+    def do_send(self, recipients: list[str], subject: str, html_content: str):
+        """Send an email.
+
+        :param recipients: The list of recipients.
+        :param subject: The mail subject.
+        :param html_content: The HTML content of the message.
+        """

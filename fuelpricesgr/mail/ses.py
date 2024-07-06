@@ -18,20 +18,17 @@ class SESMailSender(mail.MailSender):
         """
         super().__init__()
 
-        self.client = boto3.client('ses', region_name=settings.MAIL['PARAMETERS']['AWS_REGION'])
+        self.client = boto3.client('ses', **settings.MAIL['PARAMETERS'])
 
-    def send(self, subject: str, html_content: str):
+    def do_send(self, recipients: list[str], subject: str, html_content: str):
         """Send an email.
 
+        :param recipients: The recipients.
         :param subject: The mail subject.
         :param html_content: The HTML content of the message.
         """
-        if not self.recipients:
-            logger.error("No recipients to send the email")
-            return
-
         self.client.send_email(
-            Destination={'ToAddresses': self.recipients},
+            Destination={'ToAddresses': recipients},
             Message={
                 'Body': {
                     'Html': {

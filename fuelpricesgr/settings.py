@@ -37,5 +37,5 @@ AWS_REGION = env('AWS_REGION', None)
 # Mail configuration
 MAIL = {
     'SENDER': env('MAIL_SENDER', None),
-    'PARAMETERS': env.dict('MAIL_PARAMETERS'),
+    'PARAMETERS': env.dict('MAIL_PARAMETERS', {}),
 }
