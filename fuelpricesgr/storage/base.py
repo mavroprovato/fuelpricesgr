@@ -11,8 +11,8 @@ from fuelpricesgr import enums
 def init_storage():
     """Initialize the storage.
     """
-    from .sql_alchemy import Base, engine
-    Base.metadata.create_all(engine)
+    from .sql_alchemy import init_storage
+    init_storage()
 
 
 @contextlib.contextmanager
@@ -38,9 +38,9 @@ class BaseStorage(abc.ABC):
 
     @abc.abstractmethod
     def status(self) -> Mapping[str, object]:
-        """Return the status of the database storages.
+        """Return the status of the database storage.
 
-        :return: The status of the application storages.
+        :return: The status of the application storage.
         """
         raise NotImplementedError()
 

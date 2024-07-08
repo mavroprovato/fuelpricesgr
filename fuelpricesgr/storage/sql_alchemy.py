@@ -24,6 +24,12 @@ SessionLocal = sqlalchemy.orm.sessionmaker(autocommit=False, autoflush=False, bi
 Base = sqlalchemy.orm.declarative_base()
 
 
+def init_storage():
+    """Initialize the storage
+    """
+    Base.metadata.create_all(engine)
+
+
 class WeeklyCountry(Base):
     """The weekly country database model
     """
@@ -107,9 +113,9 @@ class SqlAlchemyStorage(base.BaseStorage):
         self.db.close()
 
     def status(self) -> enums.ApplicationStatus:
-        """Return the status of the database storages.
+        """Return the status of the database storage.
 
-        :return: The status of the application storages.
+        :return: The status of the application storage.
         """
         # Check the database status
         db_status = enums.ApplicationStatus.OK
