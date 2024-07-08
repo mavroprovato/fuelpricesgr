@@ -21,6 +21,7 @@ redis = "^5.0.1"
 sqladmin = "^0.18.0"
 SQLAlchemy = "^2.0.3"
 uvicorn = "^0.30.0"
+pymongo = "^4.8.0"
 
 [tool.poetry.dev-dependencies]
 coverage = "^7.1.0"
