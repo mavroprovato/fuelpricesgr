@@ -9,7 +9,11 @@ from fuelpricesgr import enums, storage
 
 
 class FirebaseService(storage.BaseStorage):
+    """Storage implementation based on Firebase.
+    """
     def __init__(self):
+        """Class constructor.
+        """
         cred = firebase_admin.credentials.Certificate('/home/kostas/firebase.json')
         firebase_admin.initialize_app(cred)
         self.db = firebase_admin.firestore.client()
@@ -44,13 +48,19 @@ class FirebaseService(storage.BaseStorage):
         raise NotImplementedError()
 
     def update_data(self, date: datetime.date, data_type: enums.DataType, data: list[dict]):
+        """Update the data for a data type and a date.
+
+        :param date: The date.
+        :param data_type: The data type to update.
+        :param data: The file data.
+        """
         collection = self.db.collection(self._get_collection_name(data_type=data_type))
-        print(date)
         for row in data:
             document = {'date': date.isoformat()}
             for key, value in row.items():
                 document[key] = value if not isinstance(value, decimal.Decimal) else str(value)
-            collection.document(self._get_document_name(date=date, row=row)).set(document)
+            self._get_document_name(date=date, fuel_type=row['fuel_type'], prefecture=row.get('prefecture'))
+            collection.document().set(document)
 
     def create_user(self, email: str, password: str, admin: bool = False):
         raise NotImplementedError()
@@ -65,7 +75,12 @@ class FirebaseService(storage.BaseStorage):
         raise NotImplementedError()
 
     @staticmethod
-    def _get_collection_name(data_type: enums.DataType):
+    def _get_collection_name(data_type: enums.DataType) -> str:
+        """Get the collection name for the data type.
+
+        :param data_type: The data type.
+        :return: The collection name.
+        """
         match data_type:
             case enums.DataType.WEEKLY_COUNTRY:
                 return 'weekly_country'
@@ -79,9 +94,16 @@ class FirebaseService(storage.BaseStorage):
                 raise ValueError(f"Cannot handle data type {data_type}")
 
     @staticmethod
-    def _get_document_name(date: datetime.date, row: Mapping[str, object]):
-        name = f"{date.isoformat()}_{row['fuel_type']}"
-        if 'prefecture' in row:
-            name += f"_{row['prefecture']}"
+    def _get_document_name(date: datetime.date, fuel_type: enums.FuelType, prefecture: enums.Prefecture = None) -> str:
+        """Get the name of a document.
+
+        :param date: The date.
+        :param fuel_type: The fuel type.
+        :param prefecture: The prefecture, if applicable.
+        :return: The name of the document.
+        """
+        name = f"{date.isoformat()}_{fuel_type.value}"
+        if prefecture:
+            name += f"_{prefecture.value}"
 
         return name
