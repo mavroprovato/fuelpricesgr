@@ -1,20 +1,47 @@
 """The MongoDB storage
 """
 import datetime
+import decimal
 from typing import Mapping, Iterable
 
-from fuelpricesgr import enums
+import pymongo
+
+from fuelpricesgr import enums, settings
 from . import base
+
+client = pymongo.MongoClient(settings.STORAGE_URL)
+
+
+def init_storage():
+    """Initialize the storage
+    """
+    db = client.get_default_database()
+    for data_type in enums.DataType:
+        collection_name = MongoDBStorage._get_collection_name(data_type=data_type)
+        index_fields = {'date': 1} | (
+            {'prefecture': 1} if data_type.value.endswith('_prefecture') else {}) | {'fuel_type': 1}
+        db[collection_name].create_index(index_fields)
 
 
 class MongoDBStorage(base.BaseStorage):
     """Storage implementation based on MongoDB.
     """
+    def __init__(self):
+        """Create the MongoDB storage backend.
+        """
+        self.db = client.get_default_database()
+
     def status(self) -> Mapping[str, object]:
         raise NotImplementedError()
 
     def date_range(self, data_type: enums.DataType) -> (datetime.date | None, datetime.date | None):
-        raise NotImplementedError()
+        """Return the date range for a data type.
+
+        :param data_type: The data type.
+        :return: The date range as a tuple. The first element is the minimum date and the second the maximum.
+        """
+        # TODO: implement
+        return None, None
 
     def daily_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
         raise NotImplementedError()
@@ -38,7 +65,17 @@ class MongoDBStorage(base.BaseStorage):
         raise NotImplementedError()
 
     def update_data(self, date: datetime.date, data_type: enums.DataType, data: list[dict]):
-        raise NotImplementedError()
+        """Update the data for a data type and a date.
+
+        :param date: The date.
+        :param data_type: The data type to update.
+        :param data: The file data.
+        """
+        collection = self.db[self._get_collection_name(data_type=data_type)]
+        collection.delete_many(filter={'date': datetime.datetime.combine(date, datetime.time.min)})
+        documents = [{key: self._get_value(value) for key, value in row.items()} for row in data]
+        if data:
+            collection.insert_many(documents=documents)
 
     def create_user(self, email: str, password: str, admin: bool = False):
         raise NotImplementedError()
@@ -51,3 +88,21 @@ class MongoDBStorage(base.BaseStorage):
 
     def get_admin_user_emails(self) -> list[str]:
         raise NotImplementedError()
+
+    @staticmethod
+    def _get_collection_name(data_type: enums.DataType) -> str:
+        """Return the collection name for the data type.
+
+        :param data_type: The data type.
+        :return: The collection name.
+        """
+        return data_type.value
+
+    @staticmethod
+    def _get_value(value):
+        if isinstance(value, datetime.date):
+            return datetime.datetime.combine(value, datetime.time.min)
+        if isinstance(value, decimal.Decimal):
+            return str(value)
+
+        return value

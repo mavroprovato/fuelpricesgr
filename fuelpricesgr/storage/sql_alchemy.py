@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Initialize SQL Alchemy
 os.makedirs(settings.DATA_PATH, exist_ok=True)
-engine = sqlalchemy.create_engine(settings.SQL_ALCHEMY_URL, echo=settings.SHOW_SQL)
+engine = sqlalchemy.create_engine(settings.STORAGE_URL, echo=settings.SHOW_SQL)
 SessionLocal = sqlalchemy.orm.sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = sqlalchemy.orm.declarative_base()
 

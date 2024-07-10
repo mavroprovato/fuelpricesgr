@@ -11,7 +11,7 @@ from fuelpricesgr import enums
 def init_storage():
     """Initialize the storage.
     """
-    from .sql_alchemy import init_storage
+    from .mongo import init_storage
     init_storage()
 
 
@@ -21,8 +21,8 @@ def get_storage() -> 'BaseStorage':
 
     :return: The storage.
     """
-    from .sql_alchemy import SqlAlchemyStorage
-    s = SqlAlchemyStorage()
+    from .mongo import MongoDBStorage
+    s = MongoDBStorage()
     try:
         yield s
     finally:

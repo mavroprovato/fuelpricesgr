@@ -22,7 +22,7 @@ SECRET_KEY = env('SECRET_KEY', ''.join(secrets.choice(string.ascii_letters + str
 SHOW_SQL = env.bool('SHOW_SQL', False)
 
 # The SQL Alchemy URL
-SQL_ALCHEMY_URL = env('SQL_ALCHEMY_URL', f"sqlite:///{(DATA_PATH / 'db.sqlite')}")
+STORAGE_URL = env('STORAGE_URL', f"sqlite:///{(DATA_PATH / 'db.sqlite')}")
 
 # Set the caching parameters
 CACHE = {
