@@ -37,8 +37,8 @@ class BaseStorage(abc.ABC):
         """
 
     @abc.abstractmethod
-    def status(self) -> Mapping[str, object]:
-        """Return the status of the database storage.
+    def status(self) -> enums.ApplicationStatus:
+        """Return the status of the application storage.
 
         :return: The status of the application storage.
         """

@@ -1,15 +1,21 @@
 """The MongoDB storage
 """
+from collections.abc import Mapping, Iterable
 import datetime
 import decimal
-from typing import Mapping, Iterable
+import logging
 
 import pymongo
+import pymongo.errors
 
 from fuelpricesgr import enums, settings
 from . import base
 
+# The MongoDB client
 client = pymongo.MongoClient(settings.STORAGE_URL)
+
+# The logger
+logger = logging.getLogger(__name__)
 
 
 def init_storage():
@@ -31,8 +37,19 @@ class MongoDBStorage(base.BaseStorage):
         """
         self.db = client.get_default_database()
 
-    def status(self) -> Mapping[str, object]:
-        raise NotImplementedError()
+    def status(self) -> enums.ApplicationStatus:
+        """Return the status of the application storage.
+
+        :return: The status of the application storage.
+        """
+        try:
+            self.db.command({"serverStatus": 1})
+
+            return enums.ApplicationStatus.OK
+        except pymongo.errors.PyMongoError:
+            logger.exception("Could not connect")
+
+            return enums.ApplicationStatus.ERROR
 
     def date_range(self, data_type: enums.DataType) -> (datetime.date | None, datetime.date | None):
         """Return the date range for a data type.

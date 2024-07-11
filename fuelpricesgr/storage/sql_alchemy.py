@@ -113,7 +113,7 @@ class SqlAlchemyStorage(base.BaseStorage):
         self.db.close()
 
     def status(self) -> enums.ApplicationStatus:
-        """Return the status of the database storage.
+        """Return the status of the application storage.
 
         :return: The status of the application storage.
         """
