@@ -83,8 +83,16 @@ class MongoDBStorage(base.BaseStorage):
     def country_data(self, date: datetime.date) -> Mapping[str, object]:
         raise NotImplementedError()
 
-    def data_exists(self, data_file_type: enums.DataFileType, date: datetime.date) -> bool:
-        raise NotImplementedError()
+    def data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
+        """Check if data exists for the data type for the date.
+
+        :param data_type: The data type.
+        :param date: The data
+        :return: True, if data exists for the date and for all data types for the data file type.
+        """
+        collection = self.db[self._get_collection_name(data_type=data_type)]
+
+        return collection.count_documents({'date': self.get_datetime_from_date(date=date)}) > 0
 
     def update_data(self, date: datetime.date, data_type: enums.DataType, data: list[dict]):
         """Update the data for a data type and a date.

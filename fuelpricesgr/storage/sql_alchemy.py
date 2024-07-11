@@ -278,17 +278,14 @@ class SqlAlchemyStorage(base.BaseStorage):
             ]
         }
 
-    def data_exists(self, data_file_type: enums.DataFileType, date: datetime.date) -> bool:
+    def data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
         """Check if data exists for the data file type for the date.
 
-        :param data_file_type: The data file type.
+        :param data_type: The data type.
         :param date: The data
         :return: True, if data exists for the date and for all data types for the data file type.
         """
-        return all(
-            self.db.query(sqlalchemy.exists().where(data_type.model().date == date)).scalar()
-            for data_type in data_file_type.data_types
-        )
+        return self.db.query(sqlalchemy.exists().where(data_type.model().date == date)).scalar()
 
     def update_data(self, date: datetime.date, data_type: enums.DataType, data: list[dict]):
         """Update the data for a data type and a date.

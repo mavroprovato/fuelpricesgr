@@ -77,7 +77,7 @@ def import_data(s: storage.base.BaseStorage, args: argparse.Namespace) -> bool:
                 start_date, end_date = get_fetch_date_range(s=s, args=args, data_type=data_type)
                 logger.info("Fetching %s data between %s and %s", data_file_type.description, start_date, end_date)
                 for date in data_file_type.dates(start_date=start_date, end_date=end_date):
-                    if args.update or not s.data_exists(data_file_type=data_file_type, date=date):
+                    if args.update or not s.data_exists(data_type=data_type, date=date):
                         file_data = data_fetcher.data(date=date, skip_cache=args.skip_cache)
                         s.update_data(date=date, data_type=data_type, data=file_data.get(data_type, []))
     except Exception as ex:

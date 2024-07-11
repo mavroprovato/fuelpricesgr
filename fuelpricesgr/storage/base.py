@@ -109,10 +109,10 @@ class BaseStorage(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def data_exists(self, data_file_type: enums.DataFileType, date: datetime.date) -> bool:
-        """Check if data exists for the data file type for the date.
+    def data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
+        """Check if data exists for the data type for the date.
 
-        :param data_file_type: The data file type.
+        :param data_type: The data type.
         :param date: The data
         :return: True, if data exists for the date and for all data types for the data file type.
         """
