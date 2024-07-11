@@ -21,7 +21,8 @@ SECRET_KEY = env('SECRET_KEY', ''.join(secrets.choice(string.ascii_letters + str
 # Flag to show SQL
 SHOW_SQL = env.bool('SHOW_SQL', False)
 
-# The SQL Alchemy URL
+# The storage parameters
+STORAGE_BACKEND = env('STORAGE_BACKEND', 'fuelpricesgr.storage.sql_alchemy.SqlAlchemyStorage')
 STORAGE_URL = env('STORAGE_URL', f"sqlite:///{(DATA_PATH / 'db.sqlite')}")
 
 # Set the caching parameters

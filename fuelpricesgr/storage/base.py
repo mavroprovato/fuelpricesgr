@@ -4,15 +4,16 @@ import abc
 from collections.abc import Iterable, Mapping
 import contextlib
 import datetime
+import importlib
 
-from fuelpricesgr import enums
+from fuelpricesgr import enums, settings
 
 
 def init_storage():
     """Initialize the storage.
     """
-    from .mongo import init_storage
-    init_storage()
+    storage_module = importlib.import_module('.'.join(settings.STORAGE_BACKEND.split('.')[:-1]))
+    storage_module.init_storage()
 
 
 @contextlib.contextmanager
@@ -21,8 +22,9 @@ def get_storage() -> 'BaseStorage':
 
     :return: The storage.
     """
-    from .mongo import MongoDBStorage
-    s = MongoDBStorage()
+    storage_module = importlib.import_module('.'.join(settings.STORAGE_BACKEND.split('.')[:-1]))
+    storage_class = getattr(storage_module, settings.STORAGE_BACKEND.split('.')[-1])
+    s = storage_class()
     try:
         yield s
     finally:
