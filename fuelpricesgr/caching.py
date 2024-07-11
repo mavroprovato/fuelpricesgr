@@ -19,10 +19,10 @@ def create_backend() -> cachelib.base.BaseCache:
 
     :return: The cache backend.
     """
-    cache_module = importlib.import_module('.'.join(settings.CACHE['BACKEND'].split('.')[:-1]))
-    cache_class = getattr(cache_module, settings.CACHE['BACKEND'].split('.')[-1])
+    cache_module = importlib.import_module('.'.join(settings.CACHE_BACKEND.split('.')[:-1]))
+    cache_class = getattr(cache_module, settings.CACHE_BACKEND.split('.')[-1])
 
-    return cache_class(**settings.CACHE['PARAMETERS'])
+    return cache_class(default_timeout=settings.CACHE_TIMEOUT, **settings.CACHE_PARAMETERS)
 
 
 backend = create_backend()
@@ -34,7 +34,7 @@ def status() -> enums.ApplicationStatus:
     :return: The cache status.
     """
     cache_status = enums.ApplicationStatus.OK
-    if settings.CACHE['BACKEND'] == 'cachelib.redis.RedisCache':
+    if settings.CACHE_BACKEND == 'cachelib.redis.RedisCache':
         try:
             backend._read_client.ping()
         except Exception as ex:
@@ -65,7 +65,7 @@ def cache(func):
             return pickle.loads(cache_value)
 
         result = func(*args, **kwargs)
-        backend.set(key=cache_key, value=pickle.dumps(result), timeout=settings.CACHE['TIMEOUT'])
+        backend.set(key=cache_key, value=pickle.dumps(result), timeout=settings.CACHE_TIMEOUT)
 
         return result
 

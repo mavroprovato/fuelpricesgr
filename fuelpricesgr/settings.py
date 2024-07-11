@@ -25,11 +25,9 @@ SHOW_SQL = env.bool('SHOW_SQL', False)
 STORAGE_URL = env('STORAGE_URL', f"sqlite:///{(DATA_PATH / 'db.sqlite')}")
 
 # Set the caching parameters
-CACHE = {
-    'BACKEND': env('CACHE_CLASS', 'cachelib.redis.RedisCache'),
-    'PARAMETERS': env.dict('CACHE_PARAMETERS', {}),
-    'TIMEOUT': env.int('CACHE_TIMEOUT', 3600)
-}
+CACHE_BACKEND = env('CACHE_BACKEND', 'cachelib.base.NullCache')
+CACHE_PARAMETERS = env.dict('CACHE_PARAMETERS', {})
+CACHE_TIMEOUT = env.int('CACHE_TIMEOUT', 3600)
 
 # AWS configuration
 AWS_REGION = env('AWS_REGION', None)
