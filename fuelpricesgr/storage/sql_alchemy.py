@@ -134,7 +134,7 @@ class SqlAlchemyStorage(base.BaseStorage):
         :return: The date range as a tuple. The first element is the minimum date and the second the maximum.
         """
         return self.db.query(
-            sqlalchemy.func.min(data_type.model().date), sqlalchemy.func.max(data_type.model().date)
+            sqlalchemy.func.min(self._get_model(data_type).date), sqlalchemy.func.max(self._get_model(data_type).date)
         ).one()
 
     def daily_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
@@ -285,7 +285,7 @@ class SqlAlchemyStorage(base.BaseStorage):
         :param date: The data
         :return: True, if data exists for the date and for all data types for the data file type.
         """
-        return self.db.query(sqlalchemy.exists().where(data_type.model().date == date)).scalar()
+        return self.db.query(sqlalchemy.exists().where(self._get_model(data_type).date == date)).scalar()
 
     def update_data(self, date: datetime.date, data_type: enums.DataType, data: list[dict]):
         """Update the data for a data type and a date.
@@ -295,9 +295,10 @@ class SqlAlchemyStorage(base.BaseStorage):
         :param data: The file data.
         """
         # Delete existing data
-        self.db.query(data_type.model()).filter(data_type.model().date == date).delete()
+        model = self._get_model(data_type)
+        self.db.query(model).filter(model.date == date).delete()
         for row in data:
-            data = data_type.model()(**row)
+            data = model(**row)
             data.date = date
             self.db.add(data)
 
@@ -354,3 +355,20 @@ class SqlAlchemyStorage(base.BaseStorage):
         :return: The emails of the admin users as a list of strings.
         """
         return [str(row.email) for row in self.db.query(User).filter(User.admin)]
+
+    @staticmethod
+    def _get_model(data_type: enums.DataType) -> type[Base]:
+        """Return the model for the data type.
+
+        :param data_type: The data type.
+        :return: The model.
+        """
+        match data_type:
+            case enums.DataType.WEEKLY_COUNTRY:
+                return WeeklyCountry
+            case enums.DataType.WEEKLY_PREFECTURE:
+                return WeeklyPrefecture
+            case enums.DataType.DAILY_COUNTRY:
+                return DailyCountry
+            case enums.DataType.DAILY_PREFECTURE:
+                return DailyPrefecture

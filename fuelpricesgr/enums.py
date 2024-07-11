@@ -1,10 +1,8 @@
 """The project enums
 """
-import collections.abc
+from collections.abc import Iterable, Generator
 import datetime
 import enum
-import importlib
-from collections.abc import Generator
 
 
 class ApplicationStatus(enum.Enum):
@@ -113,23 +111,6 @@ class DataType(enum.Enum):
     DAILY_COUNTRY = 'daily_country'
     DAILY_PREFECTURE = 'daily_prefecture'
 
-    def model(self):
-        """Return the database model for the data type.
-
-        :return: The database model for the data type.
-        """
-        module = importlib.import_module("fuelpricesgr.storage.sql_alchemy")
-
-        match self:
-            case self.WEEKLY_COUNTRY:
-                return getattr(module, 'WeeklyCountry')
-            case self.WEEKLY_PREFECTURE:
-                return getattr(module, 'WeeklyPrefecture')
-            case self.DAILY_COUNTRY:
-                return getattr(module, 'DailyCountry')
-            case self.DAILY_PREFECTURE:
-                return getattr(module, 'DailyPrefecture')
-
 
 class DataFileType(enum.Enum):
     """Enumeration for the different data file types.
@@ -143,8 +124,7 @@ class DataFileType(enum.Enum):
         'IMERISIO_DELTIO_ANA_NOMO'
     )
 
-    def __new__(cls, value: str, description: str, page: str, data_types: collections.abc.Iterable[DataType],
-                prefix: str):
+    def __new__(cls, value: str, description: str, page: str, data_types: Iterable[DataType], prefix: str):
         """Creates the enum.
 
         :param value: The enum value.
