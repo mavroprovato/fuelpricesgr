@@ -29,9 +29,6 @@ CACHE_BACKEND = env('CACHE_BACKEND', 'cachelib.base.NullCache')
 CACHE_PARAMETERS = env.dict('CACHE_PARAMETERS', {})
 CACHE_TIMEOUT = env.int('CACHE_TIMEOUT', 3600)
 
-# AWS configuration
-AWS_REGION = env('AWS_REGION', None)
-
 # Mail configuration
 MAIL = {
     'BACKEND': env('MAIL_BACKEND', 'fuelpricesgr.mail.ses.SESMailSender'),
