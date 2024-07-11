@@ -2,9 +2,8 @@
 """
 import fastapi.middleware
 import fastapi.middleware.cors
-import sqladmin
 
-from fuelpricesgr import storage, settings, views
+from fuelpricesgr import settings, views
 
 app = fastapi.FastAPI(
     title="Fuel Prices in Greece",
@@ -33,12 +32,12 @@ app = fastapi.FastAPI(
 )
 app.include_router(views.api.router)
 
-admin = sqladmin.Admin(
-    app, storage.sql_alchemy.engine,
-    authentication_backend=views.admin.AuthenticationBackend(secret_key=settings.SECRET_KEY)
-)
-admin.add_view(views.admin.DailyCountryAdmin)
-admin.add_view(views.admin.DailyPrefectureAdmin)
-admin.add_view(views.admin.WeeklyCountryAdmin)
-admin.add_view(views.admin.WeeklyPrefectureAdmin)
-admin.add_view(views.admin.UserAdmin)
+# admin = sqladmin.Admin(
+#     app, storage.sql_alchemy.engine,
+#     authentication_backend=views.admin.AuthenticationBackend(secret_key=settings.SECRET_KEY)
+# )
+# admin.add_view(views.admin.DailyCountryAdmin)
+# admin.add_view(views.admin.DailyPrefectureAdmin)
+# admin.add_view(views.admin.WeeklyCountryAdmin)
+# admin.add_view(views.admin.WeeklyPrefectureAdmin)
+# admin.add_view(views.admin.UserAdmin)

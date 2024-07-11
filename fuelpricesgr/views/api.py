@@ -68,10 +68,6 @@ def date_range(data_type: enums.DataType) -> Mapping[str, datetime.date | None]:
     :param data_type: The data type.
     :return: The available data date range for a data type.
     """
-    model = data_type.model()
-    if not model:
-        raise fastapi.HTTPException(status_code=404, detail="Not found")
-
     with storage.get_storage() as s:
         start_date, end_date = s.date_range(data_type=data_type)
 

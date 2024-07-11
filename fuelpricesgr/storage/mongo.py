@@ -40,7 +40,12 @@ class MongoDBStorage(base.BaseStorage):
         :param data_type: The data type.
         :return: The date range as a tuple. The first element is the minimum date and the second the maximum.
         """
-        # TODO: implement
+        result = list(self.db[self._get_collection_name(data_type=data_type)].aggregate(
+            [{"$group": {"_id": None, "min_date": {"$min": "$date"}, "max_date": {"$max": "$date"}}}]
+        ))
+        if result:
+            return result[0]['min_date'].date(), result[0]['max_date'].date()
+
         return None, None
 
     def daily_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
@@ -72,8 +77,12 @@ class MongoDBStorage(base.BaseStorage):
         :param data: The file data.
         """
         collection = self.db[self._get_collection_name(data_type=data_type)]
-        collection.delete_many(filter={'date': datetime.datetime.combine(date, datetime.time.min)})
-        documents = [{key: self._get_value(value) for key, value in row.items()} for row in data]
+        collection.delete_many(filter={'date': self.get_datetime_from_date(date)})
+        documents = [
+            {key: str(value) if isinstance(value, decimal.Decimal) else value for key, value in row.items()} |
+            {'date': self.get_datetime_from_date(date)}
+            for row in data
+        ]
         if data:
             collection.insert_many(documents=documents)
 
@@ -99,10 +108,10 @@ class MongoDBStorage(base.BaseStorage):
         return data_type.value
 
     @staticmethod
-    def _get_value(value):
-        if isinstance(value, datetime.date):
-            return datetime.datetime.combine(value, datetime.time.min)
-        if isinstance(value, decimal.Decimal):
-            return str(value)
+    def get_datetime_from_date(date: datetime.date) -> datetime.datetime:
+        """Return a datetime from a date.
 
-        return value
+        :param date: The datetime.
+        :return:
+        """
+        return datetime.datetime.combine(date, datetime.time.min)
