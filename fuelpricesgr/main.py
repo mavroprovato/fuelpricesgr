@@ -32,12 +32,18 @@ app = fastapi.FastAPI(
 )
 app.include_router(views.api.router)
 
-# admin = sqladmin.Admin(
-#     app, storage.sql_alchemy.engine,
-#     authentication_backend=views.admin.AuthenticationBackend(secret_key=settings.SECRET_KEY)
-# )
-# admin.add_view(views.admin.DailyCountryAdmin)
-# admin.add_view(views.admin.DailyPrefectureAdmin)
-# admin.add_view(views.admin.WeeklyCountryAdmin)
-# admin.add_view(views.admin.WeeklyPrefectureAdmin)
-# admin.add_view(views.admin.UserAdmin)
+# Add SQL admin if the backend is SQL Alchemy
+if settings.STORAGE_BACKEND == 'fuelpricesgr.storage.sql_alchemy.SqlAlchemyStorage':
+    import sqladmin
+    from fuelpricesgr.storage import sql_alchemy
+    from fuelpricesgr.views import admin as admin_views
+
+    admin = sqladmin.Admin(
+        app, sql_alchemy.engine,
+        authentication_backend=admin_views.AuthenticationBackend(secret_key=settings.SECRET_KEY)
+    )
+    admin.add_view(admin_views.DailyCountryAdmin)
+    admin.add_view(admin_views.DailyPrefectureAdmin)
+    admin.add_view(admin_views.WeeklyCountryAdmin)
+    admin.add_view(admin_views.WeeklyPrefectureAdmin)
+    admin.add_view(admin_views.UserAdmin)
