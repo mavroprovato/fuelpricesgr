@@ -15,11 +15,18 @@ class Status(pydantic.BaseModel):
     cache_status: enums.ApplicationStatus = pydantic.Field(title="The cache status")
 
 
-class NameDescription(pydantic.BaseModel):
-    """The name and description response.
+class FuelType(pydantic.BaseModel):
+    """The fuel type response.
     """
-    name: str = pydantic.Field(title="The name")
-    description: str = pydantic.Field(title="The description")
+    name: str = pydantic.Field(title="The fuel type name")
+    description: str = pydantic.Field(title="The fuel type description")
+
+
+class Prefecture(pydantic.BaseModel):
+    """The prefecture response.
+    """
+    name: str = pydantic.Field(title="The prefecture name")
+    description: str = pydantic.Field(title="The prefecture description")
 
 
 class DateRange(pydantic.BaseModel):
