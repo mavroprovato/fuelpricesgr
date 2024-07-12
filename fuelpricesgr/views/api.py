@@ -1,6 +1,5 @@
 """API related views
 """
-from collections.abc import Iterable, Mapping
 import datetime
 
 import fastapi
@@ -80,13 +79,13 @@ def date_range(data_type: enums.DataType) -> models.DateRange:
     path="/data/weekly/country",
     summary="Weekly country data",
     description="Return the weekly country data",
-    response_model=list[models.WeeklyCountry]
+    response_model=list[models.CountryData]
 )
 @caching.cache
 def weekly_country_data(
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> Iterable[Mapping[str, object]]:
+) -> list[models.CountryData]:
     """Return the weekly country data.
 
     :param start_date: The start date of the data to fetch.
@@ -100,16 +99,41 @@ def weekly_country_data(
 
 
 @router.get(
+    path="/data/weekly/prefectures/{prefecture}",
+    summary="Weekly prefecture data",
+    description="Return the weekly prefecture data",
+    response_model=list[models.PrefectureData]
+)
+@caching.cache
+def weekly_prefecture_data(
+        prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
+        start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
+        end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
+) -> list[models.PrefectureData]:
+    """Return the weekly prefecture data
+
+    :param prefecture: The prefecture for which to fetch data.
+    :param start_date: The start date of the data to fetch.
+    :param end_date: The end date of the data to fetch.
+    :return: The weekly prefecture data.
+    """
+    start_date, end_date = get_date_range(start_date, end_date)
+
+    with storage.get_storage() as s:
+        return s.weekly_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date)
+
+
+@router.get(
     path="/data/daily/country",
     summary="Daily country data",
     description="Returns the daily country data",
-    response_model=list[models.DailyCountry]
+    response_model=list[models.CountryData]
 )
 @caching.cache
 def daily_country_data(
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> Iterable[Mapping[str, object]]:
+) -> list[models.CountryData]:
     """Returns the daily country data.
 
     :param start_date: The start date of the data to fetch.
@@ -126,14 +150,14 @@ def daily_country_data(
     path="/data/daily/prefectures/{prefecture}",
     summary="Daily prefecture data",
     description="Return the daily prefecture data",
-    response_model=list[models.DailyPrefecture]
+    response_model=list[models.PrefectureData]
 )
 @caching.cache
 def daily_prefecture_data(
         prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> Iterable[Mapping[str, object]]:
+) -> list[models.PrefectureData]:
     """Returns the daily prefecture data.
 
     :param prefecture: The prefecture for which to fetch data.
@@ -148,38 +172,13 @@ def daily_prefecture_data(
 
 
 @router.get(
-    path="/data/weekly/prefectures/{prefecture}",
-    summary="Weekly prefecture data",
-    description="Return the weekly prefecture data",
-    response_model=list[models.WeeklyPrefecture]
-)
-@caching.cache
-def weekly_prefecture_data(
-        prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
-        start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
-        end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch.")
-) -> Iterable[Mapping[str, object]]:
-    """Return the weekly prefecture data
-
-    :param prefecture: The prefecture for which to fetch data.
-    :param start_date: The start date of the data to fetch.
-    :param end_date: The end date of the data to fetch.
-    :return: The weekly prefecture data.
-    """
-    start_date, end_date = get_date_range(start_date, end_date)
-
-    with storage.get_storage() as s:
-        return s.weekly_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date)
-
-
-@router.get(
     path="/data/country/{date}",
     summary="Country data",
     description="Return country data for a date for all prefectures along with the country averages",
-    response_model=models.Country
+    response_model=models.CountryDateData
 )
 @caching.cache
-def country_data(date: datetime.date = fastapi.Path(title="The date")) -> Mapping[str, object]:
+def country_data(date: datetime.date = fastapi.Path(title="The date")) -> models.CountryDateData:
     """Return the country data for a date.
 
     :param date: The date.

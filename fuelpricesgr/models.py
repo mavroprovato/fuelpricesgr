@@ -9,87 +9,72 @@ from fuelpricesgr import enums
 
 
 class Status(pydantic.BaseModel):
-    """The application status response.
+    """The application status model.
     """
     db_status: enums.ApplicationStatus = pydantic.Field(title="The database status")
     cache_status: enums.ApplicationStatus = pydantic.Field(title="The cache status")
 
 
 class FuelType(pydantic.BaseModel):
-    """The fuel type response.
+    """The fuel type model.
     """
     name: str = pydantic.Field(title="The fuel type name")
     description: str = pydantic.Field(title="The fuel type description")
 
 
 class Prefecture(pydantic.BaseModel):
-    """The prefecture response.
+    """The prefecture model.
     """
     name: str = pydantic.Field(title="The prefecture name")
     description: str = pydantic.Field(title="The prefecture description")
 
 
 class DateRange(pydantic.BaseModel):
-    """The date range response.
+    """The date range model.
     """
     start_date: datetime.date | None = pydantic.Field(title="The start date")
     end_date: datetime.date | None = pydantic.Field(title="The end date")
 
 
-class FuelTypePriceData(pydantic.BaseModel):
-    """The fuel type and price data.
+class PrefecturePriceData(pydantic.BaseModel):
+    """The prefecture price model.
     """
     fuel_type: enums.FuelType = pydantic.Field(title="The fuel type")
     price: decimal.Decimal = pydantic.Field(title="The price")
 
 
-class FuelTypePriceStationsData(FuelTypePriceData):
-    """The fuel type, number of stations and price data.
+class CountryPriceData(PrefecturePriceData):
+    """The country price model.
     """
     number_of_stations: int = pydantic.Field(title="The number of stations")
 
 
-class WeeklyCountry(pydantic.BaseModel):
-    """The weekly country response.
+class CountryData(pydantic.BaseModel):
+    """The country data model.
     """
     date: datetime.date = pydantic.Field(title="The date")
     data_file: str = pydantic.Field(title="The data file from which the data were fetched")
-    data: list[FuelTypePriceStationsData] = pydantic.Field(title="The weekly country data")
+    data: list[CountryPriceData] = pydantic.Field(title="The country data")
 
 
-class WeeklyPrefecture(pydantic.BaseModel):
-    """The weekly prefecture response.
+class PrefectureData(pydantic.BaseModel):
+    """The prefecture data model.
     """
     date: datetime.date = pydantic.Field(title="The date")
     data_file: str = pydantic.Field(title="The data file from which the data were fetched")
-    data: list[FuelTypePriceData] = pydantic.Field(title="The weekly prefecture data")
+    data: list[PrefecturePriceData] = pydantic.Field(title="The prefecture data")
 
 
-class DailyCountry(pydantic.BaseModel):
-    """The daily country data response.
-    """
-    date: datetime.date = pydantic.Field(title="The date")
-    data_file: str = pydantic.Field(title="The data file from which the data were fetched")
-    data: list[FuelTypePriceStationsData] = pydantic.Field(title="The daily country data")
-
-
-class DailyPrefecture(pydantic.BaseModel):
-    """The daily prefecture data response.
-    """
-    date: datetime.date = pydantic.Field(title="The date")
-    data_file: str = pydantic.Field(title="The data file from which the data were fetched")
-    data: list[FuelTypePriceData] = pydantic.Field(title="The daily prefecture data")
-
-
-class PrefectureDaily(pydantic.BaseModel):
-    """The prefecture daily data response.
+class PrefectureCountryData(pydantic.BaseModel):
+    """The prefecture country data model.
     """
     prefecture: enums.Prefecture = pydantic.Field(title="The prefecture")
-    data: list[FuelTypePriceData] = pydantic.Field(title="The prefecture data")
+    data: list[PrefecturePriceData] = pydantic.Field(title="The prefecture data")
 
 
-class Country(pydantic.BaseModel):
-    """The country data response.
+class CountryDateData(pydantic.BaseModel):
+    """The country date data model.
     """
-    prefectures: list[PrefectureDaily] = pydantic.Field(title="The prefecture data")
-    country: list[FuelTypePriceStationsData] = pydantic.Field(title="The country data")
+    prefectures: list[PrefectureCountryData] = pydantic.Field(title="The prefecture data")
+    country: list[CountryPriceData] = pydantic.Field(title="The country price data")
+
