@@ -72,10 +72,3 @@ def test_weekly_prefecture_data():
     for prefecture in enums.Prefecture:
         response = client.get(f"/data/weekly/prefectures/{prefecture.value}")
         assert response.status_code == 200
-
-
-def test_country_data():
-    """Test the country data endpoint.
-    """
-    response = client.get("/data/country/2023-01-01")
-    assert response.status_code == 200

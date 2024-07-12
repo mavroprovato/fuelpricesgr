@@ -2,7 +2,6 @@
 """
 from collections.abc import Iterable, Mapping
 import datetime
-import itertools
 import logging
 import os
 
@@ -137,86 +136,18 @@ class SqlAlchemyStorage(base.BaseStorage):
             sqlalchemy.func.min(self._get_model(data_type).date), sqlalchemy.func.max(self._get_model(data_type).date)
         ).one()
 
-    def daily_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
-        """Return the daily country data, grouped by date.
-
-        :param start_date: The start date.
-        :param end_date: The end date.
-        :return: A list of dictionaries with the results for each date.
-        """
-        return [
-            {
-                'date': date,
-                'data_file': enums.DataFileType.DAILY_COUNTRY.link(date=date),
-                'data': [
-                    {
-                        'fuel_type': row.fuel_type.name,
-                        'number_of_stations': row.number_of_stations,
-                        'price': row.price,
-                    } for row in date_group
-                ]
-            } for date, date_group in itertools.groupby(
-                self.db.query(DailyCountry).where(
-                    DailyCountry.date >= start_date, DailyCountry.date <= end_date
-                ).order_by(DailyCountry.date).all(),
-                lambda x: x.date
-            )
-        ]
-
-    def daily_prefecture_data(
-            self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
-    ) -> Iterable[Mapping[str, object]]:
-        """Return the daily prefecture data, grouped by date.
-
-        :param prefecture: The prefecture.
-        :param start_date: The start date.
-        :param end_date: The end date.
-        :return: A list of dictionaries with the results for each date.
-        """
-        return [
-            {
-                'date': date,
-                'data_file': enums.DataFileType.DAILY_PREFECTURE.link(date=date),
-                'data': [
-                    {
-                        'fuel_type': row.fuel_type.name,
-                        'price': row.price,
-                    } for row in date_group
-                ]
-            } for date, date_group in itertools.groupby(
-                self.db.query(DailyPrefecture).where(
-                    DailyPrefecture.prefecture == prefecture, DailyPrefecture.date >= start_date,
-                    DailyPrefecture.date <= end_date
-                ).order_by(DailyPrefecture.date).all(),
-                lambda x: x.date
-            )
-        ]
-
     def weekly_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
-        """Return the weekly country data, grouped by date.
+        """Return the weekly country data.
 
         :param start_date: The start date.
         :param end_date: The end date.
-        :return: A list of dictionaries with the results for each date.
+        :return: The weekly country data.
         """
-        return [
-            {
-                'date': date,
-                'data_file': enums.DataFileType.WEEKLY.link(date=date),
-                'data': [
-                    {
-                        'fuel_type': row.fuel_type.name,
-                        'price': row.price,
-                        'number_of_stations': row.number_of_stations,
-                    } for row in date_group
-                ]
-            } for date, date_group in itertools.groupby(
-                self.db.query(WeeklyCountry).where(
-                    WeeklyCountry.date >= start_date, WeeklyCountry.date <= end_date
-                ).order_by(WeeklyCountry.date).all(),
-                lambda x: x.date
+        return (
+            row.__dict__ for row in self.db.query(WeeklyCountry).where(
+                WeeklyCountry.date >= start_date, WeeklyCountry.date <= end_date
             )
-        ]
+        )
 
     def weekly_prefecture_data(
             self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
@@ -228,55 +159,42 @@ class SqlAlchemyStorage(base.BaseStorage):
         :param end_date: The end date.
         :return: A list of dictionaries with the results for each date.
         """
-        return [
-            {
-                'date': date,
-                'data_file': enums.DataFileType.WEEKLY.link(date=date),
-                'data': [
-                    {
-                        'fuel_type': row.fuel_type.name,
-                        'price': row.price,
-                    } for row in date_group
-                ]
-            } for date, date_group in itertools.groupby(
-                self.db.query(WeeklyPrefecture).where(
-                    WeeklyPrefecture.prefecture == prefecture, WeeklyPrefecture.date >= start_date,
-                    WeeklyPrefecture.date <= end_date,
-                ).order_by(WeeklyPrefecture.date).all(),
-                lambda x: x.date
+        return (
+            row.__dict__ for row in self.db.query(WeeklyPrefecture).where(
+                WeeklyPrefecture.prefecture == prefecture.value, WeeklyPrefecture.date >= start_date,
+                WeeklyPrefecture.date <= end_date
             )
-        ]
+        )
 
-    def country_data(self, date: datetime.date) -> Mapping[str, object]:
-        """Return the country data for a date.
+    def daily_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
+        """Return the daily country data.
 
-        :param date: The date.
-        :return: The country data.
+        :param start_date: The start date.
+        :param end_date: The end date.
+        :return: A list of dictionaries with the results for each date.
         """
-        return {
-            'prefectures': [
-                {
-                    'prefecture': prefecture,
-                    'data': [
-                        {
-                            'fuel_type': row.fuel_type.name,
-                            'price': row.price
-                        } for row in list(prefecture_group)
-                    ]
-                } for prefecture, prefecture_group in itertools.groupby(
-                    self.db.query(DailyPrefecture).where(DailyPrefecture.date == date).order_by(
-                        DailyPrefecture.prefecture),
-                    lambda x: x.prefecture
-                )
-            ],
-            'country': [
-                {
-                    'fuel_type': row.fuel_type.name,
-                    'price': row.price,
-                    'number_of_stations': row.number_of_stations
-                } for row in self.db.query(DailyCountry).where(DailyCountry.date == date)
-            ]
-        }
+        return (
+            row.__dict__ for row in self.db.query(DailyCountry).where(
+                DailyCountry.date >= start_date, DailyCountry.date <= end_date
+            )
+        )
+
+    def daily_prefecture_data(
+            self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
+    ) -> Iterable[Mapping[str, object]]:
+        """Return the daily prefecture data, grouped by date.
+
+        :param prefecture: The prefecture.
+        :param start_date: The start date.
+        :param end_date: The end date.
+        :return: A list of dictionaries with the results for each date.
+        """
+        return (
+            row.__dict__ for row in self.db.query(DailyPrefecture).where(
+                DailyPrefecture.prefecture == prefecture.value, DailyPrefecture.date >= start_date,
+                DailyPrefecture.date <= end_date
+            )
+        )
 
     def data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
         """Check if data exists for the data file type for the date.

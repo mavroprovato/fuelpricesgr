@@ -102,15 +102,6 @@ class BaseStorage(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def country_data(self, date: datetime.date) -> Mapping[str, object]:
-        """Return the country data for a date.
-
-        :param date: The date.
-        :return: The country data.
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
     def data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
         """Check if data exists for the data type for the date.
 

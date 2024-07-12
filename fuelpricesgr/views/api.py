@@ -1,6 +1,7 @@
 """API related views
 """
 import datetime
+import itertools
 
 import fastapi
 
@@ -95,7 +96,19 @@ def weekly_country_data(
     start_date, end_date = get_date_range(start_date, end_date)
 
     with storage.get_storage() as s:
-        return s.weekly_country_data(start_date=start_date, end_date=end_date)
+        return [
+            models.CountryData(date=date, data_file=enums.DataFileType.WEEKLY.link(date=date), data=[
+                models.CountryPriceData(
+                    fuel_type=row['fuel_type'], price=row['price'], number_of_stations=row.get('number_of_stations')
+                ) for row in date_group
+            ])
+            for date, date_group in itertools.groupby(
+                sorted(
+                    s.weekly_country_data(start_date=start_date, end_date=end_date), key=lambda x: x['date'],
+                    reverse=True
+                ), lambda x: x['date']
+            )
+        ]
 
 
 @router.get(
@@ -120,7 +133,17 @@ def weekly_prefecture_data(
     start_date, end_date = get_date_range(start_date, end_date)
 
     with storage.get_storage() as s:
-        return s.weekly_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date)
+        return [
+            models.PrefectureData(date=date, data_file=enums.DataFileType.WEEKLY.link(date=date), data=[
+                models.PrefecturePriceData(fuel_type=row['fuel_type'], price=row['price']) for row in date_group
+            ])
+            for date, date_group in itertools.groupby(
+                sorted(
+                    s.weekly_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date),
+                    key=lambda x: x['date'], reverse=True
+                ), lambda x: x['date']
+            )
+        ]
 
 
 @router.get(
@@ -143,7 +166,19 @@ def daily_country_data(
     start_date, end_date = get_date_range(start_date, end_date)
 
     with storage.get_storage() as s:
-        return s.daily_country_data(start_date=start_date, end_date=end_date)
+        return [
+            models.CountryData(date=date, data_file=enums.DataFileType.WEEKLY.link(date=date), data=[
+                models.CountryPriceData(
+                    fuel_type=row['fuel_type'], price=row['price'], number_of_stations=row.get('number_of_stations')
+                ) for row in date_group
+            ])
+            for date, date_group in itertools.groupby(
+                sorted(
+                    s.daily_country_data(start_date=start_date, end_date=end_date), key=lambda x: x['date'],
+                    reverse=True
+                ), lambda x: x['date']
+            )
+        ]
 
 
 @router.get(
@@ -168,24 +203,17 @@ def daily_prefecture_data(
     start_date, end_date = get_date_range(start_date, end_date)
 
     with storage.get_storage() as s:
-        return s.daily_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date)
-
-
-@router.get(
-    path="/data/country/{date}",
-    summary="Country data",
-    description="Return country data for a date for all prefectures along with the country averages",
-    response_model=models.CountryDateData
-)
-@caching.cache
-def country_data(date: datetime.date = fastapi.Path(title="The date")) -> models.CountryDateData:
-    """Return the country data for a date.
-
-    :param date: The date.
-    :return: The country data.
-    """
-    with storage.get_storage() as s:
-        return s.country_data(date=date)
+        return [
+            models.PrefectureData(date=date, data_file=enums.DataFileType.WEEKLY.link(date=date), data=[
+                models.PrefecturePriceData(fuel_type=row['fuel_type'], price=row['price']) for row in date_group
+            ])
+            for date, date_group in itertools.groupby(
+                sorted(
+                    s.daily_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date),
+                    key=lambda x: x['date'], reverse=True
+                ), lambda x: x['date']
+            )
+        ]
 
 
 def get_date_range(start_date: datetime.date, end_date: datetime.date) -> tuple[datetime.date, datetime.date]:

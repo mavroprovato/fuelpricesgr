@@ -80,9 +80,6 @@ class MongoDBStorage(base.BaseStorage):
                                end_date: datetime.date) -> Iterable[Mapping[str, object]]:
         raise NotImplementedError()
 
-    def country_data(self, date: datetime.date) -> Mapping[str, object]:
-        raise NotImplementedError()
-
     def data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
         """Check if data exists for the data type for the date.
 
