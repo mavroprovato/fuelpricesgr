@@ -56,35 +56,12 @@ class BaseStorage(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def daily_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
-        """Return the daily country data, grouped by date.
-
-        :param start_date: The start date.
-        :param end_date: The end date.
-        :return: A list of dictionaries with the results for each date.
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def daily_prefecture_data(
-            self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
-    ) -> Iterable[Mapping[str, object]]:
-        """Return the daily prefecture data, grouped by date.
-
-        :param prefecture: The prefecture.
-        :param start_date: The start date.
-        :param end_date: The end date.
-        :return: A list of dictionaries with the results for each date.
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
     def weekly_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
-        """Return the weekly country data, grouped by date.
+        """Return the weekly country data.
 
         :param start_date: The start date.
         :param end_date: The end date.
-        :return: A list of dictionaries with the results for each date.
+        :return: The weekly country data.
         """
         raise NotImplementedError()
 
@@ -92,12 +69,35 @@ class BaseStorage(abc.ABC):
     def weekly_prefecture_data(
             self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
     ) -> Iterable[Mapping[str, object]]:
-        """Return the weekly prefecture data, grouped by date.
+        """Return the weekly prefecture data.
 
         :param prefecture: The prefecture.
         :param start_date: The start date.
         :param end_date: The end date.
-        :return: A list of dictionaries with the results for each date.
+        :return: The weekly prefecture data.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def daily_prefecture_data(
+            self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
+    ) -> Iterable[Mapping[str, object]]:
+        """Return the daily prefecture data.
+
+        :param prefecture: The prefecture.
+        :param start_date: The start date.
+        :param end_date: The end date.
+        :return: The daily prefecture data.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def daily_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
+        """Return the daily country data.
+
+        :param start_date: The start date.
+        :param end_date: The end date.
+        :return: The daily country data.
         """
         raise NotImplementedError()
 

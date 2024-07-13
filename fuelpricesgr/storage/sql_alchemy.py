@@ -152,12 +152,12 @@ class SqlAlchemyStorage(base.BaseStorage):
     def weekly_prefecture_data(
             self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
     ) -> Iterable[Mapping[str, object]]:
-        """Return the weekly prefecture data, grouped by date.
+        """Return the weekly prefecture data.
 
         :param prefecture: The prefecture.
         :param start_date: The start date.
         :param end_date: The end date.
-        :return: A list of dictionaries with the results for each date.
+        :return: The weekly prefecture data.
         """
         return (
             row.__dict__ for row in self.db.query(WeeklyPrefecture).where(
@@ -171,7 +171,7 @@ class SqlAlchemyStorage(base.BaseStorage):
 
         :param start_date: The start date.
         :param end_date: The end date.
-        :return: A list of dictionaries with the results for each date.
+        :return: The daily country data.
         """
         return (
             row.__dict__ for row in self.db.query(DailyCountry).where(
@@ -182,12 +182,12 @@ class SqlAlchemyStorage(base.BaseStorage):
     def daily_prefecture_data(
             self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
     ) -> Iterable[Mapping[str, object]]:
-        """Return the daily prefecture data, grouped by date.
+        """Return the daily prefecture data.
 
         :param prefecture: The prefecture.
         :param start_date: The start date.
         :param end_date: The end date.
-        :return: A list of dictionaries with the results for each date.
+        :return: The daily prefecture data.
         """
         return (
             row.__dict__ for row in self.db.query(DailyPrefecture).where(

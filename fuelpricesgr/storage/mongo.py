@@ -65,20 +65,62 @@ class MongoDBStorage(base.BaseStorage):
 
         return None, None
 
+    def weekly_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
+        """Return the weekly country data.
+
+        :param start_date: The start date.
+        :param end_date: The end date.
+        :return: A list of dictionaries with the results for each date.
+        """
+        return self.db[self._get_collection_name(data_type=enums.DataType.WEEKLY_COUNTRY)].find({
+            'date': {
+                '$gte': datetime.datetime.combine(start_date, datetime.time.min),
+                '$lte': datetime.datetime.combine(end_date, datetime.time.max)
+            }
+        })
+
+    def weekly_prefecture_data(
+            self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
+    ) -> Iterable[Mapping[str, object]]:
+        """Return the weekly prefecture data.
+
+        :param prefecture: The prefecture.
+        :param start_date: The start date.
+        :param end_date: The end date.
+        :return: The weekly prefecture data.
+        """
+        return self.db[self._get_collection_name(data_type=enums.DataType.WEEKLY_PREFECTURE)].find({
+            'prefecture': prefecture.value,
+            'date': {
+                '$gte': datetime.datetime.combine(start_date, datetime.time.min),
+                '$lte': datetime.datetime.combine(end_date, datetime.time.max)
+            }
+        })
+
     def daily_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
-        raise NotImplementedError()
+        """Return the daily country data.
+
+        :param start_date: The start date.
+        :param end_date: The end date.
+        :return: The daily country data.
+        """
+        return self.db[self._get_collection_name(data_type=enums.DataType.DAILY_COUNTRY)].find({
+            'date': {
+                '$gte': datetime.datetime.combine(start_date, datetime.time.min),
+                '$lte': datetime.datetime.combine(end_date, datetime.time.max)
+            }
+        })
 
     def daily_prefecture_data(
             self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
     ) -> Iterable[Mapping[str, object]]:
-        raise NotImplementedError()
-
-    def weekly_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
-        raise NotImplementedError()
-
-    def weekly_prefecture_data(self, prefecture: enums.Prefecture, start_date: datetime.date,
-                               end_date: datetime.date) -> Iterable[Mapping[str, object]]:
-        raise NotImplementedError()
+        return self.db[self._get_collection_name(data_type=enums.DataType.DAILY_PREFECTURE)].find({
+            'prefecture': prefecture.value,
+            'date': {
+                '$gte': datetime.datetime.combine(start_date, datetime.time.min),
+                '$lte': datetime.datetime.combine(end_date, datetime.time.max)
+            }
+        })
 
     def data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
         """Check if data exists for the data type for the date.
