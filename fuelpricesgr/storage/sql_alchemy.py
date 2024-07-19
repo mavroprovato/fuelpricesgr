@@ -87,8 +87,8 @@ class User(Base):
     __tablename__ = 'users'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
-    email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True)
-    password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    email = sqlalchemy.Column(sqlalchemy.String(length=255), index=True, unique=True)
+    password = sqlalchemy.Column(sqlalchemy.String(length=255), nullable=False)
     active = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=True)
     admin = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=False)
     created_at = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False, server_default=sqlalchemy.sql.func.now())
