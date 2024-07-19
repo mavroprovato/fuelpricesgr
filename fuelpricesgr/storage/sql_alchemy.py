@@ -33,69 +33,82 @@ class WeeklyCountry(Base):
     """The weekly country database model
     """
     __tablename__ = 'weekly_country'
-    __table_args__ = (sqlalchemy.UniqueConstraint('date', 'fuel_type'), )
+    __table_args__ = (sqlalchemy.UniqueConstraint('date', 'fuel_type'), {'comment': 'Weekly country fuel data'})
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
-    date = sqlalchemy.Column(sqlalchemy.Date, index=True)
-    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
-    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
-    number_of_stations = sqlalchemy.Column(sqlalchemy.SmallInteger)
+    id = sqlalchemy.Column(
+        sqlalchemy.Integer, primary_key=True, index=True, comment='Unique identifier for weekly country data')
+    date = sqlalchemy.Column(sqlalchemy.Date, index=True, comment='The date for the data')
+    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False, comment='The fuel type for the data')
+    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False, comment='The price')
+    number_of_stations = sqlalchemy.Column(sqlalchemy.SmallInteger, comment='The number of stations')
 
 
 class DailyCountry(Base):
     """The daily country database model
     """
     __tablename__ = 'daily_country'
-    __table_args__ = (sqlalchemy.UniqueConstraint('date', 'fuel_type'), )
+    __table_args__ = (sqlalchemy.UniqueConstraint('date', 'fuel_type'), {'comment': 'Daily country fuel data'})
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
-    date = sqlalchemy.Column(sqlalchemy.Date, nullable=False)
-    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
-    number_of_stations = sqlalchemy.Column(sqlalchemy.SmallInteger, nullable=False)
-    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
+    id = sqlalchemy.Column(
+        sqlalchemy.Integer, primary_key=True, index=True, comment='Unique identifier for daily country data')
+    date = sqlalchemy.Column(sqlalchemy.Date, nullable=False, comment='The date for the data')
+    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False, comment='The fuel type for the data')
+    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False, comment='The price')
+    number_of_stations = sqlalchemy.Column(sqlalchemy.SmallInteger, nullable=False, comment='The number of stations')
 
 
 class DailyPrefecture(Base):
     """The daily prefecture database model
     """
     __tablename__ = 'daily_prefecture'
-    __table_args__ = (sqlalchemy.UniqueConstraint('date', 'prefecture', 'fuel_type'), )
+    __table_args__ = (
+        sqlalchemy.UniqueConstraint('date', 'prefecture', 'fuel_type'), {'comment': 'Daily prefecture fuel data'}
+    )
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
-    date = sqlalchemy.Column(sqlalchemy.Date, nullable=False)
-    prefecture = sqlalchemy.Column(sqlalchemy.Enum(enums.Prefecture), nullable=False)
-    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
-    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
+    id = sqlalchemy.Column(
+        sqlalchemy.Integer, primary_key=True, index=True, comment='Unique identifier for daily prefecture data')
+    date = sqlalchemy.Column(sqlalchemy.Date, nullable=False, comment='The date for the data')
+    prefecture = sqlalchemy.Column(
+        sqlalchemy.Enum(enums.Prefecture), nullable=False, comment='The prefecture for the data')
+    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False, comment='The fuel type for the data')
+    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False, comment='The price')
 
 
 class WeeklyPrefecture(Base):
     """The weekly prefecture database model
     """
     __tablename__ = 'weekly_prefecture'
-    __table_args__ = (sqlalchemy.UniqueConstraint('date', 'prefecture', 'fuel_type'), )
+    __table_args__ = (
+        sqlalchemy.UniqueConstraint('date', 'prefecture', 'fuel_type'), {'comment': 'Weekly prefecture fuel data'}
+    )
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
-    date = sqlalchemy.Column(sqlalchemy.Date, nullable=False)
-    prefecture = sqlalchemy.Column(sqlalchemy.Enum(enums.Prefecture), nullable=False)
-    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False)
-    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False)
+    id = sqlalchemy.Column(
+        sqlalchemy.Integer, primary_key=True, index=True, comment='Unique identifier for weekly prefecture data')
+    date = sqlalchemy.Column(sqlalchemy.Date, nullable=False, comment='The date for the data')
+    prefecture = sqlalchemy.Column(
+        sqlalchemy.Enum(enums.Prefecture), nullable=False, comment='The prefecture for the data')
+    fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False, comment='The fuel type for the data')
+    price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False, comment='The price')
 
 
 class User(Base):
     """The user database model
     """
     __tablename__ = 'users'
+    __table_args__ = {'comment': 'The user data'}
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True)
-    email = sqlalchemy.Column(sqlalchemy.String(length=255), index=True, unique=True)
-    password = sqlalchemy.Column(sqlalchemy.String(length=255), nullable=False)
-    active = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=True)
-    admin = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=False)
-    created_at = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False, server_default=sqlalchemy.sql.func.now())
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, index=True, comment='Unique identifier for the user')
+    email = sqlalchemy.Column(sqlalchemy.String(length=255), index=True, unique=True, comment='The user email')
+    password = sqlalchemy.Column(sqlalchemy.String(length=255), nullable=False, comment='The user password hash')
+    active = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=True, comment='True if the user is active')
+    admin = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=False, comment='True if the user is admin')
+    created_at = sqlalchemy.Column(
+        sqlalchemy.DateTime, nullable=False, server_default=sqlalchemy.sql.func.now(),
+        comment='The date and time when the user was created')
     updated_at = sqlalchemy.Column(
         sqlalchemy.DateTime, nullable=False, server_default=sqlalchemy.sql.func.now(),
-        onupdate=sqlalchemy.sql.func.now())
-    last_login = sqlalchemy.Column(sqlalchemy.DateTime)
+        onupdate=sqlalchemy.sql.func.now(), comment='The date and time when the user was last updated')
+    last_login = sqlalchemy.Column(sqlalchemy.DateTime, comment='The date and time when the user last logged in')
 
 
 class SqlAlchemyStorage(base.BaseStorage):
