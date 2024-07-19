@@ -290,3 +290,5 @@ class SqlAlchemyStorage(base.BaseStorage):
                 return DailyCountry
             case enums.DataType.DAILY_PREFECTURE:
                 return DailyPrefecture
+            case _:
+                raise ValueError(f"Cannot handle data type {data_type}")
