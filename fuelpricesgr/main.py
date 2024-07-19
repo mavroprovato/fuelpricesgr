@@ -23,11 +23,7 @@ app = fastapi.FastAPI(
     docs_url=None,
     redoc_url='/docs',
     middleware=[
-        fastapi.middleware.Middleware(
-            fastapi.middleware.cors.CORSMiddleware,
-            allow_origins=settings.CORS_ALLOW_ORIGINS,
-            allow_methods=['GET'],
-        )
+        fastapi.middleware.Middleware(fastapi.middleware.cors.CORSMiddleware, allow_methods=['GET'])
     ]
 )
 app.include_router(views.api.router)

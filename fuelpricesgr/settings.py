@@ -12,9 +12,6 @@ env.read_env()
 # The base data path
 DATA_PATH = pathlib.Path(__file__).parent.parent / 'var'
 
-# CORS allow origins
-CORS_ALLOW_ORIGINS = env('CORS_ALLOW_ORIGINS', 'http://127.0.0.1:8080,http://localhost:8080').split(',')
-
 # Secret key for cryptographic signing
 SECRET_KEY = env('SECRET_KEY', ''.join(secrets.choice(string.ascii_letters + string.punctuation) for _ in range(64)))
 
