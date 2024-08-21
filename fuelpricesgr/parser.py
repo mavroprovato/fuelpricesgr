@@ -135,6 +135,8 @@ class Parser(abc.ABC):
 
 
 class CountryParser:
+    """Parser for country data files
+    """
     # The fuel type regexes
     FUEL_TYPE_REGEXES = {
         enums.FuelType.UNLEADED_95: r'Αμόλ ?[υσ]βδ ?[ηθ] +9 ?5 +ο ?κ ?[τη] ?\.',
@@ -183,6 +185,8 @@ class CountryParser:
 
 
 class PrefectureParser:
+    """Parser for prefecture data files
+    """
     # The prefecture regexes
     PREFECTURE_REGEXES = {
         enums.Prefecture.ATTICA: r'Α\s?[ΤΣ]\s?[ΤΣ]\s?[ΙΗ]\s?Κ\s?[ΗΖ]\s?[Σ΢]',
