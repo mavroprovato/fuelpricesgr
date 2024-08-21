@@ -57,3 +57,25 @@ In order to run the docker image run
 ```
 docker run -p 8000:8000 mavroprovato/fuelpricesgr
 ```
+
+## Development
+
+In order to run the application tests, run
+
+```
+pytest fuelpricesgr/tests.py
+```
+
+In order to get the test coverage report, run
+
+```
+coverage run fuelpricesgr/tests.py
+```
+
+This will generate an HTML coverage report in `htmlcov/index.html`
+
+In order to get a pylint report, run
+
+```
+pylint fuelpricesgr
+```
