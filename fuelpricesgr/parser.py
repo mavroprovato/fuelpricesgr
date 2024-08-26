@@ -165,10 +165,9 @@ class CountryParser:
         :param text: The country data text.
         :param date: The date.
         :param weekly: True if the data are weekly.
-        :return: The weekly country data.
+        :return: The country data.
         """
         data = []
-
         for fuel_type in enums.FuelType:
             regex = cls.FUEL_TYPE_REGEXES[fuel_type] + cls.FUEL_TYPE_VALUES_REGEXES[fuel_type]
             if match := re.search(regex, text):
