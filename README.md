@@ -63,13 +63,13 @@ docker run -p 8000:8000 mavroprovato/fuelpricesgr
 In order to run the application tests, run
 
 ```
-pytest fuelpricesgr/tests.py
+pytest
 ```
 
 In order to get the test coverage report, run
 
 ```
-coverage run fuelpricesgr/tests.py
+coverage run -m pytest .
 ```
 
 This will generate an HTML coverage report in `htmlcov/index.html`
