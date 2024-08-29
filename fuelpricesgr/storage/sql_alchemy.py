@@ -17,15 +17,23 @@ from . import base
 logger = logging.getLogger(__name__)
 
 # Initialize SQL Alchemy
-os.makedirs(settings.DATA_PATH, exist_ok=True)
-engine = sqlalchemy.create_engine(settings.STORAGE_URL, echo=settings.SHOW_SQL)
-SessionLocal = sqlalchemy.orm.sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = sqlalchemy.orm.declarative_base()
+
+
+def get_engine() -> sqlalchemy.Engine:
+    """Get the SQLAlchemy engine.
+
+    :return: The SQLAlchemy engine
+    """
+    os.makedirs(settings.DATA_PATH, exist_ok=True)
+
+    return sqlalchemy.create_engine(settings.STORAGE_URL, echo=settings.SHOW_SQL)
 
 
 def init_storage():
     """Initialize the storage
     """
+    engine = get_engine()
     Base.metadata.create_all(engine)
 
 
@@ -117,7 +125,7 @@ class SqlAlchemyStorage(base.BaseStorage):
     def __init__(self):
         """Class constructor.
         """
-        self.db: SessionLocal = SessionLocal()
+        self.db = sqlalchemy.orm.sessionmaker(autocommit=False, autoflush=False, bind=get_engine())()
 
     def close(self):
         """Closes the connection to the database.

@@ -6,8 +6,8 @@ from fuelpricesgr import settings, views
 
 app = fastapi.FastAPI(
     title="Fuel Prices in Greece",
-    description=
-    """An API that returns data for fuel prices in Greece. Daily and weekly data about fuel prices are regularly
+    description="""
+    An API that returns data for fuel prices in Greece. Daily and weekly data about fuel prices are regularly
     uploaded at the [Παρατηρητήριο Τιμών Υγρών Καυσίμων](http://www.fuelprices.gr/) website by the Greek Government, but
     the data are published as PDF files. With this API you can get the data in a structured manner.""",
     contact={
@@ -27,15 +27,15 @@ app.include_router(views.api.router)
 # Add SQL admin if the backend is SQL Alchemy
 if settings.STORAGE_BACKEND == 'fuelpricesgr.storage.sql_alchemy.SqlAlchemyStorage':
     import sqladmin
-    from fuelpricesgr.storage import sql_alchemy
-    from fuelpricesgr.views import admin as admin_views
+    import fuelpricesgr.storage.sql_alchemy
+    import fuelpricesgr.views.admin
 
     admin = sqladmin.Admin(
-        app, sql_alchemy.engine,
-        authentication_backend=admin_views.AuthenticationBackend(secret_key=settings.SECRET_KEY)
+        app, fuelpricesgr.storage.sql_alchemy.get_engine(),
+        authentication_backend=fuelpricesgr.views.admin.AuthenticationBackend(secret_key=settings.SECRET_KEY)
     )
-    admin.add_view(admin_views.DailyCountryAdmin)
-    admin.add_view(admin_views.DailyPrefectureAdmin)
-    admin.add_view(admin_views.WeeklyCountryAdmin)
-    admin.add_view(admin_views.WeeklyPrefectureAdmin)
-    admin.add_view(admin_views.UserAdmin)
+    admin.add_view(fuelpricesgr.views.admin.DailyCountryAdmin)
+    admin.add_view(fuelpricesgr.views.admin.DailyPrefectureAdmin)
+    admin.add_view(fuelpricesgr.views.admin.WeeklyCountryAdmin)
+    admin.add_view(fuelpricesgr.views.admin.WeeklyPrefectureAdmin)
+    admin.add_view(fuelpricesgr.views.admin.UserAdmin)
