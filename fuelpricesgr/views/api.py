@@ -112,7 +112,7 @@ def weekly_country_data(
 
 
 @router.get(
-    path="/data/weekly/prefectures/{prefecture}",
+    path="/data/weekly/prefecture/{prefecture}",
     summary="Weekly prefecture data",
     description="Return the weekly prefecture data",
     response_model=list[models.PrefectureData]
@@ -182,7 +182,7 @@ def daily_country_data(
 
 
 @router.get(
-    path="/data/daily/prefectures/{prefecture}",
+    path="/data/daily/prefecture/{prefecture}",
     summary="Daily prefecture data",
     description="Return the daily prefecture data",
     response_model=list[models.PrefectureData]
