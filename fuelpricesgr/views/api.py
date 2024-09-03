@@ -167,7 +167,7 @@ def daily_country_data(
 
     with storage.get_storage() as s:
         return [
-            models.CountryData(date=date, data_file=enums.DataFileType.WEEKLY.link(date=date), data=[
+            models.CountryData(date=date, data_file=enums.DataFileType.DAILY_COUNTRY.link(date=date), data=[
                 models.CountryPriceData(
                     fuel_type=row['fuel_type'], price=row['price'], number_of_stations=row.get('number_of_stations')
                 ) for row in date_group
@@ -204,7 +204,7 @@ def daily_prefecture_data(
 
     with storage.get_storage() as s:
         return [
-            models.PrefectureData(date=date, data_file=enums.DataFileType.WEEKLY.link(date=date), data=[
+            models.PrefectureData(date=date, data_file=enums.DataFileType.DAILY_PREFECTURE.link(date=date), data=[
                 models.PrefecturePriceData(fuel_type=row['fuel_type'], price=row['price']) for row in date_group
             ])
             for date, date_group in itertools.groupby(
