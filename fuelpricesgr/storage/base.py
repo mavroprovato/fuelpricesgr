@@ -16,7 +16,6 @@ def init_storage():
     storage_module.init_storage()
 
 
-@contextlib.contextmanager
 def get_storage() -> 'BaseStorage':
     """Get the storage.
 
@@ -24,19 +23,18 @@ def get_storage() -> 'BaseStorage':
     """
     storage_module = importlib.import_module('.'.join(settings.STORAGE_BACKEND.split('.')[:-1]))
     storage_class = getattr(storage_module, settings.STORAGE_BACKEND.split('.')[-1])
-    s = storage_class()
-    try:
-        yield s
-    finally:
-        s.close()
+
+    return storage_class()
 
 
 class BaseStorage(abc.ABC):
     """The abstract base class for the storage.
     """
-    def close(self):
-        """Release the resources. By default, do nothing
-        """
+    def __enter__(self):
+        raise NotImplementedError("The storage class does not implement the context manager protocol")
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        raise NotImplementedError("The storage class does not implement the context manager protocol")
 
     @abc.abstractmethod
     def status(self) -> enums.ApplicationStatus:

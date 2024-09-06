@@ -122,12 +122,14 @@ class User(Base):
 class SqlAlchemyStorage(base.BaseStorage):
     """Storage implementation based on SQL Alchemy.
     """
-    def __init__(self):
-        """Class constructor.
+    def __enter__(self):
+        """Enter the context manager.
         """
         self.db = sqlalchemy.orm.sessionmaker(autocommit=False, autoflush=False, bind=get_engine())()
 
-    def close(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
         """Closes the connection to the database.
         """
         self.db.close()

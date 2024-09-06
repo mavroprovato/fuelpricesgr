@@ -32,10 +32,17 @@ def init_storage():
 class MongoDBStorage(base.BaseStorage):
     """Storage implementation based on MongoDB.
     """
-    def __init__(self):
-        """Create the MongoDB storage backend.
+    def __enter__(self):
+        """Enter the context manager.
         """
         self.db = client.get_default_database()
+
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Closes the connection to the database.
+        """
+        self.db.close()
 
     def status(self) -> enums.ApplicationStatus:
         """Return the status of the application storage.
