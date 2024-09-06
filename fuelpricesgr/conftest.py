@@ -6,13 +6,17 @@ from fuelpricesgr.tests import common, factories
 
 
 def pytest_configure():
-    """Configure pytest.
+    """Configure tests.
     """
     storage_url = f"sqlite:///{(settings.DATA_PATH / 'db_test.sqlite')}"
-    engine = get_engine(storage_url)
-    common.Session.configure(bind=engine)
+    common.Session.configure(bind=get_engine(storage_url))
     init_storage(storage_url)
+    create_test_data()
 
+
+def create_test_data():
+    """Create the data for testing
+    """
     factories.WeeklyCountryFactory.create_batch(size=1000)
     factories.WeeklyPrefectureFactory.create_batch(size=1000)
     factories.DailyCountryFactory.create_batch(size=1000)

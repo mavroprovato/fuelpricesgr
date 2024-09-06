@@ -6,6 +6,7 @@ from sqlalchemy import orm
 from fuelpricesgr import main, storage, views
 from fuelpricesgr.storage.sql_alchemy import SqlAlchemyStorage
 
+# Session for tests
 Session = orm.scoped_session(orm.sessionmaker())
 
 
@@ -34,4 +35,3 @@ main.app.dependency_overrides[views.api.get_storage] = get_test_storage
 
 # The test client
 client = TestClient(main.app)
-
