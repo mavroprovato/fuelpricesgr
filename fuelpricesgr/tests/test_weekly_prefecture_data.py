@@ -1,11 +1,8 @@
 """Test the weekly country endpoint
 """
-from fastapi.testclient import TestClient
+from fuelpricesgr import enums
 
-from fuelpricesgr import enums, main
-
-# The test client
-client = TestClient(main.app)
+from .common import client
 
 
 def test_weekly_prefecture_data():
@@ -13,4 +10,5 @@ def test_weekly_prefecture_data():
     """
     for prefecture in enums.Prefecture:
         response = client.get(f"/data/weekly/prefecture/{prefecture.value}")
+
         assert response.status_code == 200
