@@ -9,6 +9,7 @@ from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
 from fuelpricesgr import storage
+from fuelpricesgr.storage import sql_alchemy
 
 
 class BaseAdmin(sqladmin.ModelView):
@@ -27,7 +28,7 @@ class BaseAdmin(sqladmin.ModelView):
         return {attr: attr.key.replace('_', ' ').capitalize() for attr in sqlalchemy.inspect(self.model).attrs}
 
 
-class DailyCountryAdmin(BaseAdmin, model=storage.sql_alchemy.DailyCountry):
+class DailyCountryAdmin(BaseAdmin, model=sql_alchemy.DailyCountry):
     """The daily country admin.
     """
     name = "Daily Country Data"
@@ -38,7 +39,7 @@ class DailyCountryAdmin(BaseAdmin, model=storage.sql_alchemy.DailyCountry):
     column_default_sort = [('date', True), ('fuel_type', False)]
 
 
-class DailyPrefectureAdmin(BaseAdmin, model=storage.sql_alchemy.DailyPrefecture):
+class DailyPrefectureAdmin(BaseAdmin, model=sql_alchemy.DailyPrefecture):
     """The daily country admin.
     """
     name = "Daily Prefecture Data"
@@ -52,7 +53,7 @@ class DailyPrefectureAdmin(BaseAdmin, model=storage.sql_alchemy.DailyPrefecture)
     column_default_sort = [('date', True), ('prefecture', False), ('fuel_type', False)]
 
 
-class WeeklyCountryAdmin(BaseAdmin, model=storage.sql_alchemy.WeeklyCountry):
+class WeeklyCountryAdmin(BaseAdmin, model=sql_alchemy.WeeklyCountry):
     """The daily country admin.
     """
     name = "Weekly Country Data"
@@ -63,7 +64,7 @@ class WeeklyCountryAdmin(BaseAdmin, model=storage.sql_alchemy.WeeklyCountry):
     column_default_sort = [('date', True), ('fuel_type', False)]
 
 
-class WeeklyPrefectureAdmin(BaseAdmin, model=storage.sql_alchemy.WeeklyPrefecture):
+class WeeklyPrefectureAdmin(BaseAdmin, model=sql_alchemy.WeeklyPrefecture):
     """The daily country admin.
     """
     name = "Weekly Prefecture Data"
@@ -77,7 +78,7 @@ class WeeklyPrefectureAdmin(BaseAdmin, model=storage.sql_alchemy.WeeklyPrefectur
     column_default_sort = [('date', True), ('prefecture', False), ('fuel_type', True)]
 
 
-class UserAdmin(BaseAdmin, model=storage.sql_alchemy.User):
+class UserAdmin(BaseAdmin, model=sql_alchemy.User):
     """The user admin.
     """
     column_searchable_list = ('email', )
