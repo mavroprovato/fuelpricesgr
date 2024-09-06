@@ -20,20 +20,20 @@ logger = logging.getLogger(__name__)
 Base = sqlalchemy.orm.declarative_base()
 
 
-def get_engine() -> sqlalchemy.Engine:
+def get_engine(storage_url: str = settings.STORAGE_URL) -> sqlalchemy.Engine:
     """Get the SQLAlchemy engine.
 
     :return: The SQLAlchemy engine
     """
     os.makedirs(settings.DATA_PATH, exist_ok=True)
 
-    return sqlalchemy.create_engine(settings.STORAGE_URL, echo=settings.SHOW_SQL)
+    return sqlalchemy.create_engine(storage_url, echo=settings.SHOW_SQL)
 
 
-def init_storage():
+def init_storage(storage_url: str = settings.STORAGE_URL):
     """Initialize the storage
     """
-    engine = get_engine()
+    engine = get_engine(storage_url)
     Base.metadata.create_all(engine)
 
 
