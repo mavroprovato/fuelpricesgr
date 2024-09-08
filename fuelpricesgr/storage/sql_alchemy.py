@@ -122,6 +122,11 @@ class User(Base):
 class SqlAlchemyStorage(base.BaseStorage):
     """Storage implementation based on SQL Alchemy.
     """
+    def __init__(self):
+        """Constructor for the class
+        """
+        self.db = None
+
     def __enter__(self):
         """Enter the context manager.
         """

@@ -2,7 +2,6 @@
 """
 import abc
 from collections.abc import Iterable, Mapping
-import contextlib
 import datetime
 import importlib
 

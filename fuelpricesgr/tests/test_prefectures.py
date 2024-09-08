@@ -15,4 +15,3 @@ def test_prefectures():
     for index, prefecture in enumerate(enums.Prefecture):
         assert response.json()[index]['name'] == prefecture.value
         assert response.json()[index]['description'] == prefecture.description
-

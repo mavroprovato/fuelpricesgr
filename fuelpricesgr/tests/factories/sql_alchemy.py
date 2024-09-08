@@ -61,4 +61,3 @@ class DailyPrefectureFactory(factory.alchemy.SQLAlchemyModelFactory):
     fuel_type = factory.Faker('enum', enum_cls=enums.FuelType)
     prefecture = factory.Faker('enum', enum_cls=enums.Prefecture)
     price = factory.Faker('pydecimal', right_digits=3, min_value=0.5, max_value=2.5)
-

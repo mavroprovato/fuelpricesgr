@@ -32,6 +32,11 @@ def init_storage():
 class MongoDBStorage(base.BaseStorage):
     """Storage implementation based on MongoDB.
     """
+    def __init__(self):
+        """Constructor for the class
+        """
+        self.db = None
+
     def __enter__(self):
         """Enter the context manager.
         """
