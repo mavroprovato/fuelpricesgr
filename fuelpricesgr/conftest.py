@@ -1,6 +1,8 @@
 """Configure testing module
 """
-from fuelpricesgr import settings
+import datetime
+
+from fuelpricesgr import enums, parser, settings
 from fuelpricesgr.storage.sql_alchemy import get_engine, init_storage
 from fuelpricesgr.tests import common, factories
 
@@ -17,7 +19,17 @@ def pytest_configure():
 def create_test_data():
     """Create the data for testing
     """
-    factories.WeeklyCountryFactory.create_batch(size=1000)
-    factories.WeeklyPrefectureFactory.create_batch(size=1000)
-    factories.DailyCountryFactory.create_batch(size=1000)
-    factories.DailyPrefectureFactory.create_batch(size=1000)
+    print("Creating test data")
+    end_date = datetime.date.today()
+    date = end_date - datetime.timedelta(days=100)
+    while date < end_date:
+        for fuel_type in enums.FuelType:
+            if parser.Parser.data_should_exist(fuel_type=fuel_type, date=date):
+                factories.WeeklyCountryFactory.create(date=date, fuel_type=fuel_type)
+                factories.DailyCountryFactory.create(date=date, fuel_type=fuel_type)
+                for prefecture in enums.Prefecture:
+                    factories.WeeklyPrefectureFactory.create(date=date, prefecture=prefecture, fuel_type=fuel_type)
+                    factories.DailyPrefectureFactory.create(date=date, prefecture=prefecture, fuel_type=fuel_type)
+        date += datetime.timedelta(days=1)
+    common.Session().commit()
+    print("Test data created")

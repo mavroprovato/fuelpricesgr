@@ -13,7 +13,6 @@ class WeeklyCountryFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = fuelpricesgr.storage.sql_alchemy.WeeklyCountry
         sqlalchemy_session = common.Session
-        sqlalchemy_session_persistence = 'commit'
         sqlalchemy_get_or_create = ('date', 'fuel_type')
 
     date = factory.Faker('past_date', start_date='-1y')
@@ -28,7 +27,6 @@ class WeeklyPrefectureFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = fuelpricesgr.storage.sql_alchemy.WeeklyPrefecture
         sqlalchemy_session = common.Session
-        sqlalchemy_session_persistence = 'commit'
         sqlalchemy_get_or_create = ('date', 'prefecture', 'fuel_type')
 
     date = factory.Faker('past_date', start_date='-1y')
@@ -43,7 +41,6 @@ class DailyCountryFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = fuelpricesgr.storage.sql_alchemy.DailyCountry
         sqlalchemy_session = common.Session
-        sqlalchemy_session_persistence = 'commit'
         sqlalchemy_get_or_create = ('date', 'fuel_type')
 
     date = factory.Faker('past_date', start_date='-1y')
@@ -58,7 +55,6 @@ class DailyPrefectureFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = fuelpricesgr.storage.sql_alchemy.DailyPrefecture
         sqlalchemy_session = common.Session
-        sqlalchemy_session_persistence = 'commit'
         sqlalchemy_get_or_create = ('date', 'prefecture', 'fuel_type')
 
     date = factory.Faker('past_date', start_date='-1y')
