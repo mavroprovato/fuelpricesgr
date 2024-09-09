@@ -40,7 +40,7 @@ class PrefecturePriceData(pydantic.BaseModel):
     """The prefecture price model.
     """
     fuel_type: enums.FuelType = pydantic.Field(title="The fuel type")
-    price: decimal.Decimal = pydantic.Field(title="The price")
+    price: decimal.Decimal = pydantic.Field(title="The price", max_digits=4, decimal_places=3)
 
 
 class CountryPriceData(PrefecturePriceData):
