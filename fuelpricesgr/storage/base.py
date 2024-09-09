@@ -77,7 +77,7 @@ class BaseStorage(abc.ABC):
 
     @abc.abstractmethod
     def daily_prefecture_data(
-            self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
+            self, prefecture: enums.Prefecture = None, start_date: datetime.date = None, end_date: datetime.date = None
     ) -> Iterable[Mapping[str, object]]:
         """Return the daily prefecture data.
 

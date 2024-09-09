@@ -230,6 +230,39 @@ def daily_prefecture_data(
     ]
 
 
+@router.get(
+    path="/data/daily/{date}",
+    summary="Daily data",
+    description="Return the daily data for a specific date for all prefectures",
+    response_model=models.DailyData
+)
+@caching.cache
+def daily_data(
+        date: datetime.date = fastapi.Path(title="The date for which to fetch the daily data"),
+        s: BaseStorage = Depends(get_storage)
+) -> models.DailyData:
+    """Return the daily data.
+
+    :param date: The date for which to fetch the daily data.
+    :param s: The storage backend.
+    :return: The daily data.
+    """
+    return models.DailyData(
+        data_file=enums.DataFileType.DAILY_PREFECTURE.link(date=date),
+        data=[
+            models.PrefectureCountryData(prefecture=prefecture, data=[
+                models.PrefecturePriceData(fuel_type=row['fuel_type'], price=row['price'])
+                for row in prefecture_group
+            ])
+            for prefecture, prefecture_group in itertools.groupby(
+                sorted(
+                    s.daily_prefecture_data(start_date=date, end_date=date), key=lambda x: x['prefecture'].description
+                ), lambda x: x['prefecture']
+            )
+        ]
+    )
+
+
 def get_date_range(start_date: datetime.date, end_date: datetime.date) -> tuple[datetime.date, datetime.date]:
     """Get the date range from the provided start and end dates.
 

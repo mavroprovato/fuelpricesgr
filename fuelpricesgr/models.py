@@ -70,3 +70,10 @@ class PrefectureCountryData(pydantic.BaseModel):
     """
     prefecture: enums.Prefecture = pydantic.Field(title="The prefecture")
     data: list[PrefecturePriceData] = pydantic.Field(title="The prefecture data")
+
+
+class DailyData(pydantic.BaseModel):
+    """The daily data model.
+    """
+    data_file: str = pydantic.Field(title="The data file from which the data were fetched")
+    data: list[PrefectureCountryData] = pydantic.Field(title="The prefecture data")
