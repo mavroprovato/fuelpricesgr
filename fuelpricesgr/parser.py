@@ -205,7 +205,7 @@ class PrefectureParser:
         enums.Prefecture.EUBOEA: r'[ΕΔ]\s?[ΥΤ]\s?Β\s?Ο\s?[ΙΗ]\s?Α\s?[Σ΢]',
         enums.Prefecture.EVRYTANIA: r'[ΕΔ]\s?[ΥΤ]\s?Ρ\s?[ΥΤ]\s?[ΤΣ]\s?Α\s?Ν\s?[ΙΗ]Α\s?[Σ΢]',
         enums.Prefecture.ZAKYNTHOS: r'[ΖΕ]\s?Α\s?Κ\s?[ΥΤ]\s?Ν\s?Θ\s?Ο\s?[ΥΤ]',
-        enums.Prefecture.ELIS: r'[ΗΖ]\s?Λ\s?[ΕΔ]\s?[ΙΗ]Α\s?[Σ΢]',
+        enums.Prefecture.ELIS: r'[ΗΖ]\s?Λ\s?[ΕΔ]\s?[ΙΗ]\s?Α\s?[Σ΢]',
         enums.Prefecture.IMATHIA: r'[ΗΖ]\s?Μ\s?Α\s?Θ\s?[ΙΗ]\s?Α\s?[Σ΢]',
         enums.Prefecture.HERAKLION: r'[ΗΖ]\s?Ρ\s?Α\s?Κ\s?Λ\s?[ΕΔ]\s?[ΙΗ]\s?Ο\s?[ΥΤ]',
         enums.Prefecture.THESPROTIA: r'Θ\s?[ΕΔ]\s?[Σ΢]\s?Π\s?Ρ\s?Ω\s?[ΤΣ]\s?[ΙΗ]\s?Α\s?[Σ΢]',
@@ -284,6 +284,7 @@ class PrefectureParser:
                             'price': price,
                         })
             else:
+                print(text)
                 logger.error("Could not find %s prefecture data for %s and date %s", 'weekly' if weekly else 'daily',
                              prefecture.description, date)
 
