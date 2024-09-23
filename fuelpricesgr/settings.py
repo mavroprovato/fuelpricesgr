@@ -15,6 +15,9 @@ DATA_PATH = pathlib.Path(__file__).parent.parent / 'var'
 # Secret key for cryptographic signing
 SECRET_KEY = env('SECRET_KEY', ''.join(secrets.choice(string.ascii_letters + string.punctuation) for _ in range(64)))
 
+# The maximum number of days to return from the API
+MAX_DAYS = env.int('MAX_DAYS', 365)
+
 # Flag to show SQL
 SHOW_SQL = env.bool('SHOW_SQL', False)
 

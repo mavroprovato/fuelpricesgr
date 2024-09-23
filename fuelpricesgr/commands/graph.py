@@ -1,16 +1,17 @@
+"""The graph data command.
+"""
 import datetime
 
 import matplotlib.pyplot as plt
 
-from fuelpricesgr import enums, storage
-
-# The maximum number of days to display in the graph
-MAX_DAYS = 365
+from fuelpricesgr import enums, settings, storage
 
 
 def main():
+    """Graphs the data.
+    """
     end_date = datetime.date.today()
-    start_date = end_date - datetime.timedelta(days=MAX_DAYS)
+    start_date = end_date - datetime.timedelta(days=settings.MAX_DAYS)
 
     dates = []
     prices = []
