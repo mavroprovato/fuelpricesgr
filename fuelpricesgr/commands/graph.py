@@ -49,7 +49,9 @@ def plot(data, start_date: datetime.date, end_date: datetime.date, fuel_types: I
 
     fig, ax = plt.subplots()
     for fuel_type in enums.FuelType:
-        ax.plot(dates, prices[fuel_type])
+        ax.plot(dates, prices[fuel_type], label=fuel_type.description)
+    ax.set_title(f"Fuel prices between {start_date} and {end_date}")
+    ax.legend()
     plt.show()
 
 
