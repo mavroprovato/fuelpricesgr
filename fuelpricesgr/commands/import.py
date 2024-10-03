@@ -39,7 +39,7 @@ def parse_data_file_type(data_file_types: str) -> Iterable[enums.DataFileType] |
 def parse_arguments() -> argparse.Namespace:
     """Parse the command line arguments.
 
-    :return:
+    :return: The parsed arguments.
     """
     arg_parser = argparse.ArgumentParser(description='Fetch the data from the site and insert them to the database')
     arg_parser.add_argument('--types', type=parse_data_file_type,
@@ -98,7 +98,7 @@ def get_fetch_date_range(
     :param s: The storage.
     :param args: The command line arguments.
     :param data_type: The data type.
-    :return: The start and a
+    :return: The start and end date as a tuple.
     """
     start_date, end_date = args.start_date, args.end_date
 
