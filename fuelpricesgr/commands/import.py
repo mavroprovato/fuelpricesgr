@@ -1,11 +1,12 @@
 """Command to import data into the database.
 """
 import argparse
-from collections.abc import Iterable, Mapping
+from collections.abc import Mapping
 import datetime
 import io
 import logging
 import sys
+from typing import Type
 
 from fuelpricesgr import caching, fetcher, enums, mail, storage
 
@@ -21,7 +22,7 @@ _MIN_FILE_TYPE_DATES: Mapping[enums.DataType, datetime.date] = {
 }
 
 
-def parse_data_file_type(data_file_types: str) -> Iterable[enums.DataFileType] | None:
+def parse_data_file_type(data_file_types: str) -> list[Type[enums.DataFileType]] | None:
     """Parse the data file types argument.
 
     :param data_file_types: The data file types argument.
