@@ -14,9 +14,8 @@ Data are available since:
 
 ## Running the API
 
-The backend API is a [Python](https://www.python.org) based project, built with [FastAPI](https://fastapi.tiangolo.com),
-that uses [Poetry](https://python-poetry.org) for dependency management. In order to install the dependencies, you need
-to run:
+The backend API is a [Python](https://www.python.org) based project, built with [FastAPI](https://fastapi.tiangolo.com), that uses [Poetry](https://python-poetry.org)
+for dependency management. In order to install the dependencies, you need to run:
 
 ```
 poetry install

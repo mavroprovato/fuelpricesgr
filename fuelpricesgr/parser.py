@@ -284,7 +284,6 @@ class PrefectureParser:
                             'price': price,
                         })
             else:
-                print(text)
                 logger.error("Could not find %s prefecture data for %s and date %s", 'weekly' if weekly else 'daily',
                              prefecture.description, date)
 
