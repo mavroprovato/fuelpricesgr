@@ -2,6 +2,7 @@
 """
 import datetime
 import itertools
+from collections.abc import Generator
 
 import fastapi
 from fastapi import Depends
@@ -13,7 +14,7 @@ from fuelpricesgr.storage import BaseStorage
 router = fastapi.APIRouter()
 
 
-def get_storage() -> storage.BaseStorage:
+def get_storage() -> Generator[storage.BaseStorage]:
     """Get the storage backend.
 
     :return: The storage backend.
