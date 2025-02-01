@@ -7,6 +7,7 @@ import logging
 
 import pymongo
 import pymongo.errors
+import pymongo.synchronous.collection
 
 from fuelpricesgr import enums, settings
 from . import base
@@ -184,7 +185,7 @@ class MongoDBStorage(base.BaseStorage):
     def get_admin_user_emails(self) -> list[str]:
         raise NotImplementedError()
 
-    def get_collection(self, data_type: enums.DataType) -> pymongo.collection.Collection:
+    def get_collection(self, data_type: enums.DataType) -> pymongo.synchronous.collection.Collection:
         """Return the collection for the data type.
 
         :param data_type: The data type.
