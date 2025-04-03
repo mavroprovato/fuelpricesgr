@@ -14,29 +14,36 @@ Data are available since:
 
 ## Running the API
 
-The backend API is a [Python](https://www.python.org) based project, built with [FastAPI](https://fastapi.tiangolo.com), that uses [Poetry](https://python-poetry.org)
-for dependency management. In order to install the dependencies, you need to run:
+The backend API is a [Python](https://www.python.org) based project, built with [FastAPI](https://fastapi.tiangolo.com),
+that uses [uv](https://docs.astral.sh/uv/) for dependency management. In order to install uv, you need to run:
+
+```shell
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+If you don't have the required Python version install, you need to run
+
+```shell
+uv python install 3.13
+```
+
+By default, the data are stored in an [SQLite](https://www.sqlite.org) database. In order to fetch the data you need to
+run:
 
 ```
-poetry install
-```
-
-The data are stored in an [SQLite](https://www.sqlite.org) database. In order to fetch the data you need to run:
-
-```
-python -m fuelpricesgr.commands.import
+uv run python -m fuelpricesgr.commands.import
 ```
 
 This command accepts various parameters to limit the data to be fetched. You can see them by running
 
 ```
-python -m fuelpricesgr.commands.import --help
+uv run python -m fuelpricesgr.commands.import --help
 ```
 
 Now you can launch the API by running the command:
 
 ```
-uvicorn fuelpricesgr.main:app
+uv run uvicorn fuelpricesgr.main:app
 ```
 
 The API is now available at http://localhost:8000. The documentation for the API is available at
@@ -62,13 +69,13 @@ docker run -p 8000:8000 mavroprovato/fuelpricesgr
 In order to run the application tests, run
 
 ```
-pytest
+uv run pytest
 ```
 
 In order to get the test coverage report, run
 
 ```
-coverage run -m pytest .
+uv run coverage run -m pytest .
 ```
 
 This will generate an HTML coverage report in `htmlcov/index.html`
@@ -76,5 +83,5 @@ This will generate an HTML coverage report in `htmlcov/index.html`
 In order to get a pylint report, run
 
 ```
-pylint fuelpricesgr
+uv run pylint fuelpricesgr
 ```
