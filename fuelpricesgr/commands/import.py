@@ -56,7 +56,7 @@ def parse_arguments() -> argparse.Namespace:
     arg_parser.add_argument('--update', default=False, action="store_true",
                             help="Update existing data. By default existing data are not updated")
     arg_parser.add_argument('--verbose', default=False, action="store_true", help="Verbose logging")
-    arg_parser.add_argument('--send-mail', default=False, action="store_true",
+    arg_parser.add_argument('--send-mail', default=True, action="store_true",
                             help="Send mail after running the command")
 
     return arg_parser.parse_args()

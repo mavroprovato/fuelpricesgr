@@ -61,14 +61,18 @@ class MailSender:
         """
         if not self.initialized:
             return
+        recipients = self.get_recipients()
+        if not recipients:
+            logger.error("No recipients configured")
+            return
 
-        self.do_send(recipients=self.get_recipients(), subject=subject, html_content=html_content)
+        self.do_send(subject=subject, recipients=recipients, html_content=html_content)
 
-    def do_send(self, recipients: list[str], subject: str, html_content: str):
+    def do_send(self, subject: str, recipients: list[str], html_content: str):
         """Send an email.
 
-        :param recipients: The list of recipients.
         :param subject: The mail subject.
+        :param recipients: The list of recipients.
         :param html_content: The HTML content of the message.
         """
         raise NotImplementedError()

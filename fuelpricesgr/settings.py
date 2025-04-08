@@ -32,7 +32,7 @@ CACHE_TIMEOUT = env.int('CACHE_TIMEOUT', 3600)
 
 # Mail configuration
 MAIL = {
-    'BACKEND': env('MAIL_BACKEND', 'fuelpricesgr.mail.ses.SESMailSender'),
+    'BACKEND': env('MAIL_BACKEND', 'fuelpricesgr.mail.filebased.FileBasedMailSender'),
     'SENDER': env('MAIL_SENDER', None),
     'PARAMETERS': env.dict('MAIL_PARAMETERS', {}),
 }
