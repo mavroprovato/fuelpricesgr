@@ -73,7 +73,7 @@ def parse_arguments() -> argparse.Namespace:
     return arg_parser.parse_args()
 
 
-def parse_fuel_type(fuel_types: str) -> Iterable[type[enums.FuelType]] | None:
+def parse_fuel_type(fuel_types: str) -> Iterable[enums.FuelType] | None:
     """Parse the fuel types argument.
 
     :param fuel_types: The fuel types argument.
