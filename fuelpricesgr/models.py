@@ -36,14 +36,14 @@ class DateRange(pydantic.BaseModel):
     end_date: datetime.date | None = pydantic.Field(title="The end date")
 
 
-class PrefecturePriceData(pydantic.BaseModel):
+class PriceData(pydantic.BaseModel):
     """The prefecture price model.
     """
     fuel_type: enums.FuelType = pydantic.Field(title="The fuel type")
     price: decimal.Decimal = pydantic.Field(title="The price", max_digits=4, decimal_places=3)
 
 
-class CountryPriceData(PrefecturePriceData):
+class PriceDataWithNumberOfStations(PriceData):
     """The country price model.
     """
     number_of_stations: int = pydantic.Field(title="The number of stations")
@@ -54,7 +54,7 @@ class CountryData(pydantic.BaseModel):
     """
     date: datetime.date = pydantic.Field(title="The date")
     data_file: str = pydantic.Field(title="The data file from which the data were fetched")
-    data: list[CountryPriceData] = pydantic.Field(title="The country data")
+    data: list[PriceDataWithNumberOfStations] = pydantic.Field(title="The country data")
 
 
 class PrefectureData(pydantic.BaseModel):
@@ -62,14 +62,14 @@ class PrefectureData(pydantic.BaseModel):
     """
     date: datetime.date = pydantic.Field(title="The date")
     data_file: str = pydantic.Field(title="The data file from which the data were fetched")
-    data: list[PrefecturePriceData] = pydantic.Field(title="The prefecture data")
+    data: list[PriceData] = pydantic.Field(title="The prefecture data")
 
 
 class PrefectureCountryData(pydantic.BaseModel):
     """The prefecture country data model.
     """
     prefecture: enums.Prefecture = pydantic.Field(title="The prefecture")
-    data: list[PrefecturePriceData] = pydantic.Field(title="The prefecture data")
+    data: list[PriceData] = pydantic.Field(title="The prefecture data")
 
 
 class DailyData(pydantic.BaseModel):

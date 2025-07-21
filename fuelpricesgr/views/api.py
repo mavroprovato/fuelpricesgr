@@ -107,7 +107,7 @@ def weekly_country_data(
 
     return [
         models.CountryData(date=date, data_file=enums.DataFileType.WEEKLY.link(date=date), data=[
-            models.CountryPriceData(
+            models.PriceDataWithNumberOfStations(
                 fuel_type=row['fuel_type'], price=row['price'], number_of_stations=row.get('number_of_stations')
             ) for row in date_group
         ])
@@ -145,7 +145,7 @@ def weekly_prefecture_data(
 
     return [
         models.PrefectureData(date=date, data_file=enums.DataFileType.WEEKLY.link(date=date), data=[
-            models.PrefecturePriceData(fuel_type=row['fuel_type'], price=row['price']) for row in date_group
+            models.PriceData(fuel_type=row['fuel_type'], price=row['price']) for row in date_group
         ])
         for date, date_group in itertools.groupby(
             sorted(
@@ -179,7 +179,7 @@ def daily_country_data(
 
     return [
         models.CountryData(date=date, data_file=enums.DataFileType.DAILY_COUNTRY.link(date=date), data=[
-            models.CountryPriceData(
+            models.PriceDataWithNumberOfStations(
                 fuel_type=row['fuel_type'], price=row['price'], number_of_stations=row.get('number_of_stations')
             ) for row in date_group
         ])
@@ -217,7 +217,7 @@ def daily_prefecture_data(
 
     return [
         models.PrefectureData(date=date, data_file=enums.DataFileType.DAILY_PREFECTURE.link(date=date), data=[
-            models.PrefecturePriceData(fuel_type=row['fuel_type'], price=row['price']) for row in date_group
+            models.PriceData(fuel_type=row['fuel_type'], price=row['price']) for row in date_group
         ])
         for date, date_group in itertools.groupby(
             sorted(
@@ -249,7 +249,7 @@ def daily_data(
         data_file=enums.DataFileType.DAILY_PREFECTURE.link(date=date),
         data=[
             models.PrefectureCountryData(prefecture=prefecture, data=[
-                models.PrefecturePriceData(fuel_type=row['fuel_type'], price=row['price'])
+                models.PriceData(fuel_type=row['fuel_type'], price=row['price'])
                 for row in prefecture_group
             ])
             for prefecture, prefecture_group in itertools.groupby(
