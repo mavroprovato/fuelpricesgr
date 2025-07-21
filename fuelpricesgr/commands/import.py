@@ -8,7 +8,7 @@ import logging
 import sys
 from typing import Type
 
-from fuelpricesgr import caching, fetcher, enums, mail, storage
+from fuelpricesgr import caching, fetcher, enums, mail, models, storage
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -75,9 +75,12 @@ def import_data(s: storage.base.BaseStorage, args: argparse.Namespace) -> bool:
         for data_file_type in data_file_types:
             data_fetcher = fetcher.Fetcher(data_file_type=data_file_type)
             for data_type in data_file_type.data_types:
-                start_date, end_date = get_fetch_date_range(s=s, args=args, data_type=data_type)
-                logger.info("Fetching %s data between %s and %s", data_file_type.description, start_date, end_date)
-                for date in data_file_type.dates(start_date=start_date, end_date=end_date):
+                date_range = get_fetch_date_range(s=s, args=args, data_type=data_type)
+                logger.info(
+                    "Fetching %s data between %s and %s", data_file_type.description, date_range.start_date,
+                    date_range.end_date
+                )
+                for date in data_file_type.dates(start_date=date_range.start_date, end_date=date_range.end_date):
                     if args.update or not s.data_exists(data_type=data_type, date=date):
                         file_data = data_fetcher.data(date=date, skip_cache=args.skip_cache)
                         s.update_data(date=date, data_type=data_type, data=file_data.get(data_type, []))
@@ -89,8 +92,8 @@ def import_data(s: storage.base.BaseStorage, args: argparse.Namespace) -> bool:
 
 
 def get_fetch_date_range(
-        s: storage.base.BaseStorage, args: argparse.Namespace, data_type: enums.DataType
-) -> tuple[datetime.date, datetime.date]:
+    s: storage.base.BaseStorage, args: argparse.Namespace, data_type: enums.DataType
+) -> models.DateRange:
     """Get the date range for which to fetch data, based on the passed arguments. If the start date is not provided,
     then the last available date for the data file type is set as the start date. If there are no available data, then
     the first available data date on the site is set as the start date. If the end date is not provided, then today's
@@ -104,14 +107,16 @@ def get_fetch_date_range(
     start_date, end_date = args.start_date, args.end_date
 
     if start_date is None:
-        _, start_date = s.date_range(data_type=data_type)
-        if not start_date:
+        date_range = s.date_range(data_type=data_type)
+        if date_range.end_date:
+            start_date = date_range.end_date
+        else:
             start_date = _MIN_FILE_TYPE_DATES[data_type]
 
     if end_date is None:
         end_date = datetime.date.today()
 
-    return start_date, end_date
+    return models.DateRange(start_date=start_date, end_date=end_date)
 
 
 def send_mail(log_stream: io.StringIO, error: bool):

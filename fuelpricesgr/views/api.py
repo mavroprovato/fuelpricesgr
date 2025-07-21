@@ -79,9 +79,7 @@ def date_range(data_type: enums.DataType, s: BaseStorage = Depends(get_storage))
     :param s: The storage backend.
     :return: The available data date range for a data type.
     """
-    start_date, end_date = s.date_range(data_type=data_type)
-
-    return models.DateRange(start_date=start_date, end_date=end_date)
+    return s.date_range(data_type=data_type)
 
 
 @router.get(

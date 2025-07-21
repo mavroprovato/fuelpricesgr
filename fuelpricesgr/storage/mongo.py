@@ -9,7 +9,7 @@ import pymongo
 import pymongo.errors
 import pymongo.synchronous.collection
 
-from fuelpricesgr import enums, settings
+from fuelpricesgr import enums, models, settings
 from . import base
 
 
@@ -63,19 +63,20 @@ class MongoDBStorage(base.BaseStorage):
 
             return enums.ApplicationStatus.ERROR
 
-    def date_range(self, data_type: enums.DataType) -> (datetime.date | None, datetime.date | None):
+    def date_range(self, data_type: enums.DataType) -> models.DateRange:
         """Return the date range for a data type.
 
         :param data_type: The data type.
         :return: The date range as a tuple. The first element is the minimum date and the second the maximum.
         """
+        min_date, max_date = None, None
         result = list(self.get_collection(data_type=data_type).aggregate(
-            [{"$group": {"_id": None, "min_date": {"$min": "$date"}, "max_date": {"$max": "$date"}}}]
+            [{'$group': {'_id': None, 'start_date': {'$min': '$date'}, 'end_date': {'$max': "$date"}}}]
         ))
         if result:
-            return result[0]['min_date'].date(), result[0]['max_date'].date()
+            min_date, max_date = result[0]['start_date'].date(), result[0]['end_date'].date()
 
-        return None, None
+        return models.DateRange(start_date=min_date, end_date=max_date)
 
     def weekly_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
         """Return the weekly country data.

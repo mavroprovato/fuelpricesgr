@@ -10,7 +10,7 @@ import sqlalchemy
 import sqlalchemy.exc
 import sqlalchemy.orm
 
-from fuelpricesgr import enums, settings
+from fuelpricesgr import enums, models, settings
 from . import base
 
 # The module logger
@@ -154,15 +154,17 @@ class SqlAlchemyStorage(base.BaseStorage):
 
         return db_status
 
-    def date_range(self, data_type: enums.DataType) -> (datetime.date | None, datetime.date | None):
+    def date_range(self, data_type: enums.DataType) -> models.DateRange:
         """Return the date range for a data type.
 
         :param data_type: The data type.
         :return: The date range as a tuple. The first element is the minimum date and the second the maximum.
         """
-        return self.db.query(
+        result = self.db.query(
             sqlalchemy.func.min(self._get_model(data_type).date), sqlalchemy.func.max(self._get_model(data_type).date)
         ).one()
+
+        return models.DateRange(start_date=result[0], end_date=result[1])
 
     def weekly_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
         """Return the weekly country data.

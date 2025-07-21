@@ -5,7 +5,7 @@ from collections.abc import Iterable, Mapping
 import datetime
 import importlib
 
-from fuelpricesgr import enums, settings
+from fuelpricesgr import enums, models, settings
 
 
 def init_storage():
@@ -44,7 +44,7 @@ class BaseStorage(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def date_range(self, data_type: enums.DataType) -> (datetime.date | None, datetime.date | None):
+    def date_range(self, data_type: enums.DataType) -> models.DateRange:
         """Return the date range for a data type.
 
         :param data_type: The data type.
