@@ -5,6 +5,7 @@ import datetime
 import decimal
 import logging
 
+import argon2
 import pymongo
 import pymongo.errors
 import pymongo.synchronous.collection
@@ -23,10 +24,13 @@ def init_storage():
     with MongoDBStorage() as storage:
         # Create the indexes
         for data_type in enums.DataType:
-            collection = storage.get_collection(data_type=data_type)
+            collection = storage._get_collection_for_data_type(data_type=data_type)
             index_fields = {'date': 1} | (
-                {'prefecture': 1} if data_type.value.endswith('_prefecture') else {}) | {'fuel_type': 1}
+                {'prefecture': 1} if data_type.value.endswith('_prefecture') else {}
+            ) | {'fuel_type': 1}
             collection.create_index(index_fields)
+        collection = storage.client.get_default_database()['users']
+        collection.create_index({'email': 1})
 
 
 class MongoDBStorage(base.BaseStorage):
@@ -55,7 +59,7 @@ class MongoDBStorage(base.BaseStorage):
         :return: The status of the application storage.
         """
         try:
-            self.client.get_default_database().command({"serverStatus": 1})
+            self.client.get_default_database().command({'serverStatus': 1})
 
             return enums.ApplicationStatus.OK
         except pymongo.errors.PyMongoError:
@@ -70,7 +74,7 @@ class MongoDBStorage(base.BaseStorage):
         :return: The date range as a tuple. The first element is the minimum date and the second the maximum.
         """
         min_date, max_date = None, None
-        result = list(self.get_collection(data_type=data_type).aggregate(
+        result = list(self._get_collection_for_data_type(data_type=data_type).aggregate(
             [{'$group': {'_id': None, 'start_date': {'$min': '$date'}, 'end_date': {'$max': "$date"}}}]
         ))
         if result:
@@ -85,7 +89,7 @@ class MongoDBStorage(base.BaseStorage):
         :param end_date: The end date.
         :return: A list of dictionaries with the results for each date.
         """
-        return self.get_collection(data_type=enums.DataType.WEEKLY_COUNTRY).find({
+        return self._get_collection_for_data_type(data_type=enums.DataType.WEEKLY_COUNTRY).find({
             'date': {
                 '$gte': datetime.datetime.combine(start_date, datetime.time.min),
                 '$lte': datetime.datetime.combine(end_date, datetime.time.max)
@@ -102,7 +106,7 @@ class MongoDBStorage(base.BaseStorage):
         :param end_date: The end date.
         :return: The weekly prefecture data.
         """
-        return self.get_collection(data_type=enums.DataType.WEEKLY_PREFECTURE).find({
+        return self._get_collection_for_data_type(data_type=enums.DataType.WEEKLY_PREFECTURE).find({
             'prefecture': prefecture.value,
             'date': {
                 '$gte': datetime.datetime.combine(start_date, datetime.time.min),
@@ -117,7 +121,7 @@ class MongoDBStorage(base.BaseStorage):
         :param end_date: The end date.
         :return: The daily country data.
         """
-        return self.get_collection(data_type=enums.DataType.DAILY_COUNTRY).find({
+        return self._get_collection_for_data_type(data_type=enums.DataType.DAILY_COUNTRY).find({
             'date': {
                 '$gte': datetime.datetime.combine(start_date, datetime.time.min),
                 '$lte': datetime.datetime.combine(end_date, datetime.time.max)
@@ -144,7 +148,7 @@ class MongoDBStorage(base.BaseStorage):
         if end_date:
             query['date']['$lte'] = datetime.datetime.combine(end_date, datetime.time.max)
 
-        return self.get_collection(data_type=enums.DataType.DAILY_PREFECTURE).find(query)
+        return self._get_collection_for_data_type(data_type=enums.DataType.DAILY_PREFECTURE).find(query)
 
     def data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
         """Check if data exists for the data type for the date.
@@ -153,7 +157,7 @@ class MongoDBStorage(base.BaseStorage):
         :param date: The data
         :return: True, if data exists for the date and for all data types for the data file type.
         """
-        collection = self.get_collection(data_type=data_type)
+        collection = self._get_collection_for_data_type(data_type=data_type)
 
         return collection.count_documents({'date': self.get_datetime_from_date(date=date)}) > 0
 
@@ -164,7 +168,7 @@ class MongoDBStorage(base.BaseStorage):
         :param data_type: The data type to update.
         :param data: The file data.
         """
-        collection = self.get_collection(data_type=data_type)
+        collection = self._get_collection_for_data_type(data_type=data_type)
         collection.delete_many(filter={'date': self.get_datetime_from_date(date)})
         documents = [
             {key: str(value) if isinstance(value, decimal.Decimal) else value for key, value in row.items()} |
@@ -175,22 +179,49 @@ class MongoDBStorage(base.BaseStorage):
             collection.insert_many(documents=documents)
 
     def create_user(self, email: str, password: str, admin: bool = False):
-        raise NotImplementedError()
+        """Create a user.
+
+        :param email: The user email.
+        :param password: The user password.
+        :param admin: True if the user should be an admin user, False otherwise.
+        """
+        collection = self.client.get_default_database()['users']
+        password_hash = argon2.PasswordHasher().hash(password)
+        collection.insert_one(document={
+            'email': email, 'password': password_hash, 'admin': admin, 'active': True
+        })
 
     def authenticate(self, email: str, password: str) -> bool:
         raise NotImplementedError()
 
     def get_user(self, email: str):
-        raise NotImplementedError()
+        """Get the user information by email.
+
+        :param email: The user email.
+        :return: The user information.
+        """
+        return self._get_collection('users').find_one({'email': email})
 
     def get_admin_user_emails(self) -> list[str]:
-        raise NotImplementedError()
+        """Get the emails of the admin users.
 
-    def get_collection(self, data_type: enums.DataType) -> pymongo.synchronous.collection.Collection:
+        :return: The emails of the admin users as a list of strings.
+        """
+        return [row['email'] for row in self._get_collection('users').find({'admin': True}, {'email': 1})]
+
+    def _get_collection(self, name: str) -> pymongo.synchronous.collection.Collection:
+        """Return the collection.
+
+        :param name: The collection name.
+        :return: The collection.
+        """
+        return self.client.get_default_database()[name]
+
+    def _get_collection_for_data_type(self, data_type: enums.DataType) -> pymongo.synchronous.collection.Collection:
         """Return the collection for the data type.
 
         :param data_type: The data type.
-        :return: The collection name.
+        :return: The collection.
         """
         return self.client.get_default_database()[data_type.value]
 
@@ -198,7 +229,7 @@ class MongoDBStorage(base.BaseStorage):
     def get_datetime_from_date(date: datetime.date) -> datetime.datetime:
         """Return a datetime from a date.
 
-        :param date: The datetime.
-        :return:
+        :param date: The date.
+        :return: The datetime.
         """
         return datetime.datetime.combine(date, datetime.time.min)
