@@ -62,6 +62,8 @@ class DatePriceNumberOfStationsData(PriceNumberOfStationsData):
 
 
 class PriceResponse(pydantic.BaseModel):
+    """The price response model.
+    """
     date: datetime.date = pydantic.Field(title="The date")
     data: list[PriceData] = pydantic.Field(title="The price data")
 
@@ -73,6 +75,8 @@ class PriceResponse(pydantic.BaseModel):
 
 
 class PriceNumberOfStationsResponse(pydantic.BaseModel):
+    """The price and number of stations response model.
+    """
     date: datetime.date = pydantic.Field(title="The date")
     data: list[PriceNumberOfStationsData] = pydantic.Field(title="The price with number of stations data")
 

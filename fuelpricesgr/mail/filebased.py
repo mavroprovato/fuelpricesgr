@@ -19,7 +19,7 @@ class FileBasedMailSender(mail.MailSender):
         self.mail_directory = settings.DATA_PATH / 'mails'
         self.mail_directory.mkdir(parents=True, exist_ok=True)
 
-    def do_send(self, recipients: list[str], subject: str, html_content: str):
+    def do_send(self, subject: str, recipients: list[str], html_content: str):
         """Send an email.
 
         :param subject: The mail subject.
