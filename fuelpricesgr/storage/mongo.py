@@ -198,7 +198,7 @@ class MongoDBStorage(base.BaseStorage):
         """
         collection = self.client.get_default_database()['users']
         collection.insert_one(document={
-            'email': email, 'password': password_hash, 'admin': admin, 'active': True
+            'email': email, 'password': self.hash_password(password), 'admin': admin, 'active': True
         })
 
     def authenticate(self, email: str, password: str) -> bool:
