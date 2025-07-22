@@ -1,9 +1,11 @@
 """Base module for storage
 """
 import abc
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable
 import datetime
 import importlib
+
+import argon2
 
 from fuelpricesgr import enums, models, settings
 
@@ -133,16 +135,6 @@ class BaseStorage(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def authenticate(self, email: str, password: str) -> bool:
-        """Authenticate the user.
-
-        :param email: The user email.
-        :param password: The user password.
-        :return: True if the user is authenticated, False otherwise.
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
     def get_user(self, email: str):
         """Get the user information by email.
 
@@ -158,3 +150,29 @@ class BaseStorage(abc.ABC):
         :return: The emails of the admin users as a list of strings.
         """
         raise NotImplementedError()
+
+    @staticmethod
+    def hash_password(password: str) -> str:
+        """Generate a password hash.
+
+        :param password: The password.
+        :return: The password hash.
+        """
+        return argon2.PasswordHasher().hash(password)
+
+    def authenticate(self, email: str, password: str) -> bool:
+        """Authenticate the user.
+
+        :param email: The user email.
+        :param password: The user password.
+        :return: True if the user is authenticated, False otherwise.
+        """
+        user = self.get_user(email=email)
+        if user is None:
+            return False
+        try:
+            argon2.PasswordHasher().verify(user.password, password)
+
+            return True
+        except argon2.exceptions.VerifyMismatchError:
+            return False

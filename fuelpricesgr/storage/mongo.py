@@ -1,11 +1,10 @@
 """The MongoDB storage
 """
-from collections.abc import Mapping, Iterable
+from collections.abc import Iterable
 import datetime
 import decimal
 import logging
 
-import argon2
 import pymongo
 import pymongo.errors
 import pymongo.synchronous.collection
@@ -198,7 +197,6 @@ class MongoDBStorage(base.BaseStorage):
         :param admin: True if the user should be an admin user, False otherwise.
         """
         collection = self.client.get_default_database()['users']
-        password_hash = argon2.PasswordHasher().hash(password)
         collection.insert_one(document={
             'email': email, 'password': password_hash, 'admin': admin, 'active': True
         })

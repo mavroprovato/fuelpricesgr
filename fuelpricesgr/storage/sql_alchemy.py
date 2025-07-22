@@ -1,11 +1,10 @@
 """The SQL Alchemy storage
 """
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable
 import datetime
 import logging
 import os
 
-import argon2
 import sqlalchemy
 import sqlalchemy.exc
 import sqlalchemy.orm
@@ -271,27 +270,9 @@ class SqlAlchemyStorage(base.BaseStorage):
         :param password: The user password.
         :param admin: True if the user should be an admin user, False otherwise.
         """
-        password_hash = argon2.PasswordHasher().hash(password)
-        user = User(email=email, password=password_hash, admin=admin)
+        user = User(email=email, password=self.hash_password(password), admin=admin)
         self.db.add(user)
         self.db.commit()
-
-    def authenticate(self, email: str, password: str) -> bool:
-        """Authenticate the user.
-
-        :param email: The user email.
-        :param password: The user password.
-        :return: True if the user is authenticated, False otherwise.
-        """
-        user = self.get_user(email=email)
-        if user is None:
-            return False
-        try:
-            argon2.PasswordHasher().verify(user.password, password)
-
-            return True
-        except argon2.exceptions.VerifyMismatchError:
-            return False
 
     def get_user(self, email: str):
         """Get the user information by email.
