@@ -86,14 +86,14 @@ def date_range(data_type: enums.DataType, s: BaseStorage = Depends(get_storage))
     path="/data/weekly/country",
     summary="Weekly country data",
     description="Return the weekly country data",
-    response_model=list[models.CountryData]
+    response_model=list[models.PriceNumberOfStationsResponse]
 )
 @caching.cache
 def weekly_country_data(
-        start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
-        end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch."),
-        s: BaseStorage = Depends(get_storage)
-) -> list[models.CountryData]:
+    start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
+    end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch."),
+    s: BaseStorage = Depends(get_storage)
+) -> list[models.PriceNumberOfStationsResponse]:
     """Return the weekly country data.
 
     :param start_date: The start date of the data to fetch.
@@ -104,16 +104,9 @@ def weekly_country_data(
     start_date, end_date = get_date_range(start_date, end_date)
 
     return [
-        models.CountryData(date=date, data_file=enums.DataFileType.WEEKLY.link(date=date), data=[
-            models.PriceDataWithNumberOfStations(
-                fuel_type=row['fuel_type'], price=row['price'], number_of_stations=row.get('number_of_stations')
-            ) for row in date_group
-        ])
+        models.PriceNumberOfStationsResponse(date=date, data=list(date_group))
         for date, date_group in itertools.groupby(
-            sorted(
-                s.weekly_country_data(start_date=start_date, end_date=end_date), key=lambda x: x['date'],
-                reverse=True
-            ), lambda x: x['date']
+            s.weekly_country_data(start_date=start_date, end_date=end_date), lambda x: x.date
         )
     ]
 
@@ -122,15 +115,15 @@ def weekly_country_data(
     path="/data/weekly/prefecture/{prefecture}",
     summary="Weekly prefecture data",
     description="Return the weekly prefecture data",
-    response_model=list[models.PrefectureData]
+    response_model=list[models.PriceResponse]
 )
 @caching.cache
 def weekly_prefecture_data(
-        prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
-        start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
-        end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch."),
-        s: BaseStorage = Depends(get_storage)
-) -> list[models.PrefectureData]:
+    prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
+    start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
+    end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch."),
+    s: BaseStorage = Depends(get_storage)
+) -> list[models.PriceResponse]:
     """Return the weekly prefecture data
 
     :param prefecture: The prefecture for which to fetch data.
@@ -142,14 +135,9 @@ def weekly_prefecture_data(
     start_date, end_date = get_date_range(start_date, end_date)
 
     return [
-        models.PrefectureData(date=date, data_file=enums.DataFileType.WEEKLY.link(date=date), data=[
-            models.PriceData(fuel_type=row['fuel_type'], price=row['price']) for row in date_group
-        ])
+        models.PriceResponse(date=date, data=list(date_group))
         for date, date_group in itertools.groupby(
-            sorted(
-                s.weekly_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date),
-                key=lambda x: x['date'], reverse=True
-            ), lambda x: x['date']
+            s.weekly_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date), lambda x: x.date
         )
     ]
 
@@ -158,14 +146,14 @@ def weekly_prefecture_data(
     path="/data/daily/country",
     summary="Daily country data",
     description="Returns the daily country data",
-    response_model=list[models.CountryData]
+    response_model=list[models.PriceNumberOfStationsResponse]
 )
 @caching.cache
 def daily_country_data(
         start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
         end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch."),
         s: BaseStorage = Depends(get_storage)
-) -> list[models.CountryData]:
+) -> list[models.PriceNumberOfStationsResponse]:
     """Returns the daily country data.
 
     :param start_date: The start date of the data to fetch.
@@ -176,16 +164,9 @@ def daily_country_data(
     start_date, end_date = get_date_range(start_date, end_date)
 
     return [
-        models.CountryData(date=date, data_file=enums.DataFileType.DAILY_COUNTRY.link(date=date), data=[
-            models.PriceDataWithNumberOfStations(
-                fuel_type=row['fuel_type'], price=row['price'], number_of_stations=row.get('number_of_stations')
-            ) for row in date_group
-        ])
+        models.PriceNumberOfStationsResponse(date=date, data=list(date_group))
         for date, date_group in itertools.groupby(
-            sorted(
-                s.daily_country_data(start_date=start_date, end_date=end_date), key=lambda x: x['date'],
-                reverse=True
-            ), lambda x: x['date']
+            s.daily_country_data(start_date=start_date, end_date=end_date), lambda x: x.date
         )
     ]
 
@@ -194,15 +175,15 @@ def daily_country_data(
     path="/data/daily/prefecture/{prefecture}",
     summary="Daily prefecture data",
     description="Return the daily prefecture data",
-    response_model=list[models.PrefectureData]
+    response_model=list[models.PriceResponse]
 )
 @caching.cache
 def daily_prefecture_data(
-        prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
-        start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
-        end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch."),
-        s: BaseStorage = Depends(get_storage)
-) -> list[models.PrefectureData]:
+    prefecture: enums.Prefecture = fastapi.Path(title="The prefecture"),
+    start_date: datetime.date | None = fastapi.Query(default=None, title="The start date of the data to fetch."),
+    end_date: datetime.date | None = fastapi.Query(default=None, title="The end date of the data to fetch."),
+    s: BaseStorage = Depends(get_storage)
+) -> list[models.PriceResponse]:
     """Returns the daily prefecture data.
 
     :param prefecture: The prefecture for which to fetch data.
@@ -214,49 +195,11 @@ def daily_prefecture_data(
     start_date, end_date = get_date_range(start_date, end_date)
 
     return [
-        models.PrefectureData(date=date, data_file=enums.DataFileType.DAILY_PREFECTURE.link(date=date), data=[
-            models.PriceData(fuel_type=row['fuel_type'], price=row['price']) for row in date_group
-        ])
+        models.PriceResponse(date=date, data=list(date_group))
         for date, date_group in itertools.groupby(
-            sorted(
-                s.daily_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date),
-                key=lambda x: x['date'], reverse=True
-            ), lambda x: x['date']
+            s.daily_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date), lambda x: x.date
         )
     ]
-
-
-@router.get(
-    path="/data/daily/{date}",
-    summary="Daily data",
-    description="Return the daily data for a specific date for all prefectures",
-    response_model=models.DailyData
-)
-@caching.cache
-def daily_data(
-        date: datetime.date = fastapi.Path(title="The date for which to fetch the daily data"),
-        s: BaseStorage = Depends(get_storage)
-) -> models.DailyData:
-    """Return the daily data.
-
-    :param date: The date for which to fetch the daily data.
-    :param s: The storage backend.
-    :return: The daily data.
-    """
-    return models.DailyData(
-        data_file=enums.DataFileType.DAILY_PREFECTURE.link(date=date),
-        data=[
-            models.PrefectureCountryData(prefecture=prefecture, data=[
-                models.PriceData(fuel_type=row['fuel_type'], price=row['price'])
-                for row in prefecture_group
-            ])
-            for prefecture, prefecture_group in itertools.groupby(
-                sorted(
-                    s.daily_prefecture_data(start_date=date, end_date=date), key=lambda x: x['prefecture'].description
-                ), lambda x: x['prefecture']
-            )
-        ]
-    )
 
 
 def get_date_range(start_date: datetime.date, end_date: datetime.date) -> tuple[datetime.date, datetime.date]:

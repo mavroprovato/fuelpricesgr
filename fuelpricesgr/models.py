@@ -37,43 +37,47 @@ class DateRange(pydantic.BaseModel):
 
 
 class PriceData(pydantic.BaseModel):
-    """The prefecture price model.
+    """The price data model.
     """
     fuel_type: enums.FuelType = pydantic.Field(title="The fuel type")
     price: decimal.Decimal = pydantic.Field(title="The price", max_digits=4, decimal_places=3)
 
 
-class PriceDataWithNumberOfStations(PriceData):
-    """The country price model.
+class PriceNumberOfStationsData(PriceData):
+    """The price number of stations model.
     """
     number_of_stations: int = pydantic.Field(title="The number of stations")
 
 
-class CountryData(pydantic.BaseModel):
-    """The country data model.
+class DatePriceData(PriceData):
+    """The price date data model.
     """
     date: datetime.date = pydantic.Field(title="The date")
-    data_file: str = pydantic.Field(title="The data file from which the data were fetched")
-    data: list[PriceDataWithNumberOfStations] = pydantic.Field(title="The country data")
 
 
-class PrefectureData(pydantic.BaseModel):
-    """The prefecture data model.
+class DatePriceNumberOfStationsData(PriceNumberOfStationsData):
+    """The price number of stations date model.
     """
     date: datetime.date = pydantic.Field(title="The date")
-    data_file: str = pydantic.Field(title="The data file from which the data were fetched")
-    data: list[PriceData] = pydantic.Field(title="The prefecture data")
 
 
-class PrefectureCountryData(pydantic.BaseModel):
-    """The prefecture country data model.
-    """
-    prefecture: enums.Prefecture = pydantic.Field(title="The prefecture")
-    data: list[PriceData] = pydantic.Field(title="The prefecture data")
+class PriceResponse(pydantic.BaseModel):
+    date: datetime.date = pydantic.Field(title="The date")
+    data: list[PriceData] = pydantic.Field(title="The price data")
+
+    @pydantic.computed_field
+    @property
+    def data_file(self) -> str:
+        # TODO: fix this
+        return enums.DataFileType.WEEKLY.link(date=self.date)
 
 
-class DailyData(pydantic.BaseModel):
-    """The daily data model.
-    """
-    data_file: str = pydantic.Field(title="The data file from which the data were fetched")
-    data: list[PrefectureCountryData] = pydantic.Field(title="The prefecture data")
+class PriceNumberOfStationsResponse(pydantic.BaseModel):
+    date: datetime.date = pydantic.Field(title="The date")
+    data: list[PriceNumberOfStationsData] = pydantic.Field(title="The price with number of stations data")
+
+    @pydantic.computed_field
+    @property
+    def data_file(self) -> str:
+        # TODO: fix this
+        return enums.DataFileType.WEEKLY.link(date=self.date)

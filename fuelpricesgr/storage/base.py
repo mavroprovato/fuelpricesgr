@@ -53,7 +53,9 @@ class BaseStorage(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def weekly_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
+    def weekly_country_data(
+        self, start_date: datetime.date, end_date: datetime.date
+    ) -> Iterable[models.DatePriceNumberOfStationsData]:
         """Return the weekly country data.
 
         :param start_date: The start date.
@@ -64,8 +66,8 @@ class BaseStorage(abc.ABC):
 
     @abc.abstractmethod
     def weekly_prefecture_data(
-            self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
-    ) -> Iterable[Mapping[str, object]]:
+        self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
+    ) -> Iterable[models.DatePriceData]:
         """Return the weekly prefecture data.
 
         :param prefecture: The prefecture.
@@ -76,25 +78,27 @@ class BaseStorage(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
+    def daily_country_data(
+        self, start_date: datetime.date, end_date: datetime.date
+    ) -> Iterable[models.DatePriceNumberOfStationsData]:
+        """Return the daily country data.
+
+        :param start_date: The start date.
+        :param end_date: The end date.
+        :return: The daily country data.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
     def daily_prefecture_data(
-            self, prefecture: enums.Prefecture = None, start_date: datetime.date = None, end_date: datetime.date = None
-    ) -> Iterable[Mapping[str, object]]:
+        self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
+    ) -> Iterable[models.DatePriceData]:
         """Return the daily prefecture data.
 
         :param prefecture: The prefecture.
         :param start_date: The start date.
         :param end_date: The end date.
         :return: The daily prefecture data.
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def daily_country_data(self, start_date: datetime.date, end_date: datetime.date) -> Iterable[Mapping[str, object]]:
-        """Return the daily country data.
-
-        :param start_date: The start date.
-        :param end_date: The end date.
-        :return: The daily country data.
         """
         raise NotImplementedError()
 
