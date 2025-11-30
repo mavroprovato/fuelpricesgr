@@ -106,10 +106,21 @@ class Prefecture(enum.Enum):
 class DataType(enum.Enum):
     """Enumeration for the different types of data contained in the data
     """
-    WEEKLY_COUNTRY = 'weekly_country'
-    WEEKLY_PREFECTURE = 'weekly_prefecture'
-    DAILY_COUNTRY = 'daily_country'
-    DAILY_PREFECTURE = 'daily_prefecture'
+    WEEKLY_COUNTRY = 'weekly_country', datetime.date(2012, 4, 27)
+    WEEKLY_PREFECTURE = 'weekly_prefecture', datetime.date(2012, 4, 27)
+    DAILY_COUNTRY = 'daily_country', datetime.date(2017, 3, 14)
+    DAILY_PREFECTURE = 'daily_prefecture', datetime.date(2017, 3, 14)
+
+    def __new__(cls, value: str, min_date: datetime.date):
+        """Creates the enum.
+
+        :param min_date: The minimum date for which we have data.
+        """
+        obj = object.__new__(cls)
+        obj._value_ = value
+        obj.min_date = min_date
+
+        return obj
 
 
 class DataFileType(enum.Enum):
@@ -128,7 +139,7 @@ class DataFileType(enum.Enum):
         """Creates the enum.
 
         :param value: The enum value.
-        :param value: The enum description.
+        :param description: The enum description.
         :param page: The path, relative to the base URL, from which we will fetch the data.
         :param data_types: The data types that this page contains.
         :param prefix: The prefix for the data link.

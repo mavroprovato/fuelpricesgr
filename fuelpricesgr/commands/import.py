@@ -1,7 +1,6 @@
 """Command to import data into the database.
 """
 import argparse
-from collections.abc import Mapping
 import datetime
 import io
 import logging
@@ -12,14 +11,6 @@ from fuelpricesgr import caching, fetcher, enums, mail, models, storage
 
 # The module logger
 logger = logging.getLogger(__name__)
-
-# The minimum file type dates
-_MIN_FILE_TYPE_DATES: Mapping[enums.DataType, datetime.date] = {
-    enums.DataType.WEEKLY_COUNTRY: datetime.date(2012, 4, 27),
-    enums.DataType.WEEKLY_PREFECTURE: datetime.date(2012, 4, 27),
-    enums.DataType.DAILY_COUNTRY: datetime.date(2017, 3, 14),
-    enums.DataType.DAILY_PREFECTURE: datetime.date(2017, 3, 14),
-}
 
 
 def parse_data_file_type(data_file_types: str) -> list[Type[enums.DataFileType]] | None:
@@ -111,7 +102,7 @@ def get_fetch_date_range(
         if date_range.end_date:
             start_date = date_range.end_date
         else:
-            start_date = _MIN_FILE_TYPE_DATES[data_type]
+            start_date = data_type.min_date
 
     if end_date is None:
         end_date = datetime.date.today()
