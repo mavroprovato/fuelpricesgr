@@ -3,8 +3,8 @@
 import abc
 import datetime
 import decimal
+import io
 import logging
-import pathlib
 import re
 
 import pypdf
@@ -36,45 +36,25 @@ class Parser(abc.ABC):
             case _:
                 raise NotImplementedError()
 
-    @staticmethod
-    def read_text(file: pathlib.Path) -> str | None:
-        """Extract the text from the file.
+    def parse(self, date: datetime.date, data: bytes) -> dict[enums.DataType, list[dict]]:
+        """Parse the data file content.
 
-        :param file: The file.
-        :return: The extracted text.
+        :param date: The date.
+        :param data: The file.
+        :return: The consumption data.
         """
-        logger.debug("Parsing file %s", file)
+        if data is None:
+            return {}
         try:
-            reader = pypdf.PdfReader(file)
+            reader = pypdf.PdfReader(io.BytesIO(data))
         except (pypdf.errors.PdfReadError, pypdf.errors.EmptyFileError):
-            logger.error("Could not extract text from file %s", file)
-            return None
-
+            logger.error("Could not extract text from file for date %s", date)
+            return {}
         text = ''.join(page.extract_text() for page in reader.pages)
-        if not text:
-            logger.error("No text found in file %s", file)
-            return None
-
-        return text
-
-    def parse(self, file: pathlib.Path) -> dict[enums.DataType, list[dict]] | None:
-        """Parse the file to get the data.
-
-        :param file: The file.
-        :return: The file data.
-        """
-        text = self.read_text(file=file)
-        match = self.DATE_PARSING_REGEX.match(file.name)
-        if not match:
-            logger.error("Could not parse file name %s", file.name)
-            return None
-        date = datetime.date(
-            year=int(match.group('year')), month=int(match.group('month')), day=int(match.group('day')))
-
         if text:
             return self.extract_data(text=text, date=date)
 
-        return None
+        return {}
 
     @staticmethod
     def parse_number_of_stations(number_of_stations_text: str) -> int | None:
