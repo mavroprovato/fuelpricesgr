@@ -23,7 +23,7 @@ def init_storage():
     with MongoDBStorage() as storage:
         # Create the indexes
         for data_type in enums.DataType:
-            collection = storage._get_collection_for_data_type(data_type=data_type)
+            collection = storage.get_collection_for_data_type(data_type=data_type)
             index_fields = {'date': 1} | (
                 {'prefecture': 1} if data_type.value.endswith('_prefecture') else {}
             ) | {'fuel_type': 1}
@@ -73,7 +73,7 @@ class MongoDBStorage(base.BaseStorage):
         :return: The date range as a tuple. The first element is the minimum date and the second the maximum.
         """
         min_date, max_date = None, None
-        result = list(self._get_collection_for_data_type(data_type=data_type).aggregate(
+        result = list(self.get_collection_for_data_type(data_type=data_type).aggregate(
             [{'$group': {'_id': None, 'start_date': {'$min': '$date'}, 'end_date': {'$max': "$date"}}}]
         ))
         if result:
@@ -92,7 +92,7 @@ class MongoDBStorage(base.BaseStorage):
         """
         return [
             models.DatePriceNumberOfStationsData(**row)
-            for row in self._get_collection_for_data_type(data_type=enums.DataType.WEEKLY_COUNTRY).find({
+            for row in self.get_collection_for_data_type(data_type=enums.DataType.WEEKLY_COUNTRY).find({
                 'date': {
                     '$gte': datetime.datetime.combine(start_date, datetime.time.min),
                     '$lte': datetime.datetime.combine(end_date, datetime.time.max)
@@ -112,7 +112,7 @@ class MongoDBStorage(base.BaseStorage):
         """
         return [
             models.DatePriceData(**row)
-            for row in self._get_collection_for_data_type(data_type=enums.DataType.WEEKLY_PREFECTURE).find({
+            for row in self.get_collection_for_data_type(data_type=enums.DataType.WEEKLY_PREFECTURE).find({
                 'prefecture': prefecture.value,
                 'date': {
                     '$gte': datetime.datetime.combine(start_date, datetime.time.min),
@@ -132,7 +132,7 @@ class MongoDBStorage(base.BaseStorage):
         """
         return [
             models.DatePriceNumberOfStationsData(**row)
-            for row in self._get_collection_for_data_type(data_type=enums.DataType.DAILY_COUNTRY).find({
+            for row in self.get_collection_for_data_type(data_type=enums.DataType.DAILY_COUNTRY).find({
                 'date': {
                     '$gte': datetime.datetime.combine(start_date, datetime.time.min),
                     '$lte': datetime.datetime.combine(end_date, datetime.time.max)
@@ -152,7 +152,7 @@ class MongoDBStorage(base.BaseStorage):
         """
         return [
             models.DatePriceData(**row)
-            for row in self._get_collection_for_data_type(data_type=enums.DataType.DAILY_PREFECTURE).find({
+            for row in self.get_collection_for_data_type(data_type=enums.DataType.DAILY_PREFECTURE).find({
                 'prefecture': prefecture.value,
                 'date': {
                     '$gte': datetime.datetime.combine(start_date, datetime.time.min),
@@ -168,7 +168,7 @@ class MongoDBStorage(base.BaseStorage):
         :param date: The data
         :return: True, if data exists for the date and for all data types for the data file type.
         """
-        collection = self._get_collection_for_data_type(data_type=data_type)
+        collection = self.get_collection_for_data_type(data_type=data_type)
 
         return collection.count_documents({'date': self.get_datetime_from_date(date=date)}) > 0
 
@@ -179,7 +179,7 @@ class MongoDBStorage(base.BaseStorage):
         :param data_type: The data type to update.
         :param data: The file data.
         """
-        collection = self._get_collection_for_data_type(data_type=data_type)
+        collection = self.get_collection_for_data_type(data_type=data_type)
         collection.delete_many(filter={'date': self.get_datetime_from_date(date)})
         documents = [
             {key: str(value) if isinstance(value, decimal.Decimal) else value for key, value in row.items()} |
@@ -219,6 +219,14 @@ class MongoDBStorage(base.BaseStorage):
         """
         return [row['email'] for row in self._get_collection('users').find({'admin': True}, {'email': 1})]
 
+    def get_collection_for_data_type(self, data_type: enums.DataType) -> pymongo.synchronous.collection.Collection:
+        """Return the collection for the data type.
+
+        :param data_type: The data type.
+        :return: The collection.
+        """
+        return self.client.get_default_database()[data_type.value]
+
     def _get_collection(self, name: str) -> pymongo.synchronous.collection.Collection:
         """Return the collection.
 
@@ -226,14 +234,6 @@ class MongoDBStorage(base.BaseStorage):
         :return: The collection.
         """
         return self.client.get_default_database()[name]
-
-    def _get_collection_for_data_type(self, data_type: enums.DataType) -> pymongo.synchronous.collection.Collection:
-        """Return the collection for the data type.
-
-        :param data_type: The data type.
-        :return: The collection.
-        """
-        return self.client.get_default_database()[data_type.value]
 
     @staticmethod
     def get_datetime_from_date(date: datetime.date) -> datetime.datetime:
