@@ -21,7 +21,7 @@ def create_test_data():
     """
     print("Creating test data")
     end_date = datetime.date.today()
-    date = end_date - datetime.timedelta(days=100)
+    date = end_date - datetime.timedelta(days=30)
     while date < end_date:
         for fuel_type in enums.FuelType:
             if parser.Parser.data_should_exist(fuel_type=fuel_type, date=date):
