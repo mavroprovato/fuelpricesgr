@@ -8,7 +8,7 @@ import sys
 from typing import Type
 
 from fuelpricesgr import caching, enums, mail, models, parser, storage
-from fuelpricesgr.fetcher.local import LocalFileFetcher
+from fuelpricesgr.fetcher.local_file import LocalFileFetcher
 
 # The module logger
 logger = logging.getLogger(__name__)

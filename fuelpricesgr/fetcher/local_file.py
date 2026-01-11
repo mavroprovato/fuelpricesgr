@@ -1,4 +1,4 @@
-"""Module for fetching data
+"""Module for fetching the PDF data to a local file system
 """
 import datetime
 import logging
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class LocalFileFetcher:
-    """Class for fetching data files to the local file system.
+    """Class for fetching the PDF data files to the local file system.
     """
     # The timeout for fetching data in seconds
     REQUESTS_TIMEOUT = 5
