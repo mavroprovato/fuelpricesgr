@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 class S3Fetcher(BaseFetcher):
     """Class for fetching the PDF data files to an AWS S3 bucket.
     """
+    REQUIRED_SETTINGS = ['AWS_S3_BUCKET_NAME', 'AWS_LAMBDA_REGION_NAME', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
+
     def __init__(self, data_file_type: enums.DataFileType, date: datetime.date):
         """Create the data fetcher.
 
@@ -25,17 +27,25 @@ class S3Fetcher(BaseFetcher):
         """
         super().__init__(data_file_type, date)
         self.check_configuration()
-        self.s3_client = boto3.client('s3')
-        self.lambda_client = boto3.client('lambda', region_name=settings.AWS_LAMBDA_REGION_NAME)
+        self.s3_client = boto3.client(
+            's3', aws_access_key_id=settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+        self.lambda_client = boto3.client(
+            'lambda', region_name=settings.AWS_LAMBDA_REGION_NAME, aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
 
     @staticmethod
     def check_configuration():
         """Check the configuration for the data fetcher.
         """
-        if settings.AWS_S3_BUCKET_NAME is None:
-            raise ValueError("AWS_S3_BUCKET_NAME not set")
-        if settings.AWS_LAMBDA_REGION_NAME is None:
-            raise ValueError("AWS_LAMBDA_REGION_NAME not set")
+        missing_settings = []
+        for setting in S3Fetcher.REQUIRED_SETTINGS:
+            if getattr(settings, setting) is None:
+                missing_settings.append(setting)
+
+        if missing_settings:
+            raise RuntimeError(f"Missing required settings: {', '.join(missing_settings)}")
 
     def exists(self) -> bool:
         """Check if the data file exists.
