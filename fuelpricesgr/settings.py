@@ -26,6 +26,7 @@ STORAGE_BACKEND = env('STORAGE_BACKEND', 'fuelpricesgr.storage.sql_alchemy.SqlAl
 STORAGE_URL = env('STORAGE_URL', f"sqlite:///{(DATA_PATH / 'db.sqlite')}")
 
 # The fetcher parameters
+FETCHER_CLASS = env('FETCHER_CLASS', 'fuelpricesgr.fetcher.local_file.LocalFileFetcher')
 AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID', None)
 AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY', None)
 AWS_LAMBDA_REGION_NAME = env('AWS_LAMBDA_REGION_NAME', None)

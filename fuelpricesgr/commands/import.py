@@ -5,10 +5,8 @@ import datetime
 import io
 import logging
 import sys
-from typing import Type
 
-from fuelpricesgr import caching, enums, mail, models, parser, storage
-from fuelpricesgr.fetcher.s3 import S3Fetcher
+from fuelpricesgr import caching, enums, fetcher, mail, models, parser, storage
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -73,7 +71,7 @@ def import_data(s: storage.base.BaseStorage, args: argparse.Namespace) -> bool:
                     date_range.end_date
                 )
                 for date in data_file_type.dates(start_date=date_range.start_date, end_date=date_range.end_date):
-                    data_fetcher = S3Fetcher(data_file_type=data_file_type, date=date)
+                    data_fetcher = fetcher.BaseFetcher.get_fetcher(data_file_type=data_file_type, date=date)
                     if args.update or not s.data_exists(data_type=data_type, date=date):
                         file_data = data_fetcher.data(skip_cache=args.skip_cache)
                         data = file_parser.parse(date=date, data=file_data)

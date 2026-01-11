@@ -2,9 +2,10 @@
 """
 import abc
 import datetime
+import importlib
 import logging
 
-from fuelpricesgr import enums
+from fuelpricesgr import enums, settings
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -13,6 +14,17 @@ logger = logging.getLogger(__name__)
 class BaseFetcher(abc.ABC):
     """Base class for fetching PDF files.
     """
+    @staticmethod
+    def get_fetcher(data_file_type: enums.DataFileType, date: datetime.date) -> 'BaseFetcher':
+        """Get the fetcher.
+
+        :return: The fetcher.
+        """
+        fetcher_module = importlib.import_module('.'.join(settings.FETCHER_CLASS.split('.')[:-1]))
+        fetcher_class = getattr(fetcher_module, settings.FETCHER_CLASS.split('.')[-1])
+
+        return fetcher_class(data_file_type, date)
+
     def __init__(self, data_file_type: enums.DataFileType, date: datetime.date):
         """Create the data fetcher.
 
