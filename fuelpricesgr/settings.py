@@ -25,6 +25,12 @@ SHOW_SQL = env.bool('SHOW_SQL', False)
 STORAGE_BACKEND = env('STORAGE_BACKEND', 'fuelpricesgr.storage.sql_alchemy.SqlAlchemyStorage')
 STORAGE_URL = env('STORAGE_URL', f"sqlite:///{(DATA_PATH / 'db.sqlite')}")
 
+# The fetcher parameters
+AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID', None)
+AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY', None)
+AWS_LAMBDA_REGION_NAME = env('AWS_LAMBDA_REGION_NAME', None)
+AWS_S3_BUCKET_NAME = env('AWS_S3_BUCKET_NAME', None)
+
 # Set the caching parameters
 CACHE_BACKEND = env('CACHE_BACKEND', 'cachelib.base.NullCache')
 CACHE_PARAMETERS = env.dict('CACHE_PARAMETERS', {})

@@ -5,12 +5,13 @@ import logging
 import requests
 
 from fuelpricesgr import enums, settings
+from .base import BaseFetcher
 
 # The module logger
 logger = logging.getLogger(__name__)
 
 
-class LocalFileFetcher:
+class LocalFileFetcher(BaseFetcher):
     """Class for fetching the PDF data files to the local file system.
     """
     # The timeout for fetching data in seconds
@@ -22,53 +23,46 @@ class LocalFileFetcher:
         :param data_file_type: The data file type.
         :param date: The date of the file to fetch.
         """
-        self.directory = settings.DATA_PATH / 'cache' / data_file_type.value
-        self.directory.mkdir(parents=True, exist_ok=True)
-        self.data_file_type = data_file_type
-        self.date = date
-
-    def fetch_data(self, skip_cache: bool = False):
-        """Fetch the data for the specified date and file type.
-
-        :param skip_cache: Do not use file cache.
-        :return: The data text, if it can be fetched successfully.
-        """
-        if self.exists():
-            if skip_cache:
-                logger.info(
-                    "Downloading %s file for date %s again because cache is skipped", self.data_file_type, self.date
-                )
-
-                return self.fetch()
-            else:
-                logger.info("File %s for date %s exists in cache", self.data_file_type, self.date)
-
-                return self.read()
-        else:
-            logger.info("Downloading %s file for date %s because it does not exist", self.data_file_type, self.date)
-
-            return self.fetch()
+        super().__init__(data_file_type, date)
+        self.base_directory = settings.DATA_PATH / 'cache'
 
     def exists(self) -> bool:
-        file = self.directory / f"{self.date.isoformat()}.pdf"
+        """Check if the data file exists.
+
+        :return: True if the data file exists, False otherwise.
+        """
+        file = self.base_directory / self.path()
 
         return file.exists()
 
-    def fetch(self):
-        """Download a file to the local cache directory.
+    def fetch(self) -> bytes:
+        """Download a file to the local cache directory and return its contents.
+
+        :return: The file contents.
         """
-        file = self.directory / f"{self.date.isoformat()}.pdf"
+        file = self.base_directory / self.path()
+        file.parent.mkdir(parents=True, exist_ok=True)
         with file.open('wb') as f:
             contents = self.download()
             if contents is not None:
                 f.write(contents)
 
+            return contents
+
     def read(self) -> bytes:
-        file = self.directory / f"{self.date.isoformat()}.pdf"
+        """Read a file from the local cache directory.
+
+        :return: The file contents.
+        """
+        file = self.base_directory / self.path()
 
         return file.read_bytes()
 
     def download(self) -> bytes | None:
+        """Download a file from the site to the local cache directory.
+
+        :return: The file contents.
+        """
         # Download the file
         file_url = self.data_file_type.link(self.date)
         logger.info("Downloading file from %s", file_url)

@@ -8,13 +8,13 @@ import sys
 from typing import Type
 
 from fuelpricesgr import caching, enums, mail, models, parser, storage
-from fuelpricesgr.fetcher.local_file import LocalFileFetcher
+from fuelpricesgr.fetcher.s3 import S3Fetcher
 
 # The module logger
 logger = logging.getLogger(__name__)
 
 
-def parse_data_file_type(data_file_types: str) -> list[Type[enums.DataFileType]] | None:
+def parse_data_file_type(data_file_types: str) -> list[enums.DataFileType] | None:
     """Parse the data file types argument.
 
     :param data_file_types: The data file types argument.
@@ -73,9 +73,9 @@ def import_data(s: storage.base.BaseStorage, args: argparse.Namespace) -> bool:
                     date_range.end_date
                 )
                 for date in data_file_type.dates(start_date=date_range.start_date, end_date=date_range.end_date):
-                    data_fetcher = LocalFileFetcher(data_file_type=data_file_type, date=date)
+                    data_fetcher = S3Fetcher(data_file_type=data_file_type, date=date)
                     if args.update or not s.data_exists(data_type=data_type, date=date):
-                        file_data = data_fetcher.fetch_data(skip_cache=args.skip_cache)
+                        file_data = data_fetcher.data(skip_cache=args.skip_cache)
                         data = file_parser.parse(date=date, data=file_data)
                         s.update_data(date=date, data_type=data_type, data=data.get(data_type, []))
     except Exception as ex:
