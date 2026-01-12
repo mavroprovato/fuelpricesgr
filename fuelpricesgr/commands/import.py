@@ -60,25 +60,26 @@ def import_data(s: storage.base.BaseStorage, args: argparse.Namespace) -> bool:
     :return: True if an error occurred, False otherwise.
     """
     error = False
-    try:
-        data_file_types = enums.DataFileType if args.types is None else args.types
-        for data_file_type in data_file_types:
-            file_parser = parser.Parser.get(data_file_type=data_file_type)
-            for data_type in data_file_type.data_types:
-                date_range = get_fetch_date_range(s=s, args=args, data_type=data_type)
-                logger.info(
-                    "Fetching %s data between %s and %s", data_file_type.description, date_range.start_date,
-                    date_range.end_date
-                )
-                for date in data_file_type.dates(start_date=date_range.start_date, end_date=date_range.end_date):
-                    data_fetcher = fetcher.BaseFetcher.get_fetcher(data_file_type=data_file_type, date=date)
-                    if args.update or not s.data_exists(data_type=data_type, date=date):
+
+    data_file_types = enums.DataFileType if args.types is None else args.types
+    for data_file_type in data_file_types:
+        file_parser = parser.Parser.get(data_file_type=data_file_type)
+        for data_type in data_file_type.data_types:
+            date_range = get_fetch_date_range(s=s, args=args, data_type=data_type)
+            logger.info(
+                "Fetching %s data between %s and %s", data_file_type.description, date_range.start_date,
+                date_range.end_date
+            )
+            for date in data_file_type.dates(start_date=date_range.start_date, end_date=date_range.end_date):
+                data_fetcher = fetcher.BaseFetcher.get_fetcher(data_file_type=data_file_type, date=date)
+                if args.update or not s.data_exists(data_type=data_type, date=date):
+                    try:
                         file_data = data_fetcher.data(skip_cache=args.skip_cache)
                         data = file_parser.parse(date=date, data=file_data)
                         s.update_data(date=date, data_type=data_type, data=data.get(data_type, []))
-    except Exception as ex:
-        logger.exception("Error while importing data", exc_info=ex)
-        error = True
+                    except Exception as ex:
+                        logger.exception("Error while importing data", exc_info=ex)
+                        error = True
 
     return error
 
