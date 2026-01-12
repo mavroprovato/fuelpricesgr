@@ -8,7 +8,7 @@ import boto3
 import botocore.exceptions
 
 from fuelpricesgr import enums, settings
-from .base import BaseFetcher
+from .base import BaseFetcher, FetcherException
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -74,12 +74,15 @@ class S3Fetcher(BaseFetcher):
 
         :return: The data file content.
         """
-        self.lambda_client.invoke(
+        response = self.lambda_client.invoke(
             FunctionName='fuelpricesgr-downloader',
             Payload=json.dumps({
-                'bucket': settings.AWS_S3_BUCKET_NAME, 'url': self.data_file_type.link(date=self.date),
+                'bucket_name': settings.AWS_S3_BUCKET_NAME, 'url': self.data_file_type.link(date=self.date),
                 'key': self.path()
             })
         )
+        response_body = json.loads(response['Payload'].read())
+        if response_body['status'] != 200:
+            raise FetcherException(f"Could not fetch data file: {response_body['message']}")
 
         return self.read()
