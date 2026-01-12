@@ -5,7 +5,7 @@ import logging
 import requests
 
 from fuelpricesgr import enums, settings
-from .base import BaseFetcher
+from .base import BaseFetcher, FetcherException
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -44,8 +44,7 @@ class LocalFileFetcher(BaseFetcher):
         file.parent.mkdir(parents=True, exist_ok=True)
         with file.open('wb') as f:
             contents = self.download()
-            if contents is not None:
-                f.write(contents)
+            f.write(contents)
 
             return contents
 
@@ -56,7 +55,10 @@ class LocalFileFetcher(BaseFetcher):
         """
         file = self.base_directory / self.path()
 
-        return file.read_bytes()
+        try:
+            return file.read_bytes()
+        except OSError as ex:
+            raise FetcherException(message="Could not read file") from ex
 
     def download(self) -> bytes | None:
         """Download a file from the site to the local cache directory.
@@ -70,16 +72,13 @@ class LocalFileFetcher(BaseFetcher):
             response = requests.get(file_url, stream=True, timeout=self.REQUESTS_TIMEOUT)
             response.raise_for_status()
         except requests.RequestException as ex:
-            logger.error("Could not download URL for date %s", self.date.isoformat(), exc_info=ex)
-            return None
+            raise FetcherException(message="Could not download file") from ex
 
         # Check if response is a PDF file
         if response.headers['content-type'].startswith('text/html'):
-            logger.error("File not found for date %s", self.date.isoformat())
-            return None
+            raise FetcherException(message="File not found")
         if response.headers['content-type'] != 'application/pdf':
-            logger.error("File is not PDF for date %s", self.date.isoformat())
-            return None
+            raise FetcherException(message="File is not a PDF file")
 
         # Return the file contents
         return response.raw.read()

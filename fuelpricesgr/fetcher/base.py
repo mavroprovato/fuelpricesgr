@@ -11,6 +11,17 @@ from fuelpricesgr import enums, settings
 logger = logging.getLogger(__name__)
 
 
+class FetcherException(Exception):
+    """Exception raised when fetching data fails.
+    """
+    def __init__(self, message: str) -> None:
+        """Initialize the FetcherException.
+
+        :param message: The exception message.
+        """
+        self.message = message
+
+
 class BaseFetcher(abc.ABC):
     """Base class for fetching PDF files.
     """
