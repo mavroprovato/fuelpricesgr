@@ -1,5 +1,6 @@
 """The downloader lambda function.
 """
+import dataclasses
 from typing import Mapping, Any
 import urllib.request
 import urllib.error
@@ -7,53 +8,69 @@ import urllib.error
 import boto3
 import botocore.exceptions
 
-# The bucket name
-BUCKET_NAME = 'fuelpricesgr-data'
 
-# The S3 client
-s3_client = boto3.client('s3')
+@dataclasses.dataclass
+class Parameters:
+    """The parameters for the downloader.
+    """
+    bucket_name: str  # The bucket name
+    url: str  # The URL to download
+    key: str  # The S3 key where the file will be saved
 
 
-def download_file(url: str, key: str) -> Mapping[str, Any]:
+class DownloaderException(Exception):
+    """Exception raised when the download fails.
+    """
+    def __init__(self, message: str, detail: dict):
+        self.message = message
+        self.detail = detail
+
+
+def download_file(bucket_name: str, url: str, key: str) -> bool:
     """Download a file and save it to the S3 bucket.
 
+    :param bucket_name: The name of the s3 bucket.
     :param url: The URL of the file to download.
     :param key: The S3 key where the file is to be downloaded.
-    :return :A dictionary with the following keys:
-        * status: 200 if the download was successful, 500 if the download failed.
-        * message: The message. If the file was downloaded successfully, it provides information whether the file was
-        downloaded or it already existed. In case of an error, the error message is returned.
-        * bucket: The S3 bucket where the file was downloaded when successful.
-        * key: The S3 key where the file was downloaded when successful.
+    :return True if the file existed in cache, False otherwise.
     """
+    s3_client = boto3.client('s3')
     try:
-        s3_client.head_object(Bucket=BUCKET_NAME, Key=key)
+        # Check if file exists
+        s3_client.head_object(Bucket=bucket_name, Key=key)
 
-        result = {
-            'status': 200,
-            'message': 'File exists',
-            'bucket': BUCKET_NAME,
-            'key': key
-        }
+        return True
     except botocore.exceptions.ClientError:
+        # The file does not exist in the bucket, try to download it
         try:
             response = urllib.request.urlopen(url)
             data = response.read()
-            s3_client.put_object(Bucket=BUCKET_NAME, Key=key, Body=data)
+            s3_client.put_object(Bucket=bucket_name, Key=key, Body=data)
 
-            result = {
-                'status': 200,
-                'message': 'File downloaded',
-                'bucket': BUCKET_NAME,
-                'key': key
-            }
+            return False
         except urllib.error.HTTPError as ex:
-            result = {
-                'status': 500,
-                'message': f"Could not download file: ${ex}"
-            }
+            raise DownloaderException(message="Could not download file", detail={"detail": str(ex)})
 
-    return result
+
+def get_parameters(event: Mapping) -> Parameters:
+    """Get the parameters from the event.
+
+    :param event: The event.
+    :return: The parameters.
+    """
+    required_keys = ['bucket_name', 'url', 'key']
+    parameters = {}
+    errors = {}
+    for key in required_keys:
+        if key in event:
+            parameters[key] = event[key]
+        else:
+            errors[key] = f"Missing required parameter: {key}"
+
+    if errors:
+        raise DownloaderException(message='Parameters missing', detail=errors)
+
+    return Parameters(**parameters)
 
 
 def lambda_handler(event: Mapping, _) -> Mapping[str, Any]:
@@ -63,19 +80,14 @@ def lambda_handler(event: Mapping, _) -> Mapping[str, Any]:
     :param _: The lambda context.
     :return: The response.
     """
-    url = event.get('url')
-    if url is None:
-        result = {
-            'status': 400,
-            'message': 'No url provided'
-        }
-        return result
-    key = event.get('key')
-    if key is None:
-        result = {
-            'status': 400,
-            'message': 'No S3 key provided'
-        }
-        return result
+    try:
+        params = get_parameters(event)
+    except DownloaderException as ex:
+        return {'status': 400, 'message': ex.message, 'detail': ex.detail}
 
-    return download_file(url, key)
+    try:
+        exists = download_file(bucket_name=params.bucket_name, url=params.url, key=params.key)
+    except DownloaderException as ex:
+        return {'status': 500, 'message': ex.message, 'detail': ex.detail}
+
+    return {'status': 200, 'message': 'File exists' if exists else 'File downloaded', 'key': params.key}

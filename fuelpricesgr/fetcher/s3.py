@@ -76,7 +76,10 @@ class S3Fetcher(BaseFetcher):
         """
         self.lambda_client.invoke(
             FunctionName='fuelpricesgr-downloader',
-            Payload=json.dumps({'url': self.data_file_type.link(date=self.date), 'key': self.path()})
+            Payload=json.dumps({
+                'bucket': settings.AWS_S3_BUCKET_NAME, 'url': self.data_file_type.link(date=self.date),
+                'key': self.path()
+            })
         )
 
         return self.read()
