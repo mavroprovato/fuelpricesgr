@@ -21,8 +21,14 @@ class Parameters:
 class DownloaderException(Exception):
     """Exception raised when the download fails.
     """
-    def __init__(self, message: str, detail: dict):
+    def __init__(self, message: str, client_error: bool = False, detail: dict = None):
+        """Create the exception.
+
+        :param message: The exception message.
+        :param detail:
+        """
         self.message = message
+        self.client_error = client_error
         self.detail = detail
 
 
@@ -44,6 +50,11 @@ def download_file(bucket_name: str, url: str, key: str) -> bool:
         # The file does not exist in the bucket, try to download it
         try:
             response = urllib.request.urlopen(url)
+            if response.headers['content-type'].startswith('text/html'):
+                raise DownloaderException(message="File not found")
+            if response.headers['content-type'] != 'application/pdf':
+                raise DownloaderException(message="File is not a PDF")
+
             data = response.read()
             s3_client.put_object(Bucket=bucket_name, Key=key, Body=data)
 
@@ -68,7 +79,7 @@ def get_parameters(event: Mapping) -> Parameters:
             errors[key] = f"Missing required parameter: {key}"
 
     if errors:
-        raise DownloaderException(message='Parameters missing', detail=errors)
+        raise DownloaderException(message='Parameters missing', client_error=True, detail=errors)
 
     return Parameters(**parameters)
 
@@ -82,12 +93,8 @@ def lambda_handler(event: Mapping, _) -> Mapping[str, Any]:
     """
     try:
         params = get_parameters(event)
-    except DownloaderException as ex:
-        return {'status': 400, 'message': ex.message, 'detail': ex.detail}
-
-    try:
         exists = download_file(bucket_name=params.bucket_name, url=params.url, key=params.key)
-    except DownloaderException as ex:
-        return {'status': 500, 'message': ex.message, 'detail': ex.detail}
 
-    return {'status': 200, 'message': 'File exists' if exists else 'File downloaded', 'key': params.key}
+        return {'status': 200, 'message': 'File exists' if exists else 'File downloaded', 'key': params.key}
+    except DownloaderException as ex:
+        return {'status': 400 if ex.client_error else 500, 'message': ex.message, 'detail': ex.detail}
