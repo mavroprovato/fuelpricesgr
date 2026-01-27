@@ -6,10 +6,7 @@ import io
 import logging
 import sys
 
-from fuelpricesgr import caching, enums, fetcher, mail, models, parser, storage
-
-# The module logger
-logger = logging.getLogger(__name__)
+from fuelpricesgr import enums, importer, mail
 
 
 def parse_data_file_type(data_file_types: str) -> list[enums.DataFileType] | None:
@@ -52,66 +49,6 @@ def parse_arguments() -> argparse.Namespace:
     return arg_parser.parse_args()
 
 
-def import_data(s: storage.base.BaseStorage, args: argparse.Namespace) -> bool:
-    """Import data based on the command line arguments.
-
-    :param s: The storage.
-    :param args: The command line arguments.
-    :return: True if an error occurred, False otherwise.
-    """
-    error = False
-
-    data_file_types = enums.DataFileType if args.types is None else args.types
-    for data_file_type in data_file_types:
-        file_parser = parser.Parser.get(data_file_type=data_file_type)
-        for data_type in data_file_type.data_types:
-            date_range = get_fetch_date_range(s=s, args=args, data_type=data_type)
-            logger.info(
-                "Fetching %s data between %s and %s", data_file_type.description, date_range.start_date,
-                date_range.end_date
-            )
-            for date in data_file_type.dates(start_date=date_range.start_date, end_date=date_range.end_date):
-                data_fetcher = fetcher.BaseFetcher.get_fetcher(data_file_type=data_file_type, date=date)
-                if args.update or not s.data_exists(data_type=data_type, date=date):
-                    try:
-                        file_data = data_fetcher.data(skip_cache=args.skip_cache)
-                        data = file_parser.parse(date=date, data=file_data)
-                        s.update_data(date=date, data_type=data_type, data=data.get(data_type, []))
-                    except Exception as ex:
-                        logger.exception("Error while importing data", exc_info=ex)
-                        error = True
-
-    return error
-
-
-def get_fetch_date_range(
-    s: storage.base.BaseStorage, args: argparse.Namespace, data_type: enums.DataType
-) -> models.DateRange:
-    """Get the date range for which to fetch data, based on the passed arguments. If the start date is not provided,
-    then the last available date for the data file type is set as the start date. If there are no available data, then
-    the first available data date on the site is set as the start date. If the end date is not provided, then today's
-    date is set as the end date.
-
-    :param s: The storage.
-    :param args: The command line arguments.
-    :param data_type: The data type.
-    :return: The start and end date as a tuple.
-    """
-    start_date, end_date = args.start_date, args.end_date
-
-    if start_date is None:
-        date_range = s.date_range(data_type=data_type)
-        if date_range.end_date:
-            start_date = date_range.end_date
-        else:
-            start_date = data_type.min_date
-
-    if end_date is None:
-        end_date = datetime.date.today()
-
-    return models.DateRange(start_date=start_date, end_date=end_date)
-
-
 def send_mail(log_stream: io.StringIO, error: bool):
     """Send an email with the command results.
 
@@ -135,25 +72,14 @@ def main():
     """
     # Parse arguments
     args = parse_arguments()
-
-    # Configure logging
-    log_stream = io.StringIO()
     logging.basicConfig(
-        handlers=[logging.StreamHandler(stream=sys.stdout), logging.StreamHandler(stream=log_stream)],
+        handlers=[logging.StreamHandler(stream=sys.stdout)],
         level=logging.INFO if args.verbose else logging.WARNING, format='%(asctime)s %(name)s %(levelname)s %(message)s'
     )
-
-    # Import data
-    storage.init_storage()
-    with storage.get_storage() as s:
-        error = import_data(s=s, args=args)
-
-    # Clear cache
-    caching.clear_cache()
-
-    # Send mail
-    if args.send_mail:
-        send_mail(log_stream=log_stream, error=error)
+    importer.import_data(
+        data_file_types=args.types, start_date=args.start_date, end_date=args.end_date, update=args.update,
+        skip_cache=args.skip_cache
+    )
 
 
 if __name__ == '__main__':

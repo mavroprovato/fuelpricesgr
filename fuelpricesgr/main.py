@@ -1,8 +1,11 @@
 """The FastAPI main module
 """
+import apscheduler.schedulers.background
+import apscheduler.triggers.cron
+import atexit
 import fastapi.middleware
 
-from fuelpricesgr import settings, views
+from fuelpricesgr import settings, tasks, views
 
 app = fastapi.FastAPI(
     title="Fuel Prices in Greece",
@@ -39,3 +42,15 @@ if settings.STORAGE_BACKEND == 'fuelpricesgr.storage.sql_alchemy.SqlAlchemyStora
     admin.add_view(fuelpricesgr.views.admin.WeeklyCountryAdmin)
     admin.add_view(fuelpricesgr.views.admin.WeeklyPrefectureAdmin)
     admin.add_view(fuelpricesgr.views.admin.UserAdmin)
+
+# Set up the task scheduler
+scheduler = apscheduler.schedulers.background.BackgroundScheduler()
+scheduler.add_job(tasks.import_data, apscheduler.triggers.cron.CronTrigger(hour="*/8"))
+scheduler.start()
+
+
+@atexit.register
+def shutdown():
+    """Graceful shutdown.
+    """
+    scheduler.shutdown()
