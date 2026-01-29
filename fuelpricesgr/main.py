@@ -10,9 +10,10 @@ from fuelpricesgr import settings, tasks, views
 app = fastapi.FastAPI(
     title="Fuel Prices in Greece",
     description="""
-    An API that returns data for fuel prices in Greece. Daily and weekly data about fuel prices are regularly
-    uploaded at the [Παρατηρητήριο Τιμών Υγρών Καυσίμων](http://www.fuelprices.gr/) website by the Greek Government, but
-    the data are published as PDF files. With this API you can get the data in a structured manner.""",
+An API that returns data for fuel prices in Greece. Daily and weekly data about fuel prices are regularly uploaded at
+the [Παρατηρητήριο Τιμών Υγρών Καυσίμων](http://www.fuelprices.gr/) website by the Greek Government, but the data are
+published as PDF files. With this API you can get the data in a structured manner.
+    """,
     contact={
         "name": "Kostas Kokkoros",
         "url": "https://www.mavroprovato.net",
@@ -22,8 +23,7 @@ app = fastapi.FastAPI(
         "name": "The MIT License (MIT)",
         "url": "https://opensource.org/licenses/MIT",
     },
-    docs_url=None,
-    redoc_url='/docs',
+    docs_url='/docs'
 )
 app.include_router(views.api.router)
 
