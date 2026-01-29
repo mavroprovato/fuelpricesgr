@@ -46,8 +46,8 @@ Now you can launch the API by running the command:
 uv run uvicorn fuelpricesgr.main:app
 ```
 
-The API is now available at http://localhost:8000. The documentation for the API is available at
-http://localhost:8000/docs.
+The API is now available at http://localhost:8000/api. The documentation for the API is available at
+http://localhost:8000/api/docs.
 
 
 ## Running with docker
