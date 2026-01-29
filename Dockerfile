@@ -1,19 +1,34 @@
-FROM python:3.11-bookworm
+FROM python:3.13-slim-trixie
 
-WORKDIR /code
+# Environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PATH="/root/.local/bin/:$PATH"
 
-COPY poetry.lock pyproject.toml ./
+# Install OS dependencies
+RUN apt-get -qq update && \
+    apt-get -qqy install curl ca-certificates pkg-config build-essential libpq-dev default-libmysqlclient-dev
 
-RUN apt -qq update && apt -qq install -y curl
+# Download the latest uv installer
+ADD https://astral.sh/uv/install.sh /uv-installer.sh
 
-COPY ./fuelpricesgr /code/fuelpricesgr
+# Run the uv installer then remove it
+RUN sh /uv-installer.sh -q && rm /uv-installer.sh
 
-RUN curl -sSL https://install.python-poetry.org | python3 -
+# Create the app directory
+RUN mkdir /app
 
-RUN POETRY_VIRTUALENVS_CREATE=false /root/.local/bin/poetry install
+# Set the working directory
+WORKDIR /app
 
-COPY ./var/ /code/var
+# Copy the files required to install dependencies
+COPY pyproject.toml uv.lock /app/
 
-RUN python -m fuelpricesgr.commands.import --verbose
+# Copy the Django project to the container
+COPY . /app/
 
-CMD ["uvicorn", "fuelpricesgr.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Install python dependencies
+RUN uv sync -q --locked
+
+# Run Django's development server
+ENTRYPOINT ["/bin/bash", "/app/docker-entrypoint.sh"]

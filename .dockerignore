@@ -1,0 +1,27 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv/
+
+# Git related files
+.gitignore
+.git/
+
+# Environment files
+#.env
+
+# Pycharm project files
+.idea/
+
+# Test coverage file
+.coverage
+htmlcov/
+
+# Data directory
+var/
