@@ -25,7 +25,7 @@ published as PDF files. With this API you can get the data in a structured manne
     },
     docs_url='/docs'
 )
-app.include_router(views.api.router)
+app.include_router(views.api.router, prefix='/api')
 
 # Add SQL admin if the backend is SQL Alchemy
 if settings.STORAGE_BACKEND == 'fuelpricesgr.storage.sql_alchemy.SqlAlchemyStorage':
