@@ -20,7 +20,7 @@ class SESMailSender(mail.MailSender):
 
         self.client = boto3.client('ses', **settings.MAIL['PARAMETERS'])
 
-    def do_send(self, recipients: list[str], subject: str, html_content: str):
+    def do_send(self, subject: str, recipients: list[str], html_content: str):
         """Send an email.
 
         :param recipients: The recipients.

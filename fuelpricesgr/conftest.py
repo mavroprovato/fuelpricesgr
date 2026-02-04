@@ -11,7 +11,7 @@ def pytest_configure():
     """Configure tests.
     """
     storage_url = f"sqlite:///{(settings.DATA_PATH / 'db_test.sqlite')}"
-    common.Session.configure(bind=get_engine(storage_url))
+    common.TEST_SESSION.configure(bind=get_engine(storage_url))
     init_storage(storage_url)
     create_test_data()
 
@@ -31,5 +31,5 @@ def create_test_data():
                     factories.WeeklyPrefectureFactory.create(date=date, prefecture=prefecture, fuel_type=fuel_type)
                     factories.DailyPrefectureFactory.create(date=date, prefecture=prefecture, fuel_type=fuel_type)
         date += datetime.timedelta(days=1)
-    common.Session().commit()
+    common.TEST_SESSION().commit()
     print("Test data created")

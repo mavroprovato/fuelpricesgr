@@ -22,7 +22,7 @@ def get_fetch_date_range(
     :param data_type: The data type.
     :param start_date: The start date.
     :param end_date: The end date.
-    :return: The start and end date as a tuple.
+    :return: The date range.
     """
     if start_date is None:
         date_range = s.date_range(data_type=data_type)
@@ -41,6 +41,15 @@ def import_file_type_data(
     s: storage.BaseStorage, data_file_types: list[enums.DataFileType], start_date: datetime.date = None,
     end_date: datetime.date = None, update: bool = False, skip_cache: bool = False
 ):
+    """Import date file types.
+
+    :param s: The storage.
+    :param data_file_types: The date file types to import.
+    :param start_date: The start date.
+    :param end_date: The end date.
+    :param update: Set to True to update existing data.
+    :param skip_cache: Set to True to skip caching.
+    """
     for data_file_type in data_file_types:
         file_parser = parser.Parser.get(data_file_type=data_file_type)
         for data_type in data_file_type.data_types:
@@ -64,6 +73,14 @@ def import_data(
     data_file_types: list[enums.DataFileType] = None, start_date: datetime.date = None, end_date: datetime.date = None,
     update: bool = False, skip_cache: bool = False
 ):
+    """Import data.
+
+    :param data_file_types: The date file types to import.
+    :param start_date: The start date.
+    :param end_date: The end date.
+    :param update: Set to True to update existing data.
+    :param skip_cache: Set to True to skip caching.
+    """
     # Import data
     with storage.get_storage() as s:
         data_file_types = enums.DataFileType if data_file_types is None else data_file_types

@@ -1,8 +1,9 @@
 """The FastAPI main module
 """
+import atexit
+
 import apscheduler.schedulers.background
 import apscheduler.triggers.cron
-import atexit
 import fastapi.middleware
 
 from fuelpricesgr import settings, storage, tasks, views

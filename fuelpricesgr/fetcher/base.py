@@ -51,20 +51,18 @@ class BaseFetcher(abc.ABC):
         :param skip_cache: Do not use file cache.
         :return: The data text, if it can be fetched successfully.
         """
-        if self.exists():
-            if skip_cache:
-                logger.info(
-                    "Downloading %s file for date %s again because cache is skipped", self.data_file_type, self.date
-                )
-                return self.fetch()
-            else:
-                logger.info("File %s for date %s exists in cache", self.data_file_type, self.date)
-
-                return self.read()
-        else:
+        if not self.exists():
             logger.info("Downloading %s file for date %s because it does not exist", self.data_file_type, self.date)
-
             return self.fetch()
+
+        if skip_cache:
+            logger.info(
+                "Downloading %s file for date %s again because cache is skipped", self.data_file_type, self.date
+            )
+            return self.fetch()
+
+        logger.info("File %s for date %s exists in cache", self.data_file_type, self.date)
+        return self.read()
 
     def path(self) -> str:
         """Return the path of the data file.

@@ -16,11 +16,13 @@ class BaseDataFactory(factory.alchemy.SQLAlchemyModelFactory):
 
 
 class WeeklyCountryFactory(BaseDataFactory):
-    """The weekly country data factory
+    """The weekly country data factory.
     """
     class Meta:
+        """Metadata class for the factory.
+        """
         model = fuelpricesgr.storage.sql_alchemy.WeeklyCountry
-        sqlalchemy_session = common.Session
+        sqlalchemy_session = common.TEST_SESSION
         sqlalchemy_get_or_create = ('date', 'fuel_type')
 
     number_of_stations = factory.Faker('pyint', min_value=0, max_value=1000)
@@ -30,8 +32,10 @@ class WeeklyPrefectureFactory(BaseDataFactory):
     """The weekly prefecture data factory
     """
     class Meta:
+        """Metadata class for the factory.
+        """
         model = fuelpricesgr.storage.sql_alchemy.WeeklyPrefecture
-        sqlalchemy_session = common.Session
+        sqlalchemy_session = common.TEST_SESSION
         sqlalchemy_get_or_create = ('date', 'prefecture', 'fuel_type')
 
     prefecture = factory.Faker('enum', enum_cls=enums.Prefecture)
@@ -41,8 +45,10 @@ class DailyCountryFactory(BaseDataFactory):
     """The daily country data factory
     """
     class Meta:
+        """Metadata class for the factory.
+        """
         model = fuelpricesgr.storage.sql_alchemy.DailyCountry
-        sqlalchemy_session = common.Session
+        sqlalchemy_session = common.TEST_SESSION
         sqlalchemy_get_or_create = ('date', 'fuel_type')
 
     number_of_stations = factory.Faker('pyint', min_value=0, max_value=1000)
@@ -52,8 +58,10 @@ class DailyPrefectureFactory(BaseDataFactory):
     """The daily prefecture data factory
     """
     class Meta:
+        """Metadata class for the factory.
+        """
         model = fuelpricesgr.storage.sql_alchemy.DailyPrefecture
-        sqlalchemy_session = common.Session
+        sqlalchemy_session = common.TEST_SESSION
         sqlalchemy_get_or_create = ('date', 'prefecture', 'fuel_type')
 
     prefecture = factory.Faker('enum', enum_cls=enums.Prefecture)

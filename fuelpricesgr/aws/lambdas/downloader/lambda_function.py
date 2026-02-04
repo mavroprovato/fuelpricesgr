@@ -46,21 +46,21 @@ def download_file(bucket_name: str, url: str, key: str) -> bool:
         s3_client.head_object(Bucket=bucket_name, Key=key)
 
         return True
-    except botocore.exceptions.ClientError:
+    except botocore.exceptions.ClientError as client_ex:
         # The file does not exist in the bucket, try to download it
         try:
-            response = urllib.request.urlopen(url)
-            if response.headers['content-type'].startswith('text/html'):
-                raise DownloaderException(message="File not found")
-            if response.headers['content-type'] != 'application/pdf':
-                raise DownloaderException(message="File is not a PDF")
+            with urllib.request.urlopen(url) as response:
+                if response.headers['content-type'].startswith('text/html'):
+                    raise DownloaderException(message="File not found") from client_ex
+                if response.headers['content-type'] != 'application/pdf':
+                    raise DownloaderException(message="File is not a PDF") from client_ex
 
-            data = response.read()
-            s3_client.put_object(Bucket=bucket_name, Key=key, Body=data)
+                data = response.read()
+                s3_client.put_object(Bucket=bucket_name, Key=key, Body=data)
 
-            return False
-        except urllib.error.HTTPError as ex:
-            raise DownloaderException(message="Could not download file", detail={"detail": str(ex)})
+                return False
+        except urllib.error.HTTPError as http_ex:
+            raise DownloaderException(message="Could not download file", detail={"detail": str(http_ex)}) from http_ex
 
 
 def get_parameters(event: Mapping) -> Parameters:

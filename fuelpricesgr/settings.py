@@ -1,8 +1,6 @@
 """Application settings module
 """
 import pathlib
-import secrets
-import string
 
 import environs
 

@@ -1,5 +1,7 @@
 """Common test module
 """
+import typing
+
 from fastapi.testclient import TestClient
 from sqlalchemy import orm
 
@@ -7,7 +9,7 @@ from fuelpricesgr import main, storage, views
 from fuelpricesgr.storage.sql_alchemy import SqlAlchemyStorage
 
 # Session for tests
-Session = orm.scoped_session(orm.sessionmaker())
+TEST_SESSION = orm.scoped_session(orm.sessionmaker())
 
 
 class TestSqlAlchemyStorage(SqlAlchemyStorage):
@@ -16,12 +18,12 @@ class TestSqlAlchemyStorage(SqlAlchemyStorage):
     def __enter__(self):
         """Enter the context manager.
         """
-        self.db = Session()
+        self.db = TEST_SESSION()
 
         return self
 
 
-def get_test_storage() -> storage.BaseStorage:
+def get_test_storage() -> typing.Generator[storage.BaseStorage]:
     """Get the test storage backend.
 
     :return: The test storage backend.

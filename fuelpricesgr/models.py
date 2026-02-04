@@ -70,6 +70,10 @@ class PriceResponse(pydantic.BaseModel):
     @pydantic.computed_field
     @property
     def data_file(self) -> str:
+        """Return the data file URL.
+
+        :return: The data file URL.
+        """
         # TODO: fix this
         return enums.DataFileType.WEEKLY.link(date=self.date)
 
@@ -83,5 +87,9 @@ class PriceNumberOfStationsResponse(pydantic.BaseModel):
     @pydantic.computed_field
     @property
     def data_file(self) -> str:
+        """Return the data file URL.
+
+        :return: The data file URL.
+        """
         # TODO: fix this
         return enums.DataFileType.WEEKLY.link(date=self.date)
