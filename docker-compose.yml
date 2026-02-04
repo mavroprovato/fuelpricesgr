@@ -1,0 +1,14 @@
+name: fuelpricesgr
+
+services:
+  api:
+    build:
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    network_mode: host
+    volumes:
+      - api_data:/app/fuelpricesgr/var
+
+volumes:
+  api_data:

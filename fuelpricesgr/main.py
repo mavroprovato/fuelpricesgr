@@ -5,8 +5,12 @@ import apscheduler.triggers.cron
 import atexit
 import fastapi.middleware
 
-from fuelpricesgr import settings, tasks, views
+from fuelpricesgr import settings, storage, tasks, views
 
+# Initialize the storage
+storage.init_storage()
+
+# Create the application
 app = fastapi.FastAPI(
     title="Fuel Prices in Greece",
     description="""

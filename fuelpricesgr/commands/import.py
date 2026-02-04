@@ -6,7 +6,7 @@ import io
 import logging
 import sys
 
-from fuelpricesgr import enums, importer, mail
+from fuelpricesgr import enums, importer, mail, storage
 
 
 def parse_data_file_type(data_file_types: str) -> list[enums.DataFileType] | None:
@@ -72,6 +72,7 @@ def main():
     """
     # Parse arguments
     args = parse_arguments()
+    storage.init_storage()
     logging.basicConfig(
         handlers=[logging.StreamHandler(stream=sys.stdout)],
         level=logging.INFO if args.verbose else logging.WARNING, format='%(asctime)s %(name)s %(levelname)s %(message)s'
