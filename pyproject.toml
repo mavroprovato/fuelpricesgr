@@ -3,24 +3,17 @@ name = "fuelpricesgr"
 version = "0.1.0"
 description = "A database of fuel prices in Greece"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     "apscheduler~=3.11.0",
     "argon2-cffi~=25.1.0",
     "boto3~=1.43.0",
     "cachelib~=0.14.0",
     "environs~=15.0.0",
-    "factory-boy~=3.3.0",
     "fastapi~=0.136.0",
-    "gunicorn~=26.0.0",
     "itsdangerous~=2.2.0",
     "matplotlib~=3.10.0",
-    "mysqlclient~=2.2.0",
-    "psycopg2~=2.9.0",
-    "pymongo~=4.17.0",
-    "pymysql~=1.1.0",
     "pypdf~=6.11.0",
-    "redis~=7.4.0",
     "requests~=2.34.0",
     "sqladmin~=0.25.0",
     "sqlalchemy~=2.0.0",
@@ -31,6 +24,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "coverage~=7.14.0",
+    "factory-boy~=3.3.0",
     "httpx~=0.28.0",
     "pylint~=4.0.0",
     "pytest~=9.0.0",
