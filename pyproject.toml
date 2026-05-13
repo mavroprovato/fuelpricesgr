@@ -30,3 +30,8 @@ dev = [
     "pytest~=9.0.0",
     "safety~=3.7.0",
 ]
+
+postgres = [
+    "psycopg~=3.3.0",
+    "psycopg-binary~=3.3.0",
+]
