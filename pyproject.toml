@@ -31,7 +31,16 @@ dev = [
     "safety~=3.7.0",
 ]
 
+[project.optional-dependencies]
 postgres = [
     "psycopg~=3.3.0",
-    "psycopg-binary~=3.3.0",
+    "psycopg-binary~=3.3.0"
+]
+
+mysql = [
+    "pymysql~=1.1.0"
+]
+
+mongo = [
+    "pymongo~=4.17.0"
 ]
