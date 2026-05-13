@@ -72,13 +72,13 @@ class LocalFileFetcher(BaseFetcher):
             response = requests.get(file_url, stream=True, timeout=self.REQUESTS_TIMEOUT)
             response.raise_for_status()
         except requests.RequestException as ex:
-            raise FetcherException(message="Could not download file") from ex
+            raise FetcherException(message=f"Could not download file from {file_url}") from ex
 
         # Check if response is a PDF file
         if response.headers['content-type'].startswith('text/html'):
-            raise FetcherException(message="File not found")
+            raise FetcherException(message=f"File not found at {file_url}")
         if response.headers['content-type'] != 'application/pdf':
-            raise FetcherException(message="File is not a PDF file")
+            raise FetcherException(message=f"File is not a PDF file at {file_url}")
 
         # Return the file contents
         return response.raw.read()
