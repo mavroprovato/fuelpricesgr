@@ -1,8 +1,8 @@
 """Test the status endpoint
 """
-from fuelpricesgr.tests import common
+from fuelpricesgr import tests
 
-class StatusTestCase(common.BaseAPITestCase):
+class StatusTestCase(tests.common.BaseAPITestCase):
     """The status endpoint test case
     """
     def test_status(self):
