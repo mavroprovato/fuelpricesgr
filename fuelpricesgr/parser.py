@@ -15,6 +15,16 @@ from fuelpricesgr import enums
 # The module logger
 logger = logging.getLogger(__name__)
 
+class ParserException(Exception):
+    """Exception raised when failing to parse data fails.
+    """
+    def __init__(self, message: str) -> None:
+        """Initialize the ParserException.
+
+        :param message: The exception message.
+        """
+        self.message = message
+
 
 class Parser(abc.ABC):
     """Class to parse data files
@@ -25,6 +35,8 @@ class Parser(abc.ABC):
     @staticmethod
     def get(data_file_type: enums.DataFileType) -> 'Parser':
         """Get the parser object.
+
+        :return: The parser object.
         """
         match data_file_type:
             case enums.DataFileType.WEEKLY:
@@ -34,7 +46,7 @@ class Parser(abc.ABC):
             case enums.DataFileType.DAILY_PREFECTURE:
                 return DailyPrefectureParser()
             case _:
-                raise NotImplementedError()
+                raise ParserException(f"Parsing of {data_file_type} is not implemented")
 
     def parse(self, date: datetime.date, data: bytes) -> dict[enums.DataType, list[dict]]:
         """Parse the data file content.
@@ -43,18 +55,18 @@ class Parser(abc.ABC):
         :param data: The file.
         :return: The consumption data.
         """
-        if data is None:
-            return {}
         try:
             reader = pypdf.PdfReader(io.BytesIO(data))
-        except (pypdf.errors.PdfReadError, pypdf.errors.EmptyFileError):
-            logger.error("Could not extract text from file for date %s", date)
-            return {}
-        text = ''.join(page.extract_text() for page in reader.pages)
-        if text:
-            return self.extract_data(text=text, date=date)
+        except pypdf.errors.EmptyFileError as ex:
+            raise ParserException("File is empty") from ex
+        except pypdf.errors.PdfReadError as ex:
+            raise ParserException("Could not extract text from file") from ex
 
-        return {}
+        text = ''.join(page.extract_text() for page in reader.pages)
+        if not text:
+            raise ParserException("File does not contain any text")
+
+        return self.extract_data(text=text, date=date)
 
     @staticmethod
     def parse_number_of_stations(number_of_stations_text: str) -> int | None:
@@ -105,7 +117,7 @@ class Parser(abc.ABC):
         return True
 
     @abc.abstractmethod
-    def extract_data(self, text: str, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:
+    def extract_data(self, text: str, date: datetime.date) -> dict[enums.DataType, list[dict]]:
         """Extract weekly country and prefecture data.
 
         :param text: The file text.
@@ -264,8 +276,8 @@ class PrefectureParser:
                             'price': price,
                         })
             else:
-                logger.error("Could not find %s prefecture data for %s and date %s", 'weekly' if weekly else 'daily',
-                             prefecture.description, date)
+                logger.error("Could not find %s prefecture data for date %s and prefecture %s",
+                             'weekly' if weekly else 'daily', date, prefecture.description)
 
         return data
 
@@ -273,7 +285,7 @@ class PrefectureParser:
 class WeeklyParser(Parser, CountryParser, PrefectureParser):
     """Parser for weekly data files
     """
-    def extract_data(self, text: str, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:
+    def extract_data(self, text: str, date: datetime.date) -> dict[enums.DataType, list[dict]]:
         """Extract weekly country and prefecture data.
 
         :param text: The file text.
@@ -315,7 +327,7 @@ class WeeklyParser(Parser, CountryParser, PrefectureParser):
 class DailyCountryParser(Parser, CountryParser):
     """Parser for daily country data files
     """
-    def extract_data(self, text: str, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:
+    def extract_data(self, text: str, date: datetime.date) -> dict[enums.DataType, list[dict]]:
         """Extract daily country data.
 
         :param text: The file text.
@@ -328,7 +340,7 @@ class DailyCountryParser(Parser, CountryParser):
 class DailyPrefectureParser(Parser, PrefectureParser):
     """Parser for daily prefecture data files
     """
-    def extract_data(self, text: str, date: datetime.date) -> dict[enums.DataType, list[dict]] | None:
+    def extract_data(self, text: str, date: datetime.date) -> dict[enums.DataType, list[dict]]:
         """Extract daily prefecture data.
 
         :param text: The file text.

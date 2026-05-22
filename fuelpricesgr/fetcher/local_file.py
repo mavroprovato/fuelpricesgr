@@ -52,18 +52,20 @@ class LocalFileFetcher(BaseFetcher):
         """Read a file from the local cache directory.
 
         :return: The file contents.
+        :raises FetcherException: If the file could not be downloaded.
         """
         file = self.base_directory / self.path()
 
         try:
             return file.read_bytes()
         except OSError as ex:
-            raise FetcherException(message="Could not read file") from ex
+            raise FetcherException(message=f"Could not read file {file}") from ex
 
-    def download(self) -> bytes | None:
+    def download(self) -> bytes:
         """Download a file from the site to the local cache directory.
 
         :return: The file contents.
+        :raises FetcherException: If the file could not be downloaded.
         """
         # Download the file
         file_url = self.data_file_type.link(self.date)

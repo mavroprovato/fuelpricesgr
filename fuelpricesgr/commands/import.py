@@ -18,8 +18,8 @@ def parse_data_file_type(data_file_types: str) -> list[enums.DataFileType] | Non
     if data_file_types:
         try:
             return [enums.DataFileType[dft] for dft in data_file_types.upper().split(',')]
-        except KeyError as exc:
-            raise argparse.ArgumentTypeError("Could not parse data file types") from exc
+        except KeyError as ex:
+            raise argparse.ArgumentTypeError("Could not parse data file types") from ex
 
     return None
 
@@ -75,7 +75,8 @@ def main():
     storage.init_storage()
     logging.basicConfig(
         handlers=[logging.StreamHandler(stream=sys.stdout)],
-        level=logging.INFO if args.verbose else logging.WARNING, format='%(asctime)s %(name)s %(levelname)s %(message)s'
+        level=logging.INFO if args.verbose else logging.WARNING,
+        format='%(asctime)s %(name)s %(levelname)s %(filename)s:%(lineno)d %(message)s'
     )
     importer.import_data(
         data_file_types=args.types, start_date=args.start_date, end_date=args.end_date, update=args.update,

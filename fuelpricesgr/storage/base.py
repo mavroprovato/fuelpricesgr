@@ -46,11 +46,12 @@ class BaseStorage(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def date_range(self, data_type: enums.DataType) -> models.DateRange:
+    def date_range(self, data_type: enums.DataType) -> models.DateRange | None:
         """Return the date range for a data type.
 
         :param data_type: The data type.
-        :return: The date range as a tuple. The first element is the minimum date and the second the maximum.
+        :return: The date range as a tuple. The first element is the minimum date and the second the maximum. Returns
+        None if there are no data.
         """
         raise NotImplementedError()
 

@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 def get_fetch_date_range(
-    s: storage.base.BaseStorage, data_type: enums.DataType, start_date: datetime.date = None,
-    end_date: datetime.date = None
+    s: storage.base.BaseStorage, data_type: enums.DataType, start_date: datetime.date | None = None,
+    end_date: datetime.date | None = None
 ) -> models.DateRange:
     """Get the date range for which to fetch data, based on the passed arguments. If the start date is not provided,
     then the last available date for the data file type is set as the start date. If there are no available data, then
@@ -26,10 +26,10 @@ def get_fetch_date_range(
     """
     if start_date is None:
         date_range = s.date_range(data_type=data_type)
-        if date_range.end_date:
+        if date_range is not None:
             start_date = date_range.end_date
-        else:
-            start_date = data_type.min_date
+    if start_date is None:
+        start_date = data_type.min_date
 
     if end_date is None:
         end_date = datetime.date.today()
@@ -38,8 +38,8 @@ def get_fetch_date_range(
 
 
 def import_file_type_data(
-    s: storage.BaseStorage, data_file_types: list[enums.DataFileType], start_date: datetime.date = None,
-    end_date: datetime.date = None, update: bool = False, skip_cache: bool = False
+    s: storage.BaseStorage, data_file_types: list[enums.DataFileType], start_date: datetime.date | None = None,
+    end_date: datetime.date | None= None, update: bool = False, skip_cache: bool = False
 ):
     """Import date file types.
 
@@ -65,13 +65,16 @@ def import_file_type_data(
                         file_data = data_fetcher.data(skip_cache=skip_cache)
                         data = file_parser.parse(date=date, data=file_data)
                         s.update_data(date=date, data_type=data_type, data=data.get(data_type, []))
-                    except Exception as ex:
-                        logger.exception("Error while importing data", exc_info=ex)
+                    except (fetcher.FetcherException, parser.ParserException) as ex:
+                        logger.error(
+                            "Error while importing data for date %s and data type %s: %s", date, data_type.value,
+                            ex.message
+                        )
 
 
 def import_data(
-    data_file_types: list[enums.DataFileType] = None, start_date: datetime.date = None, end_date: datetime.date = None,
-    update: bool = False, skip_cache: bool = False
+    data_file_types: list[enums.DataFileType] | None = None, start_date: datetime.date | None = None,
+    end_date: datetime.date | None = None, update: bool = False, skip_cache: bool = False
 ):
     """Import data.
 
@@ -83,7 +86,7 @@ def import_data(
     """
     # Import data
     with storage.get_storage() as s:
-        data_file_types = enums.DataFileType if data_file_types is None else data_file_types
+        data_file_types = list(enums.DataFileType) if data_file_types is None else data_file_types
         import_file_type_data(
             s=s, data_file_types=data_file_types, start_date=start_date, end_date=end_date, update=update,
             skip_cache=skip_cache
