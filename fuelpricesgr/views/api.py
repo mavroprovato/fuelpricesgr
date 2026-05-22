@@ -72,7 +72,7 @@ def prefectures() -> list[models.Prefecture]:
     response_model=models.DateRange
 )
 @caching.cache
-def date_range(data_type: enums.DataType, s: BaseStorage = Depends(get_storage)) -> models.DateRange:
+def date_range(data_type: enums.DataType, s: BaseStorage = Depends(get_storage)) -> models.DateRange | None:
     """Returns the available data date range for a data type.
 
     :param data_type: The data type.
@@ -202,25 +202,25 @@ def daily_prefecture_data(
     ]
 
 
-def get_date_range(start_date: datetime.date, end_date: datetime.date) -> tuple[datetime.date, datetime.date]:
+def get_date_range(
+    start_date: datetime.date | None, end_date: datetime.date | None
+) -> tuple[datetime.date, datetime.date]:
     """Get the date range from the provided start and end dates.
 
     :param start_date: The start date.
     :param end_date: The end date.
     :return: The date range as a tuple, with the start date as the first element and the end date as the second.
     """
-    # Make sure that we don't get more days than MAX_DAYS
-    if start_date is None and end_date is None:
+    # Get default values for start and end date
+    if end_date is None:
         end_date = datetime.date.today()
-        start_date = end_date - datetime.timedelta(days=settings.MAX_DAYS)
-    elif start_date is None:
-        start_date = end_date - datetime.timedelta(days=settings.MAX_DAYS)
-    elif end_date is None:
-        end_date = start_date + datetime.timedelta(days=settings.MAX_DAYS)
-    elif start_date > end_date:
+    if start_date is None:
+        start_date = datetime.date.today() - datetime.timedelta(days=settings.MAX_DAYS)
+
+    # Validate start & end dates
+    if start_date > end_date:
         raise fastapi.HTTPException(status_code=400, detail="Start date must be before end date")
-    else:
-        days = (end_date - start_date).days
-        start_date = end_date - datetime.timedelta(days=min(days, settings.MAX_DAYS))
+    if (end_date - start_date).days > settings.MAX_DAYS:
+        raise fastapi.HTTPException(status_code=400, detail=f"Cannot get data for more than {settings.MAX_DAYS} days")
 
     return start_date, end_date
