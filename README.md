@@ -24,7 +24,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 If you don't have the required Python version install, you need to run
 
 ```shell
-uv python install 3.13
+uv python install `cat .python-version`
 ```
 
 By default, the data are stored in an [SQLite](https://www.sqlite.org) database. In order to fetch the data you need to
