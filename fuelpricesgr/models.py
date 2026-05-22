@@ -66,16 +66,7 @@ class PriceResponse(pydantic.BaseModel):
     """
     date: datetime.date = pydantic.Field(title="The date")
     data: list[PriceData] = pydantic.Field(title="The price data")
-
-    @pydantic.computed_field
-    @property
-    def data_file(self) -> str:
-        """Return the data file URL.
-
-        :return: The data file URL.
-        """
-        # TODO: fix this
-        return enums.DataFileType.WEEKLY.link(date=self.date)
+    data_file: str = pydantic.Field(title="The data file")
 
 
 class PriceNumberOfStationsResponse(pydantic.BaseModel):
@@ -83,13 +74,4 @@ class PriceNumberOfStationsResponse(pydantic.BaseModel):
     """
     date: datetime.date = pydantic.Field(title="The date")
     data: list[PriceNumberOfStationsData] = pydantic.Field(title="The price with number of stations data")
-
-    @pydantic.computed_field
-    @property
-    def data_file(self) -> str:
-        """Return the data file URL.
-
-        :return: The data file URL.
-        """
-        # TODO: fix this
-        return enums.DataFileType.WEEKLY.link(date=self.date)
+    data_file: str = pydantic.Field(title="The data file")

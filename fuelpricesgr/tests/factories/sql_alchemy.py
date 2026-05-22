@@ -3,7 +3,6 @@
 import factory
 
 from fuelpricesgr import enums
-from fuelpricesgr.tests import common
 import fuelpricesgr.storage.sql_alchemy
 
 
@@ -22,7 +21,6 @@ class WeeklyCountryFactory(BaseDataFactory):
         """Metadata class for the factory.
         """
         model = fuelpricesgr.storage.sql_alchemy.WeeklyCountry
-        sqlalchemy_session = common.TEST_SESSION
         sqlalchemy_get_or_create = ('date', 'fuel_type')
 
     number_of_stations = factory.Faker('pyint', min_value=0, max_value=1000)
@@ -35,7 +33,6 @@ class WeeklyPrefectureFactory(BaseDataFactory):
         """Metadata class for the factory.
         """
         model = fuelpricesgr.storage.sql_alchemy.WeeklyPrefecture
-        sqlalchemy_session = common.TEST_SESSION
         sqlalchemy_get_or_create = ('date', 'prefecture', 'fuel_type')
 
     prefecture = factory.Faker('enum', enum_cls=enums.Prefecture)
@@ -48,7 +45,6 @@ class DailyCountryFactory(BaseDataFactory):
         """Metadata class for the factory.
         """
         model = fuelpricesgr.storage.sql_alchemy.DailyCountry
-        sqlalchemy_session = common.TEST_SESSION
         sqlalchemy_get_or_create = ('date', 'fuel_type')
 
     number_of_stations = factory.Faker('pyint', min_value=0, max_value=1000)
@@ -61,7 +57,6 @@ class DailyPrefectureFactory(BaseDataFactory):
         """Metadata class for the factory.
         """
         model = fuelpricesgr.storage.sql_alchemy.DailyPrefecture
-        sqlalchemy_session = common.TEST_SESSION
         sqlalchemy_get_or_create = ('date', 'prefecture', 'fuel_type')
 
     prefecture = factory.Faker('enum', enum_cls=enums.Prefecture)

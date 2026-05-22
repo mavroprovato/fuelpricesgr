@@ -1,9 +1,9 @@
 """Configure testing module
 """
+from sqlalchemy import orm
 
 from fuelpricesgr import settings
 from fuelpricesgr.storage.sql_alchemy import get_engine, init_storage
-from sqlalchemy import orm
 
 
 def pytest_configure():

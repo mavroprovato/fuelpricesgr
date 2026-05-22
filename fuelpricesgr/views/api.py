@@ -104,7 +104,9 @@ def weekly_country_data(
     start_date, end_date = get_date_range(start_date, end_date)
 
     return [
-        models.PriceNumberOfStationsResponse(date=date, data=list(date_group))
+        models.PriceNumberOfStationsResponse(
+            date=date, data=list(date_group), data_file=enums.DataFileType.WEEKLY.link(date)
+        )
         for date, date_group in itertools.groupby(
             s.weekly_country_data(start_date=start_date, end_date=end_date), lambda x: x.date
         )
@@ -135,7 +137,7 @@ def weekly_prefecture_data(
     start_date, end_date = get_date_range(start_date, end_date)
 
     return [
-        models.PriceResponse(date=date, data=list(date_group))
+        models.PriceResponse(date=date, data=list(date_group), data_file=enums.DataFileType.WEEKLY.link(date))
         for date, date_group in itertools.groupby(
             s.weekly_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date), lambda x: x.date
         )
@@ -164,7 +166,9 @@ def daily_country_data(
     start_date, end_date = get_date_range(start_date, end_date)
 
     return [
-        models.PriceNumberOfStationsResponse(date=date, data=list(date_group))
+        models.PriceNumberOfStationsResponse(
+            date=date, data=list(date_group), data_file=enums.DataFileType.DAILY_COUNTRY.link(date)
+        )
         for date, date_group in itertools.groupby(
             s.daily_country_data(start_date=start_date, end_date=end_date), lambda x: x.date
         )
@@ -195,7 +199,7 @@ def daily_prefecture_data(
     start_date, end_date = get_date_range(start_date, end_date)
 
     return [
-        models.PriceResponse(date=date, data=list(date_group))
+        models.PriceResponse(date=date, data=list(date_group), data_file=enums.DataFileType.DAILY_PREFECTURE.link(date))
         for date, date_group in itertools.groupby(
             s.daily_prefecture_data(prefecture=prefecture, start_date=start_date, end_date=end_date), lambda x: x.date
         )
