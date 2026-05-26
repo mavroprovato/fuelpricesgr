@@ -32,8 +32,8 @@ class Prefecture(pydantic.BaseModel):
 class DateRange(pydantic.BaseModel):
     """The date range model.
     """
-    start_date: datetime.date = pydantic.Field(title="The start date")
-    end_date: datetime.date = pydantic.Field(title="The end date")
+    start_date: datetime.date | None = pydantic.Field(title="The start date")
+    end_date: datetime.date | None = pydantic.Field(title="The end date")
 
 
 class PriceData(pydantic.BaseModel):

@@ -153,7 +153,7 @@ class SqlAlchemyStorage(base.BaseStorage):
 
         return db_status
 
-    def date_range(self, data_type: enums.DataType) -> models.DateRange | None:
+    def date_range(self, data_type: enums.DataType) -> models.DateRange:
         """Return the date range for a data type.
 
         :param data_type: The data type.
@@ -163,10 +163,7 @@ class SqlAlchemyStorage(base.BaseStorage):
             sqlalchemy.func.min(self._get_model(data_type).date), sqlalchemy.func.max(self._get_model(data_type).date)
         ).one()
 
-        if result[0] is not None and result[1] is not None:
-            return models.DateRange(start_date=result[0], end_date=result[1])
-
-        return None
+        return models.DateRange(start_date=result[0], end_date=result[1])
 
     def weekly_country_data(
         self, start_date: datetime.date, end_date: datetime.date

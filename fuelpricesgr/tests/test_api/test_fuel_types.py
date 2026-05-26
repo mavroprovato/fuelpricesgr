@@ -1,5 +1,7 @@
 """Test the fuel types endpoint
 """
+from fastapi import status
+
 from fuelpricesgr import enums, tests
 
 class FuelTypesTestCase(tests.common.BaseAPITestCase):
@@ -10,7 +12,7 @@ class FuelTypesTestCase(tests.common.BaseAPITestCase):
         """
         response = self.client.get('/api/fuelTypes')
 
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         for index, prefecture in enumerate(enums.FuelType):
             assert response.json()[index]['name'] == prefecture.value
             assert response.json()[index]['description'] == prefecture.description

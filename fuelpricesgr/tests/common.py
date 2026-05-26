@@ -6,13 +6,17 @@ import unittest
 
 import fastapi.testclient
 
-from fuelpricesgr import enums, main, models, storage
+from fuelpricesgr import enums, main, models, storage, views
 
 
-def mock_data_storage(status: enums.ApplicationStatus = enums.ApplicationStatus.OK):
+def create_mock_storage(
+    status: enums.ApplicationStatus,
+    date_range: models.DateRange
+):
     """Mock the storage backend.
 
-    :param status: The application status.
+    :param status: The application status to use.
+    :param date_range: The date range to use.
     """
     class TestStorage(storage.BaseStorage):
         """Storage class for testing"""
@@ -21,7 +25,7 @@ def mock_data_storage(status: enums.ApplicationStatus = enums.ApplicationStatus.
             return status
 
         def date_range(self, data_type: enums.DataType) -> models.DateRange | None:
-            raise NotImplementedError()
+            return date_range
 
         def weekly_country_data(
                 self, start_date: datetime.date, end_date: datetime.date
@@ -66,6 +70,17 @@ class BaseAPITestCase(unittest.TestCase):
     """
     @classmethod
     def setUpClass(cls):
+        """Set up the test client.
+        """
         super().setUpClass()
 
         cls.client = fastapi.testclient.TestClient(main.app)
+
+    @staticmethod
+    def mock_data_storage(
+        status: enums.ApplicationStatus = enums.ApplicationStatus.OK,
+        date_range: models.DateRange = models.DateRange(start_date=None, end_date=None)
+    ):
+        main.app.dependency_overrides[views.api.get_storage] = lambda: create_mock_storage(
+            status=status, date_range=date_range
+        )
