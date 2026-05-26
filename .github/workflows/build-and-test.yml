@@ -25,4 +25,4 @@ jobs:
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
 
       - name: Run tests
-        uses: uv run pytest
+        run: uv run pytest
