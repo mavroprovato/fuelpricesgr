@@ -16,7 +16,6 @@ class DateRangeTestCase(tests.common.BaseAPITestCase):
         start_date = dateutil.parser.parse('2026-01-01').date()
         end_date = dateutil.parser.parse('2026-12-31').date()
         self.mock_data_storage(date_range=models.DateRange(start_date=start_date, end_date=end_date))
-        print(f"/api/dateRange/{enums.DataType.WEEKLY_COUNTRY}")
         response = self.client.get(f"/api/dateRange/{enums.DataType.WEEKLY_COUNTRY.value}")
 
         assert response.status_code == status.HTTP_200_OK
