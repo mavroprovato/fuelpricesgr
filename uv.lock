@@ -560,7 +560,7 @@ requires-dist = [
     { name = "pymongo", marker = "extra == 'mongo'", specifier = "~=4.17.0" },
     { name = "pymysql", marker = "extra == 'mysql'", specifier = "~=1.1.0" },
     { name = "pypdf", specifier = "~=6.11.0" },
-    { name = "python-dateutil", specifier = ">=2.9.0.post0" },
+    { name = "python-dateutil", specifier = "~=2.9.0" },
     { name = "requests", specifier = "~=2.34.0" },
     { name = "sqladmin", specifier = "~=0.25.0" },
     { name = "sqlalchemy", specifier = "~=2.0.0" },
