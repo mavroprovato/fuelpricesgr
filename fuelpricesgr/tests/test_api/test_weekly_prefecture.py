@@ -52,15 +52,22 @@ class WeeklyPrefectureTestCase(tests.common.BaseAPITestCase):
             }
         ]
 
-    def test_weekly_country_invalid_start_date(self):
-        """The weekly country data endpoint test case for invalid start date.
+    def test_weekly_prefecture_invalid_prefecture(self):
+        """The weekly prefecture data endpoint test case for invalid prefecture.
+        """
+        response = self.client.get('/api/data/weekly/prefecture/INVALID')
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+    def test_weekly_prefecture_invalid_start_date(self):
+        """The weekly prefecture data endpoint test case for invalid start date.
         """
         response = self.client.get('/api/data/weekly/prefecture/LACONIA', params={'start_date': 'INVALID'})
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
-    def test_weekly_country_invalid_end_date(self):
-        """The weekly country data endpoint test case for invalid end date.
+    def test_weekly_prefecture_invalid_end_date(self):
+        """The weekly prefecture data endpoint test case for invalid end date.
         """
         response = self.client.get('/api/data/weekly/prefecture/LACONIA', params={'end_date': 'INVALID'})
 
