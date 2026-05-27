@@ -17,19 +17,19 @@ class WeeklyCountryTestCase(tests.common.BaseAPITestCase):
         self.mock_data_storage(weekly_country_data=[
             models.DatePriceNumberOfStationsData(
                 fuel_type=enums.FuelType.DIESEL, price=decimal.Decimal('1.814'), number_of_stations=4697,
-                date=dateutil.parser.parse('2026-05-30')
+                date=dateutil.parser.parse('2026-05-15')
             ),
             models.DatePriceNumberOfStationsData(
                 fuel_type=enums.FuelType.UNLEADED_95, price=decimal.Decimal('2.104'), number_of_stations=2782,
-                date=dateutil.parser.parse('2026-05-30')
+                date=dateutil.parser.parse('2026-05-15')
             ),
             models.DatePriceNumberOfStationsData(
                 fuel_type=enums.FuelType.DIESEL, price=decimal.Decimal('1.871'), number_of_stations=4724,
-                date=dateutil.parser.parse('2026-05-31')
+                date=dateutil.parser.parse('2026-05-08')
             ),
             models.DatePriceNumberOfStationsData(
                 fuel_type=enums.FuelType.UNLEADED_95, price=decimal.Decimal('2.094'), number_of_stations=4440,
-                date=dateutil.parser.parse('2026-05-31')
+                date=dateutil.parser.parse('2026-05-08')
             ),
         ])
         response = self.client.get('/api/data/weekly/country')
@@ -37,20 +37,20 @@ class WeeklyCountryTestCase(tests.common.BaseAPITestCase):
         assert response.status_code == status.HTTP_200_OK
         assert response.json() == [
             {
-                'date': '2026-05-30',
+                'date': '2026-05-15',
                 'data': [
                     {'fuel_type': 'DIESEL', 'price': '1.814', 'number_of_stations': 4697},
                     {'fuel_type': 'UNLEADED_95', 'price': '2.104', 'number_of_stations': 2782}
                 ],
-                'data_file': 'http://www.fuelprices.gr/files/deltia/EBDOM_DELTIO_30_05_2026.pdf'
+                'data_file': 'http://www.fuelprices.gr/files/deltia/EBDOM_DELTIO_15_05_2026.pdf'
             },
             {
-                'date': '2026-05-31',
+                'date': '2026-05-08',
                 'data': [
                     {'fuel_type': 'DIESEL', 'price': '1.871', 'number_of_stations': 4724},
                     {'fuel_type': 'UNLEADED_95', 'price': '2.094', 'number_of_stations': 4440}
                 ],
-                'data_file': 'http://www.fuelprices.gr/files/deltia/EBDOM_DELTIO_31_05_2026.pdf'
+                'data_file': 'http://www.fuelprices.gr/files/deltia/EBDOM_DELTIO_08_05_2026.pdf'
             }
         ]
 
