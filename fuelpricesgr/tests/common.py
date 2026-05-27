@@ -15,6 +15,7 @@ def create_mock_storage(
     weekly_country_data: Iterable[models.DatePriceNumberOfStationsData],
     weekly_prefecture_data: Iterable[models.DatePriceData],
     daily_country_data: Iterable[models.DatePriceNumberOfStationsData],
+    daily_prefecture_data: Iterable[models.DatePriceData],
 ):
     """Mock the storage backend.
 
@@ -23,6 +24,7 @@ def create_mock_storage(
     :param weekly_country_data: The weekly country data to use.
     :param weekly_prefecture_data: The weekly prefecture data to use.
     :param daily_country_data: The daily country data to use.
+    :param daily_prefecture_data: The daily prefecture data to use.
     """
     class TestStorage(storage.BaseStorage):
         """Storage class for testing"""
@@ -51,7 +53,7 @@ def create_mock_storage(
         def daily_prefecture_data(
                 self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
         ) -> Iterable[models.DatePriceData]:
-            raise NotImplementedError()
+            return daily_prefecture_data
 
         def data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
             raise NotImplementedError()
@@ -89,8 +91,10 @@ class BaseAPITestCase(unittest.TestCase):
         weekly_country_data: Iterable[models.DatePriceNumberOfStationsData] = (),
         weekly_prefecture_data: Iterable[models.DatePriceData] = (),
         daily_country_data: Iterable[models.DatePriceNumberOfStationsData] = (),
+        daily_prefecture_data: Iterable[models.DatePriceData] = (),
     ):
         main.app.dependency_overrides[views.api.get_storage] = lambda: create_mock_storage(
             status=status, date_range=date_range, weekly_country_data=weekly_country_data,
-            weekly_prefecture_data=weekly_prefecture_data, daily_country_data=daily_country_data
+            weekly_prefecture_data=weekly_prefecture_data, daily_country_data=daily_country_data,
+            daily_prefecture_data=daily_prefecture_data
         )
