@@ -162,7 +162,7 @@ class DataFileType(enum.Enum):
         """
         current_date = start_date
         while current_date <= end_date:
-            if self != self.WEEKLY or current_date.weekday() == 4:
+            if self != self.WEEKLY or current_date.isoweekday() == 5:
                 yield current_date
             current_date += datetime.timedelta(days=1)
 
