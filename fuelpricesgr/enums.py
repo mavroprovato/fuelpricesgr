@@ -179,7 +179,10 @@ class DataFileType(enum.Enum):
         :param date: The date to check.
         :return: True if the file exists, False otherwise.
         """
-        if self == DataFileType.WEEKLY and date in [datetime.date(2015, 9, 18), datetime.date(2017, 7, 7)]:
+        if self == DataFileType.WEEKLY and date in [
+            datetime.date(2015, 9, 18), datetime.date(2017, 7, 7), datetime.date(2023, 2, 24),
+            datetime.date(2023, 5, 19), datetime.date(2023, 7, 21), datetime.date(2023, 9, 8)
+        ]:
             return False
 
         return True
@@ -219,8 +222,6 @@ class DataFileType(enum.Enum):
                 filename = f"{self.prefix}_{datetime.date(2017, 7, 10):%d_%m_%Y}.pdf"
             elif date == datetime.date(2018, 1, 5):
                 filename = f"{self.prefix}_{date:%d_%m_%Y}..pdf"
-            elif date == datetime.date(2022, 12, 23):
-                filename = f"{self.prefix}_{datetime.date(2022, 12, 22):%d_%m_%Y}.pdf"
             elif date == datetime.date(2024, 1, 26):
                 filename = f"{self.prefix}_{datetime.date(2024, 1, 25):%d_%m_%Y}.pdf"
 
