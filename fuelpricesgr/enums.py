@@ -34,6 +34,26 @@ class FuelType(enum.Enum):
 
         return obj
 
+    def data_exists(self, date: datetime.date) -> bool:
+        """Returns true if data exists for the specified date.
+
+        :param date: The date.
+        :return: True if the data exists.
+        """
+        if self == FuelType.SUPER and date >= datetime.date(2022, 8, 5):
+            # Last date with SUPER data
+            return False
+        elif self == FuelType.GAS and date <= datetime.date(2012, 6, 1):
+            # There are no data for GAS for these old dates
+            return False
+        elif (
+          self == FuelType.DIESEL_HEATING and not ((date.month >= 10 and date.day >= 15) or (date.month <= 4))
+        ):
+            # No DIESEL_HEATING for this period
+            return False
+
+        return True
+
 
 class Prefecture(enum.Enum):
     """Enumeration for greek prefectures
