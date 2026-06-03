@@ -3,7 +3,7 @@
 import datetime
 import logging
 
-from fuelpricesgr import enums, caching, fetcher, models, parser, storage
+from fuelpricesgr import enums, caching, fetcher, parser, storage
 
 # The module logger
 logger = logging.getLogger(__name__)
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def get_fetch_date_range(
     s: storage.base.BaseStorage, data_type: enums.DataType, start_date: datetime.date | None = None,
     end_date: datetime.date | None = None
-) -> models.DateRange:
+) -> tuple[datetime.date, datetime.date]:
     """Get the date range for which to fetch data, based on the passed arguments. If the start date is not provided,
     then the last available date for the data file type is set as the start date. If there are no available data, then
     the first available data date on the site is set as the start date. If the end date is not provided, then today's
@@ -22,7 +22,7 @@ def get_fetch_date_range(
     :param data_type: The data type.
     :param start_date: The start date.
     :param end_date: The end date.
-    :return: The date range.
+    :return: The date range as a tuple of the start & end dates.
     """
     if start_date is None:
         date_range = s.date_range(data_type=data_type)
@@ -34,7 +34,7 @@ def get_fetch_date_range(
     if end_date is None:
         end_date = datetime.date.today()
 
-    return models.DateRange(start_date=start_date, end_date=end_date)
+    return start_date, end_date
 
 
 def import_file_type_data(
@@ -53,12 +53,11 @@ def import_file_type_data(
     for data_file_type in data_file_types:
         file_parser = parser.Parser.get(data_file_type=data_file_type)
         for data_type in data_file_type.data_types:
-            date_range = get_fetch_date_range(s=s, data_type=data_type, start_date=start_date, end_date=end_date)
-            logger.info(
-                "Fetching %s data between %s and %s", data_file_type.description, date_range.start_date,
-                date_range.end_date
+            start_date, end_date = get_fetch_date_range(
+                s=s, data_type=data_type, start_date=start_date, end_date=end_date
             )
-            for date in data_file_type.dates(start_date=date_range.start_date, end_date=date_range.end_date):
+            logger.info("Fetching %s data between %s and %s", data_file_type.description, start_date, end_date)
+            for date in data_file_type.dates(start_date=start_date, end_date=end_date):
                 data_fetcher = fetcher.BaseFetcher.get_fetcher(data_file_type=data_file_type, date=date)
                 if update or not s.data_exists(data_type=data_type, date=date):
                     try:

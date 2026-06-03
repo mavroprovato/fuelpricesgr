@@ -86,7 +86,7 @@ class BaseFetcher(abc.ABC):
         """
 
     @abc.abstractmethod
-    def fetch(self) -> bytes | None:
+    def fetch(self) -> bytes:
         """Fetch the data file from the site, and save it to storage.
 
         :return: The data file content.
