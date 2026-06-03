@@ -18,14 +18,14 @@ class Status(pydantic.BaseModel):
 class FuelType(pydantic.BaseModel):
     """The fuel type model.
     """
-    name: str = pydantic.Field(title="The fuel type name")
+    name: enums.FuelType = pydantic.Field(title="The fuel type name")
     description: str = pydantic.Field(title="The fuel type description")
 
 
 class Prefecture(pydantic.BaseModel):
     """The prefecture model.
     """
-    name: str = pydantic.Field(title="The prefecture name")
+    name: enums.Prefecture = pydantic.Field(title="The prefecture name")
     description: str = pydantic.Field(title="The prefecture description")
 
 
