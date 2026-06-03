@@ -173,6 +173,17 @@ class DataFileType(enum.Enum):
 
         return obj
 
+    def file_exists(self, date: datetime.date) -> bool:
+        """Returns true if the file exists in the site for the specified date.
+
+        :param date: The date to check.
+        :return: True if the file exists, False otherwise.
+        """
+        if self == DataFileType.WEEKLY and date in [datetime.date(2015, 9, 18), datetime.date(2017, 7, 7)]:
+            return False
+
+        return True
+
     def dates(self, start_date: datetime.date, end_date: datetime.date) -> Generator[datetime.date]:
         """Get the available dates for the file type and the selected dates.
 

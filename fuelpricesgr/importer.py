@@ -58,6 +58,9 @@ def import_file_type_data(
             )
             logger.info("Fetching %s data between %s and %s", data_file_type.description, start_date, end_date)
             for date in data_file_type.dates(start_date=start_date, end_date=end_date):
+                if not data_file_type.file_exists(date=date):
+                    logger.warning("%s data for date %s do not exist", data_file_type.description, date)
+                    continue
                 data_fetcher = fetcher.BaseFetcher.get_fetcher(data_file_type=data_file_type, date=date)
                 if update or not s.data_exists(data_type=data_type, date=date):
                     try:
