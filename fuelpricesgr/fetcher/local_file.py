@@ -42,8 +42,8 @@ class LocalFileFetcher(BaseFetcher):
         """
         file = self.base_directory / self.path()
         file.parent.mkdir(parents=True, exist_ok=True)
+        contents = self.download()
         with file.open('wb') as f:
-            contents = self.download()
             f.write(contents)
 
             return contents
