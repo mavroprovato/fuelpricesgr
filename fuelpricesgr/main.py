@@ -5,6 +5,7 @@ import atexit
 import apscheduler.schedulers.background
 import apscheduler.triggers.cron
 import fastapi.middleware
+from fastapi.middleware.cors import CORSMiddleware
 
 from fuelpricesgr import settings, storage, tasks, views
 
@@ -31,6 +32,9 @@ published as PDF files. With this API you can get the data in a structured manne
     docs_url='/docs'
 )
 app.include_router(views.api.router, prefix='/api')
+app.add_middleware(
+    CORSMiddleware, allow_origins=settings.CORS_ALLOW_ORIGINS, allow_methods=['GET']
+)
 
 # Add SQL admin if the backend is SQL Alchemy
 if settings.STORAGE_BACKEND == 'fuelpricesgr.storage.sql_alchemy.SqlAlchemyStorage':

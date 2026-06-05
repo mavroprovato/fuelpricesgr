@@ -23,6 +23,9 @@ SHOW_SQL = env.bool('SHOW_SQL', False)
 STORAGE_BACKEND = env('STORAGE_BACKEND', 'fuelpricesgr.storage.sql_alchemy.SqlAlchemyStorage')
 STORAGE_URL = env('STORAGE_URL', f"sqlite:///{(DATA_PATH / 'db.sqlite')}")
 
+# The CORS configuration
+CORS_ALLOW_ORIGINS = env.list('CORS_ALLOW_ORIGINS', ['http://localhost:5173'])
+
 # The fetcher parameters
 FETCHER_CLASS = env('FETCHER_CLASS', 'fuelpricesgr.fetcher.local_file.LocalFileFetcher')
 AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID', None)
