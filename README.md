@@ -47,8 +47,20 @@ uv run uvicorn fuelpricesgr.main:app
 ```
 
 The API is now available at http://localhost:8000/api. The documentation for the API is available at
-http://localhost:8000/api/docs.
+http://localhost:8000/docs.
 
+## Running the administration interface
+
+An administration interface is provided for the application data, but only if SQLAlchemy is used to manage the
+application data. Before using it, an administrator user must be created. You can create it by running the following
+command:
+
+```
+uv run python -m fuelpricesgr.commands.createuser --admin <user_email>
+```
+
+The command will ask you for a password for the user. After successful creation, you can log in to the administration
+interface at http://localhost:8000/admin and manage the data.
 
 ## Running with docker
 
