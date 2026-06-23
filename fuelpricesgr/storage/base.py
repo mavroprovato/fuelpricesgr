@@ -46,7 +46,7 @@ class BaseStorage(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def date_range(self, data_type: enums.DataType) -> models.DateRange | None:
+    def date_range(self, data_type: enums.DataType) -> models.DateRange:
         """Return the date range for a data type.
 
         :param data_type: The data type.

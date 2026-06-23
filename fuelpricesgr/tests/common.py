@@ -32,7 +32,7 @@ def create_mock_storage(
         def status(self) -> enums.ApplicationStatus:
             return status
 
-        def date_range(self, data_type: enums.DataType) -> models.DateRange | None:
+        def date_range(self, data_type: enums.DataType) -> models.DateRange:
             return date_range
 
         def weekly_country_data(
