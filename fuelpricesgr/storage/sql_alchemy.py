@@ -167,17 +167,21 @@ class SqlAlchemyStorage(base.BaseStorage):
 
     def weekly_country_data(
         self, start_date: datetime.date, end_date: datetime.date
-    ) -> Iterable[models.DatePriceNumberOfStationsData]:
+    ) -> Iterable[models.WeeklyCountryData]:
         """Return the weekly country data.
 
         :param start_date: The start date.
         :param end_date: The end date.
         :return: The weekly country data.
         """
+        query = self.db.query(WeeklyCountry).order_by(WeeklyCountry.date.desc())
+        if start_date is not None:
+            query = query.where(WeeklyCountry.date >= start_date)
+        if end_date is not None:
+            query = query.where(WeeklyCountry.date <= end_date)
+
         return (
-            models.DatePriceNumberOfStationsData(**row.__dict__) for row in self.db.query(WeeklyCountry).where(
-                WeeklyCountry.date >= start_date, WeeklyCountry.date <= end_date
-            ).order_by(WeeklyCountry.date.desc())
+            models.WeeklyCountryData(**row.__dict__) for row in query
         )
 
     def weekly_prefecture_data(
@@ -213,7 +217,8 @@ class SqlAlchemyStorage(base.BaseStorage):
         )
 
     def daily_prefecture_data(
-        self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
+        self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
+        end_date: datetime.date | None = None
     ) -> Iterable[models.DatePriceData]:
         """Return the daily prefecture data.
 
@@ -222,12 +227,15 @@ class SqlAlchemyStorage(base.BaseStorage):
         :param end_date: The end date.
         :return: The daily prefecture data.
         """
-        return (
-            models.DatePriceData(**row.__dict__) for row in self.db.query(DailyPrefecture).where(
-                DailyPrefecture.prefecture == prefecture.value, DailyPrefecture.date >= start_date,
-                DailyPrefecture.date <= end_date
-            ).order_by(DailyPrefecture.date.desc())
-        )
+        query = self.db.query(DailyPrefecture)
+        if prefecture is not None:
+            query = query.where(DailyPrefecture.prefecture == prefecture.value)
+        if start_date is not None:
+            query = query.where(DailyPrefecture.date >= start_date)
+        if end_date is not None:
+            query = query.where(DailyPrefecture.date <= end_date)
+
+        return (models.DatePriceData(**row.__dict__) for row in query.order_by(DailyPrefecture.date.desc()))
 
     def data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
         """Check if data exists for the data file type for the date.

@@ -58,7 +58,7 @@ class BaseStorage(abc.ABC):
     @abc.abstractmethod
     def weekly_country_data(
         self, start_date: datetime.date, end_date: datetime.date
-    ) -> Iterable[models.DatePriceNumberOfStationsData]:
+    ) -> Iterable[models.WeeklyCountryData]:
         """Return the weekly country data.
 
         :param start_date: The start date.
