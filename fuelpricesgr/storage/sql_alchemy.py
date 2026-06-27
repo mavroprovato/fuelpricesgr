@@ -166,7 +166,7 @@ class SqlAlchemyStorage(base.BaseStorage):
         return models.DateRange(start_date=result[0], end_date=result[1])
 
     def weekly_country_data(
-        self, start_date: datetime.date, end_date: datetime.date
+        self, start_date: datetime.date | None = None, end_date: datetime.date | None = None
     ) -> Iterable[models.WeeklyCountryData]:
         """Return the weekly country data.
 
