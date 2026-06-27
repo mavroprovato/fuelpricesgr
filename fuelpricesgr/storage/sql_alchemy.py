@@ -180,13 +180,12 @@ class SqlAlchemyStorage(base.BaseStorage):
         if end_date is not None:
             query = query.where(WeeklyCountry.date <= end_date)
 
-        return (
-            models.WeeklyCountryData(**row.__dict__) for row in query
-        )
+        return (models.WeeklyCountryData(**row.__dict__) for row in query)
 
     def weekly_prefecture_data(
-        self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
-    ) -> Iterable[models.DatePriceData]:
+        self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
+        end_date: datetime.date | None = None
+    ) -> Iterable[models.WeeklyPrefectureData]:
         """Return the weekly prefecture data.
 
         :param prefecture: The prefecture.
@@ -194,12 +193,15 @@ class SqlAlchemyStorage(base.BaseStorage):
         :param end_date: The end date.
         :return: The weekly prefecture data.
         """
-        return (
-            models.DatePriceData(**row.__dict__) for row in self.db.query(WeeklyPrefecture).where(
-                WeeklyPrefecture.prefecture == prefecture.value, WeeklyPrefecture.date >= start_date,
-                WeeklyPrefecture.date <= end_date
-            ).order_by(WeeklyPrefecture.date.desc())
-        )
+        query = self.db.query(WeeklyPrefecture).order_by(WeeklyPrefecture.date.desc())
+        if prefecture is not None:
+            query = query.where(WeeklyPrefecture.prefecture == prefecture.value)
+        if start_date is not None:
+            query = query.where(WeeklyPrefecture.date >= start_date)
+        if end_date is not None:
+            query = query.where(WeeklyPrefecture.date <= end_date)
+
+        return (models.WeeklyPrefectureData(**row.__dict__) for row in query)
 
     def daily_country_data(
         self, start_date: datetime.date, end_date: datetime.date

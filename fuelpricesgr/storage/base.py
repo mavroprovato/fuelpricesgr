@@ -70,7 +70,7 @@ class BaseStorage(abc.ABC):
     @abc.abstractmethod
     def weekly_prefecture_data(
         self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
-    ) -> Iterable[models.DatePriceData]:
+    ) -> Iterable[models.WeeklyPrefectureData]:
         """Return the weekly prefecture data.
 
         :param prefecture: The prefecture.
