@@ -204,24 +204,26 @@ class SqlAlchemyStorage(base.BaseStorage):
         return (models.WeeklyPrefectureData(**row.__dict__) for row in query)
 
     def daily_country_data(
-        self, start_date: datetime.date, end_date: datetime.date
-    ) -> Iterable[models.DatePriceNumberOfStationsData]:
+        self, start_date: datetime.date | None, end_date: datetime.date | None
+    ) -> Iterable[models.DailyCountryData]:
         """Return the daily country data.
 
         :param start_date: The start date.
         :param end_date: The end date.
         :return: The daily country data.
         """
-        return (
-            models.DatePriceNumberOfStationsData(**row.__dict__) for row in self.db.query(DailyCountry).where(
-                DailyCountry.date >= start_date, DailyCountry.date <= end_date
-            ).order_by(DailyCountry.date.desc())
-        )
+        query = self.db.query(DailyCountry).order_by(DailyCountry.date.desc())
+        if start_date is not None:
+            query = query.where(DailyCountry.date >= start_date)
+        if end_date is not None:
+            query = query.where(DailyCountry.date <= end_date)
+
+        return (models.DailyCountryData(**row.__dict__) for row in query)
 
     def daily_prefecture_data(
         self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
         end_date: datetime.date | None = None
-    ) -> Iterable[models.DatePriceData]:
+    ) -> Iterable[models.DailyPrefectureData]:
         """Return the daily prefecture data.
 
         :param prefecture: The prefecture.
@@ -237,7 +239,7 @@ class SqlAlchemyStorage(base.BaseStorage):
         if end_date is not None:
             query = query.where(DailyPrefecture.date <= end_date)
 
-        return (models.DatePriceData(**row.__dict__) for row in query.order_by(DailyPrefecture.date.desc()))
+        return (models.DailyPrefectureData(**row.__dict__) for row in query.order_by(DailyPrefecture.date.desc()))
 
     def data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
         """Check if data exists for the data file type for the date.
