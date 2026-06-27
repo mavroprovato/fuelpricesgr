@@ -91,34 +91,32 @@ class PriceNumberOfStationsData(pydantic.BaseModel):
     price: decimal.Decimal = pydantic.Field(title="The price", max_digits=4, decimal_places=3)
     number_of_stations: int | None = pydantic.Field(title="The number of stations")
 
-
-class WeeklyCountryDataResponse(pydantic.BaseModel):
-    """The weekly country data response model.
+class BaseDataResponse(pydantic.BaseModel):
+    """The base data response model.
     """
     date: datetime.date = pydantic.Field(title="The date")
     data_file: str = pydantic.Field(title="The data file")
+
+
+class WeeklyCountryDataResponse(BaseDataResponse):
+    """The weekly country data response model.
+    """
     data: list[PriceNumberOfStationsData] = pydantic.Field(title="The weekly country data")
 
 
-class WeeklyPrefectureDataResponse(pydantic.BaseModel):
+class WeeklyPrefectureDataResponse(BaseDataResponse):
     """The weekly country data response model.
     """
-    date: datetime.date = pydantic.Field(title="The date")
-    data_file: str = pydantic.Field(title="The data file")
     data: list[PriceData] = pydantic.Field(title="The weekly prefecture data")
 
 
-class DailyCountryDataResponse(pydantic.BaseModel):
+class DailyCountryDataResponse(BaseDataResponse):
     """The daily country data response model.
     """
-    date: datetime.date = pydantic.Field(title="The date")
-    data_file: str = pydantic.Field(title="The data file")
     data: list[PriceNumberOfStationsData] = pydantic.Field(title="The weekly country data")
 
 
-class DailyPrefectureDataResponse(pydantic.BaseModel):
+class DailyPrefectureDataResponse(BaseDataResponse):
     """The daily prefecture data response model.
     """
-    date: datetime.date = pydantic.Field(title="The date")
-    data_file: str = pydantic.Field(title="The data file")
     data: list[PriceData] = pydantic.Field(title="The weekly prefecture data")
