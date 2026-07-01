@@ -43,10 +43,10 @@ class FuelType(enum.Enum):
         if self == FuelType.SUPER and date >= datetime.date(2022, 8, 5):
             # Last date with SUPER data
             return False
-        elif self == FuelType.GAS and date <= datetime.date(2012, 6, 1):
+        if self == FuelType.GAS and date <= datetime.date(2012, 6, 1):
             # There are no data for GAS for these old dates
             return False
-        elif (
+        if (
           self == FuelType.DIESEL_HEATING and not ((date.month >= 10 and date.day >= 15) or (date.month <= 4))
         ):
             # No DIESEL_HEATING for this period

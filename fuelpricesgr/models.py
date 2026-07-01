@@ -36,42 +36,79 @@ class DateRange(pydantic.BaseModel):
     end_date: datetime.date | None = pydantic.Field(title="The end date")
 
 
-class PriceData(pydantic.BaseModel):
-    """The price data model.
+class BaseData(pydantic.BaseModel):
+    """The base weekly data model.
     """
+    date: datetime.date = pydantic.Field(title="The date")
     fuel_type: enums.FuelType = pydantic.Field(title="The fuel type")
     price: decimal.Decimal = pydantic.Field(title="The price", max_digits=4, decimal_places=3)
 
 
-class PriceNumberOfStationsData(PriceData):
-    """The price number of stations model.
+class WeeklyCountryData(BaseData):
+    """The weekly country data model.
     """
-    number_of_stations: int = pydantic.Field(title="The number of stations")
+    number_of_stations: int | None = pydantic.Field(title="The number of stations")
 
 
-class DatePriceData(PriceData):
-    """The price date data model.
+class WeeklyPrefectureData(BaseData):
+    """The weekly prefecture data model.
+    """
+    prefecture: enums.Prefecture = pydantic.Field(title="The prefecture")
+
+
+class DailyCountryData(BaseData):
+    """The daily country data model.
+    """
+    number_of_stations: int | None = pydantic.Field(title="The number of stations")
+
+
+class DailyPrefectureData(BaseData):
+    """The daily prefecture data model.
+    """
+    prefecture: enums.Prefecture = pydantic.Field(title="The prefecture")
+
+
+class PrefectureData(pydantic.BaseModel):
+    """Fuel type price data model.
+    """
+    prefecture: enums.Prefecture = pydantic.Field(title="The prefecture")
+    fuel_type: enums.FuelType = pydantic.Field(title="The fuel type")
+    price: decimal.Decimal = pydantic.Field(title="The price", max_digits=4, decimal_places=3)
+
+
+class CountryData(pydantic.BaseModel):
+    """Fuel type price and number of stations data model.
+    """
+    fuel_type: enums.FuelType = pydantic.Field(title="The fuel type")
+    price: decimal.Decimal = pydantic.Field(title="The price", max_digits=4, decimal_places=3)
+    number_of_stations: int | None = pydantic.Field(title="The number of stations")
+
+class BaseDataResponse(pydantic.BaseModel):
+    """The base data response model.
     """
     date: datetime.date = pydantic.Field(title="The date")
-
-
-class DatePriceNumberOfStationsData(PriceNumberOfStationsData):
-    """The price number of stations date model.
-    """
-    date: datetime.date = pydantic.Field(title="The date")
-
-
-class PriceResponse(pydantic.BaseModel):
-    """The price response model.
-    """
-    date: datetime.date = pydantic.Field(title="The date")
-    data: list[PriceData] = pydantic.Field(title="The price data")
     data_file: str = pydantic.Field(title="The data file")
 
 
-class PriceNumberOfStationsResponse(pydantic.BaseModel):
-    """The price and number of stations response model.
+class WeeklyCountryDataResponse(BaseDataResponse):
+    """The weekly country data response model.
     """
-    date: datetime.date = pydantic.Field(title="The date")
-    data: list[PriceNumberOfStationsData] = pydantic.Field(title="The price with number of stations data")
-    data_file: str = pydantic.Field(title="The data file")
+    data: list[CountryData] = pydantic.Field(title="The weekly country data")
+
+
+class WeeklyPrefectureDataResponse(BaseDataResponse):
+    """The weekly country data response model.
+    """
+    data: list[PrefectureData] = pydantic.Field(title="The weekly prefecture data")
+
+
+class DailyCountryDataResponse(BaseDataResponse):
+    """The daily country data response model.
+    """
+    data: list[CountryData] = pydantic.Field(title="The weekly country data")
+
+
+class DailyPrefectureDataResponse(BaseDataResponse):
+    """The daily prefecture data response model.
+    """
+    data: list[PrefectureData] = pydantic.Field(title="The weekly prefecture data")

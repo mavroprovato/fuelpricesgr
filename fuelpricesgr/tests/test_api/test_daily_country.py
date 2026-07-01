@@ -1,4 +1,4 @@
-"""Test the dialy country data endpoint
+"""Test the daily country data endpoint
 """
 import decimal
 
@@ -15,19 +15,19 @@ class DailyCountryTestCase(tests.common.BaseAPITestCase):
         """The daily country data endpoint test case
         """
         self.mock_data_storage(daily_country_data=[
-            models.DatePriceNumberOfStationsData(
+            models.DailyCountryData(
                 fuel_type=enums.FuelType.DIESEL, price=decimal.Decimal('1.815'), number_of_stations=4724,
                 date=dateutil.parser.parse('2026-05-25')
             ),
-            models.DatePriceNumberOfStationsData(
+            models.DailyCountryData(
                 fuel_type=enums.FuelType.UNLEADED_95, price=decimal.Decimal('2.136'), number_of_stations=4425,
                 date=dateutil.parser.parse('2026-05-25')
             ),
-            models.DatePriceNumberOfStationsData(
+            models.DailyCountryData(
                 fuel_type=enums.FuelType.DIESEL, price=decimal.Decimal('1.818'), number_of_stations=4720,
                 date=dateutil.parser.parse('2026-05-24')
             ),
-            models.DatePriceNumberOfStationsData(
+            models.DailyCountryData(
                 fuel_type=enums.FuelType.UNLEADED_95, price=decimal.Decimal('2.137'), number_of_stations=4440,
                 date=dateutil.parser.parse('2026-05-24')
             ),

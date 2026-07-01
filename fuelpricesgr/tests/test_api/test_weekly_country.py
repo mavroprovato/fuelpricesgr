@@ -15,19 +15,19 @@ class WeeklyCountryTestCase(tests.common.BaseAPITestCase):
         """The weekly country data endpoint test case
         """
         self.mock_data_storage(weekly_country_data=[
-            models.DatePriceNumberOfStationsData(
+            models.WeeklyCountryData(
                 fuel_type=enums.FuelType.DIESEL, price=decimal.Decimal('1.814'), number_of_stations=4697,
                 date=dateutil.parser.parse('2026-05-15')
             ),
-            models.DatePriceNumberOfStationsData(
+            models.WeeklyCountryData(
                 fuel_type=enums.FuelType.UNLEADED_95, price=decimal.Decimal('2.104'), number_of_stations=2782,
                 date=dateutil.parser.parse('2026-05-15')
             ),
-            models.DatePriceNumberOfStationsData(
+            models.WeeklyCountryData(
                 fuel_type=enums.FuelType.DIESEL, price=decimal.Decimal('1.871'), number_of_stations=4724,
                 date=dateutil.parser.parse('2026-05-08')
             ),
-            models.DatePriceNumberOfStationsData(
+            models.WeeklyCountryData(
                 fuel_type=enums.FuelType.UNLEADED_95, price=decimal.Decimal('2.094'), number_of_stations=4440,
                 date=dateutil.parser.parse('2026-05-08')
             ),

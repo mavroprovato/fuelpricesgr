@@ -12,10 +12,10 @@ from fuelpricesgr import enums, main, models, storage, views
 def create_mock_storage(
     status: enums.ApplicationStatus,
     date_range: models.DateRange,
-    weekly_country_data: Iterable[models.DatePriceNumberOfStationsData],
-    weekly_prefecture_data: Iterable[models.DatePriceData],
-    daily_country_data: Iterable[models.DatePriceNumberOfStationsData],
-    daily_prefecture_data: Iterable[models.DatePriceData],
+    weekly_country_data: Iterable[models.WeeklyCountryData],
+    weekly_prefecture_data: Iterable[models.WeeklyPrefectureData],
+    daily_country_data: Iterable[models.DailyCountryData],
+    daily_prefecture_data: Iterable[models.DailyPrefectureData],
 ):
     """Mock the storage backend.
 
@@ -36,23 +36,25 @@ def create_mock_storage(
             return date_range
 
         def weekly_country_data(
-                self, start_date: datetime.date, end_date: datetime.date
-        ) -> Iterable[models.DatePriceNumberOfStationsData]:
+            self, start_date: datetime.date | None = None, end_date: datetime.date | None = None
+        ) -> Iterable[models.WeeklyCountryData]:
             return weekly_country_data
 
         def weekly_prefecture_data(
-            self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
-        ) -> Iterable[models.DatePriceData]:
+            self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
+            end_date: datetime.date | None = None
+        ) -> Iterable[models.WeeklyPrefectureData]:
             return weekly_prefecture_data
 
         def daily_country_data(
-                self, start_date: datetime.date, end_date: datetime.date
-        ) -> Iterable[models.DatePriceNumberOfStationsData]:
+            self, start_date: datetime.date | None = None, end_date: datetime.date | None = None
+        ) -> Iterable[models.DailyCountryData]:
             return daily_country_data
 
         def daily_prefecture_data(
-                self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
-        ) -> Iterable[models.DatePriceData]:
+            self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
+            end_date: datetime.date | None = None
+        ) -> Iterable[models.DailyPrefectureData]:
             return daily_prefecture_data
 
         def data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
@@ -88,10 +90,10 @@ class BaseAPITestCase(unittest.TestCase):
     def mock_data_storage(
         status: enums.ApplicationStatus = enums.ApplicationStatus.OK,
         date_range: models.DateRange = models.DateRange(start_date=None, end_date=None),
-        weekly_country_data: Iterable[models.DatePriceNumberOfStationsData] = (),
-        weekly_prefecture_data: Iterable[models.DatePriceData] = (),
-        daily_country_data: Iterable[models.DatePriceNumberOfStationsData] = (),
-        daily_prefecture_data: Iterable[models.DatePriceData] = (),
+        weekly_country_data: Iterable[models.WeeklyCountryData] = (),
+        weekly_prefecture_data: Iterable[models.WeeklyPrefectureData] = (),
+        daily_country_data: Iterable[models.DailyCountryData] = (),
+        daily_prefecture_data: Iterable[models.DailyPrefectureData] = (),
     ):
         main.app.dependency_overrides[views.api.get_storage] = lambda: create_mock_storage(
             status=status, date_range=date_range, weekly_country_data=weekly_country_data,

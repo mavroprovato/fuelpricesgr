@@ -82,27 +82,25 @@ class MongoDBStorage(base.BaseStorage):
         return models.DateRange(start_date=min_date, end_date=max_date)
 
     def weekly_country_data(
-        self, start_date: datetime.date, end_date: datetime.date
-    ) -> Iterable[models.DatePriceNumberOfStationsData]:
+        self, start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    ) -> Iterable[models.WeeklyCountryData]:
         """Return the weekly country data.
 
         :param start_date: The start date.
         :param end_date: The end date.
         :return: A list of dictionaries with the results for each date.
         """
+        filters = self.filter_dates(start_date=start_date, end_date=end_date)
+
         return [
-            models.DatePriceNumberOfStationsData(**row)
-            for row in self.get_collection_for_data_type(data_type=enums.DataType.WEEKLY_COUNTRY).find({
-                'date': {
-                    '$gte': datetime.datetime.combine(start_date, datetime.time.min),
-                    '$lte': datetime.datetime.combine(end_date, datetime.time.max)
-                }
-            })
+            models.WeeklyCountryData(**row)
+            for row in self.get_collection_for_data_type(data_type=enums.DataType.WEEKLY_COUNTRY).find(filters)
         ]
 
     def weekly_prefecture_data(
-            self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
-    ) -> Iterable[models.DatePriceData]:
+            self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
+            end_date: datetime.date | None = None
+    ) -> Iterable[models.WeeklyPrefectureData]:
         """Return the weekly prefecture data.
 
         :param prefecture: The prefecture.
@@ -110,39 +108,36 @@ class MongoDBStorage(base.BaseStorage):
         :param end_date: The end date.
         :return: The weekly prefecture data.
         """
+        filters = (
+            self.filter_dates(start_date=start_date, end_date=end_date) |
+            self.filter_prefecture(prefecture=prefecture)
+        )
+
         return [
-            models.DatePriceData(**row)
-            for row in self.get_collection_for_data_type(data_type=enums.DataType.WEEKLY_PREFECTURE).find({
-                'prefecture': prefecture.value,
-                'date': {
-                    '$gte': datetime.datetime.combine(start_date, datetime.time.min),
-                    '$lte': datetime.datetime.combine(end_date, datetime.time.max)
-                }
-            })
+            models.WeeklyPrefectureData(**row)
+            for row in self.get_collection_for_data_type(data_type=enums.DataType.WEEKLY_PREFECTURE).find(filters)
         ]
 
     def daily_country_data(
-        self, start_date: datetime.date, end_date: datetime.date
-    ) -> Iterable[models.DatePriceNumberOfStationsData]:
+        self, start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    ) -> Iterable[models.DailyCountryData]:
         """Return the daily country data.
 
         :param start_date: The start date.
         :param end_date: The end date.
         :return: The daily country data.
         """
+        filters = self.filter_dates(start_date=start_date, end_date=end_date)
+
         return [
-            models.DatePriceNumberOfStationsData(**row)
-            for row in self.get_collection_for_data_type(data_type=enums.DataType.DAILY_COUNTRY).find({
-                'date': {
-                    '$gte': datetime.datetime.combine(start_date, datetime.time.min),
-                    '$lte': datetime.datetime.combine(end_date, datetime.time.max)
-                }
-            })
+            models.DailyCountryData(**row)
+            for row in self.get_collection_for_data_type(data_type=enums.DataType.DAILY_COUNTRY).find(filters)
         ]
 
     def daily_prefecture_data(
-        self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
-    ) -> Iterable[models.DatePriceData]:
+        self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
+            end_date: datetime.date | None = None
+    ) -> Iterable[models.DailyPrefectureData]:
         """Return the daily prefecture data.
 
         :param prefecture: The prefecture.
@@ -150,16 +145,37 @@ class MongoDBStorage(base.BaseStorage):
         :param end_date: The end date.
         :return: The daily prefecture data.
         """
+        filters = (
+            self.filter_dates(start_date=start_date, end_date=end_date) |
+            self.filter_prefecture(prefecture=prefecture)
+        )
+
         return [
-            models.DatePriceData(**row)
-            for row in self.get_collection_for_data_type(data_type=enums.DataType.DAILY_PREFECTURE).find({
-                'prefecture': prefecture.value,
-                'date': {
-                    '$gte': datetime.datetime.combine(start_date, datetime.time.min),
-                    '$lte': datetime.datetime.combine(end_date, datetime.time.max)
-                }
-            })
+            models.DailyPrefectureData(**row)
+            for row in self.get_collection_for_data_type(data_type=enums.DataType.DAILY_PREFECTURE).find(filters)
         ]
+
+    @staticmethod
+    def filter_dates(start_date: datetime.date | None, end_date: datetime.date | None = None) -> dict:
+        date_filter = {}
+        if start_date is not None:
+            date_filter['$gte'] = datetime.datetime.combine(start_date, datetime.time.min)
+        if end_date is not None:
+            date_filter['$lte'] = datetime.datetime.combine(end_date, datetime.time.max)
+
+        if date_filter:
+            return {'date': date_filter}
+        else:
+            return dict()
+
+    @staticmethod
+    def filter_prefecture(prefecture: enums.Prefecture | None = None) -> dict:
+        prefecture_filter = {}
+        if prefecture is not None:
+            prefecture_filter['prefecture'] = prefecture.value
+
+        return prefecture_filter
+
 
     def data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
         """Check if data exists for the data type for the date.

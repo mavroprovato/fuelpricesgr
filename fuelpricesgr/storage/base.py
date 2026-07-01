@@ -57,8 +57,8 @@ class BaseStorage(abc.ABC):
 
     @abc.abstractmethod
     def weekly_country_data(
-        self, start_date: datetime.date, end_date: datetime.date
-    ) -> Iterable[models.DatePriceNumberOfStationsData]:
+        self, start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    ) -> Iterable[models.WeeklyCountryData]:
         """Return the weekly country data.
 
         :param start_date: The start date.
@@ -69,8 +69,9 @@ class BaseStorage(abc.ABC):
 
     @abc.abstractmethod
     def weekly_prefecture_data(
-        self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
-    ) -> Iterable[models.DatePriceData]:
+        self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
+        end_date: datetime.date | None = None
+    ) -> Iterable[models.WeeklyPrefectureData]:
         """Return the weekly prefecture data.
 
         :param prefecture: The prefecture.
@@ -82,8 +83,8 @@ class BaseStorage(abc.ABC):
 
     @abc.abstractmethod
     def daily_country_data(
-        self, start_date: datetime.date, end_date: datetime.date
-    ) -> Iterable[models.DatePriceNumberOfStationsData]:
+        self, start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    ) -> Iterable[models.DailyCountryData]:
         """Return the daily country data.
 
         :param start_date: The start date.
@@ -94,8 +95,9 @@ class BaseStorage(abc.ABC):
 
     @abc.abstractmethod
     def daily_prefecture_data(
-        self, prefecture: enums.Prefecture, start_date: datetime.date, end_date: datetime.date
-    ) -> Iterable[models.DatePriceData]:
+        self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
+        end_date: datetime.date | None = None
+    ) -> Iterable[models.DailyPrefectureData]:
         """Return the daily prefecture data.
 
         :param prefecture: The prefecture.
