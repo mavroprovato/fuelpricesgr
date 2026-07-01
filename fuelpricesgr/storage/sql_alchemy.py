@@ -10,6 +10,7 @@ import sqlalchemy.exc
 import sqlalchemy.orm
 
 from fuelpricesgr import enums, models, settings
+from views.api import prefectures
 from . import base
 
 # The module logger
@@ -174,13 +175,12 @@ class SqlAlchemyStorage(base.BaseStorage):
         :param end_date: The end date.
         :return: The weekly country data.
         """
-        query = self.db.query(WeeklyCountry).order_by(WeeklyCountry.date.desc())
-        if start_date is not None:
-            query = query.where(WeeklyCountry.date >= start_date)
-        if end_date is not None:
-            query = query.where(WeeklyCountry.date <= end_date)
-
-        return (models.WeeklyCountryData(**row.__dict__) for row in query)
+        return (
+            models.WeeklyCountryData(**row.__dict__) for row in self._filter_data(
+                query=self.db.query(WeeklyCountry).order_by(WeeklyCountry.date.desc()), model=WeeklyCountry,
+                start_date=start_date, end_date=end_date
+            )
+        )
 
     def weekly_prefecture_data(
         self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
@@ -193,15 +193,13 @@ class SqlAlchemyStorage(base.BaseStorage):
         :param end_date: The end date.
         :return: The weekly prefecture data.
         """
-        query = self.db.query(WeeklyPrefecture).order_by(WeeklyPrefecture.date.desc(), WeeklyPrefecture.prefecture)
-        if prefecture is not None:
-            query = query.where(WeeklyPrefecture.prefecture == prefecture.value)
-        if start_date is not None:
-            query = query.where(WeeklyPrefecture.date >= start_date)
-        if end_date is not None:
-            query = query.where(WeeklyPrefecture.date <= end_date)
-
-        return (models.WeeklyPrefectureData(**row.__dict__) for row in query)
+        return (
+            models.WeeklyPrefectureData(**row.__dict__) for row in self._filter_data(
+                query=self.db.query(WeeklyPrefecture).order_by(
+                    WeeklyPrefecture.date.desc(), WeeklyPrefecture.prefecture
+                ), model=WeeklyPrefecture, prefecture=prefecture, start_date=start_date, end_date=end_date
+            )
+        )
 
     def daily_country_data(
         self, start_date: datetime.date | None = None, end_date: datetime.date | None = None
@@ -212,13 +210,12 @@ class SqlAlchemyStorage(base.BaseStorage):
         :param end_date: The end date.
         :return: The daily country data.
         """
-        query = self.db.query(DailyCountry).order_by(DailyCountry.date.desc())
-        if start_date is not None:
-            query = query.where(DailyCountry.date >= start_date)
-        if end_date is not None:
-            query = query.where(DailyCountry.date <= end_date)
-
-        return (models.DailyCountryData(**row.__dict__) for row in query)
+        return (
+            models.DailyCountryData(**row.__dict__) for row in self._filter_data(
+                query=self.db.query(DailyCountry).order_by(DailyCountry.date.desc()), model=DailyCountry,
+                start_date=start_date, end_date=end_date
+            )
+        )
 
     def daily_prefecture_data(
         self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
@@ -231,15 +228,12 @@ class SqlAlchemyStorage(base.BaseStorage):
         :param end_date: The end date.
         :return: The daily prefecture data.
         """
-        query = self.db.query(DailyPrefecture).order_by(DailyPrefecture.date.desc(), DailyPrefecture.prefecture)
-        if prefecture is not None:
-            query = query.where(DailyPrefecture.prefecture == prefecture.value)
-        if start_date is not None:
-            query = query.where(DailyPrefecture.date >= start_date)
-        if end_date is not None:
-            query = query.where(DailyPrefecture.date <= end_date)
-
-        return (models.DailyPrefectureData(**row.__dict__) for row in query)
+        return (
+            models.DailyPrefectureData(**row.__dict__) for row in self._filter_data(
+                query=self.db.query(DailyPrefecture).order_by(DailyPrefecture.date.desc(), DailyPrefecture.prefecture),
+                model=DailyPrefecture, prefecture=prefecture, start_date=start_date, end_date=end_date
+            )
+        )
 
     def data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
         """Check if data exists for the data file type for the date.
@@ -300,6 +294,20 @@ class SqlAlchemyStorage(base.BaseStorage):
         :return: The emails of the admin users as a list of strings.
         """
         return [str(row.email) for row in self.db.query(User).filter(User.admin)]
+
+    @staticmethod
+    def _filter_data(
+        query: sqlalchemy.orm.query.Query, model: type[Base], prefecture: enums.Prefecture | None = None,
+        start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    ) -> sqlalchemy.orm.query.Query:
+        if prefecture is not None:
+            query = query.where(model.prefecture == prefecture.value)
+        if start_date is not None:
+            query = query.where(model.date >= start_date)
+        if end_date is not None:
+            query = query.where(model.date <= end_date)
+
+        return query
 
     @staticmethod
     def _get_model(data_type: enums.DataType) -> type[Base]:
