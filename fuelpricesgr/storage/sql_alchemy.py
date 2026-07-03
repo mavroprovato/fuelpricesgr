@@ -10,7 +10,6 @@ import sqlalchemy.exc
 import sqlalchemy.orm
 
 from fuelpricesgr import enums, models, settings
-from views.api import prefectures
 from . import base
 
 # The module logger
