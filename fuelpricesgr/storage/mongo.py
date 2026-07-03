@@ -7,7 +7,7 @@ import logging
 
 import pymongo
 import pymongo.errors
-import pymongo.synchronous.collection
+import pymongo.synchronous.cursor
 
 from fuelpricesgr import enums, models, settings
 from . import base
@@ -23,7 +23,7 @@ def init_storage():
     with MongoDBStorage() as storage:
         # Create the indexes
         for data_type in enums.DataType:
-            collection = storage.get_collection_for_data_type(data_type=data_type)
+            collection = storage.client.get_default_database()[data_type.value]
             index_fields = {'date': 1} | (
                 {'prefecture': 1} if data_type.value.endswith('_prefecture') else {}
             ) | {'fuel_type': 1}
@@ -73,7 +73,7 @@ class MongoDBStorage(base.BaseStorage):
         :return: The date range as a tuple. The first element is the minimum date and the second the maximum.
         """
         min_date, max_date = None, None
-        result = list(self.get_collection_for_data_type(data_type=data_type).aggregate(
+        result = list(self.client.get_default_database()[data_type.value].aggregate(
             [{'$group': {'_id': None, 'start_date': {'$min': '$date'}, 'end_date': {'$max': "$date"}}}]
         ))
         if result:
@@ -90,16 +90,16 @@ class MongoDBStorage(base.BaseStorage):
         :param end_date: The end date.
         :return: A list of dictionaries with the results for each date.
         """
-        filters = self.filter_dates(start_date=start_date, end_date=end_date)
-
-        return [
+        return (
             models.WeeklyCountryData(**row)
-            for row in self.get_collection_for_data_type(data_type=enums.DataType.WEEKLY_COUNTRY).find(filters)
-        ]
+            for row in self.filter(
+                data_type=enums.DataType.WEEKLY_COUNTRY, start_date=start_date, end_date=end_date
+            ).sort('date', pymongo.DESCENDING)
+        )
 
     def weekly_prefecture_data(
-            self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
-            end_date: datetime.date | None = None
+        self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
+        end_date: datetime.date | None = None
     ) -> Iterable[models.WeeklyPrefectureData]:
         """Return the weekly prefecture data.
 
@@ -108,15 +108,13 @@ class MongoDBStorage(base.BaseStorage):
         :param end_date: The end date.
         :return: The weekly prefecture data.
         """
-        filters = (
-            self.filter_dates(start_date=start_date, end_date=end_date) |
-            self.filter_prefecture(prefecture=prefecture)
-        )
-
-        return [
+        return (
             models.WeeklyPrefectureData(**row)
-            for row in self.get_collection_for_data_type(data_type=enums.DataType.WEEKLY_PREFECTURE).find(filters)
-        ]
+            for row in self.filter(
+                data_type=enums.DataType.WEEKLY_PREFECTURE, prefecture=prefecture, start_date=start_date,
+                end_date=end_date
+            ).sort('date', pymongo.DESCENDING)
+        )
 
     def daily_country_data(
         self, start_date: datetime.date | None = None, end_date: datetime.date | None = None
@@ -127,16 +125,16 @@ class MongoDBStorage(base.BaseStorage):
         :param end_date: The end date.
         :return: The daily country data.
         """
-        filters = self.filter_dates(start_date=start_date, end_date=end_date)
-
-        return [
+        return (
             models.DailyCountryData(**row)
-            for row in self.get_collection_for_data_type(data_type=enums.DataType.DAILY_COUNTRY).find(filters)
-        ]
+            for row in self.filter(
+                data_type=enums.DataType.DAILY_COUNTRY, start_date=start_date, end_date=end_date
+            ).sort('date', pymongo.DESCENDING)
+        )
 
     def daily_prefecture_data(
         self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
-            end_date: datetime.date | None = None
+        end_date: datetime.date | None = None
     ) -> Iterable[models.DailyPrefectureData]:
         """Return the daily prefecture data.
 
@@ -145,37 +143,13 @@ class MongoDBStorage(base.BaseStorage):
         :param end_date: The end date.
         :return: The daily prefecture data.
         """
-        filters = (
-            self.filter_dates(start_date=start_date, end_date=end_date) |
-            self.filter_prefecture(prefecture=prefecture)
-        )
-
-        return [
+        return (
             models.DailyPrefectureData(**row)
-            for row in self.get_collection_for_data_type(data_type=enums.DataType.DAILY_PREFECTURE).find(filters)
-        ]
-
-    @staticmethod
-    def filter_dates(start_date: datetime.date | None, end_date: datetime.date | None = None) -> dict:
-        date_filter = {}
-        if start_date is not None:
-            date_filter['$gte'] = datetime.datetime.combine(start_date, datetime.time.min)
-        if end_date is not None:
-            date_filter['$lte'] = datetime.datetime.combine(end_date, datetime.time.max)
-
-        if date_filter:
-            return {'date': date_filter}
-        else:
-            return dict()
-
-    @staticmethod
-    def filter_prefecture(prefecture: enums.Prefecture | None = None) -> dict:
-        prefecture_filter = {}
-        if prefecture is not None:
-            prefecture_filter['prefecture'] = prefecture.value
-
-        return prefecture_filter
-
+            for row in self.filter(
+                data_type=enums.DataType.DAILY_PREFECTURE, prefecture=prefecture, start_date=start_date,
+                end_date=end_date
+            ).sort('date', pymongo.DESCENDING)
+        )
 
     def data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
         """Check if data exists for the data type for the date.
@@ -184,7 +158,7 @@ class MongoDBStorage(base.BaseStorage):
         :param date: The data
         :return: True, if data exists for the date and for all data types for the data file type.
         """
-        collection = self.get_collection_for_data_type(data_type=data_type)
+        collection = self.client.get_default_database()[data_type.value]
 
         return collection.count_documents({'date': self.get_datetime_from_date(date=date)}) > 0
 
@@ -195,7 +169,7 @@ class MongoDBStorage(base.BaseStorage):
         :param data_type: The data type to update.
         :param data: The file data.
         """
-        collection = self.get_collection_for_data_type(data_type=data_type)
+        collection = self.client.get_default_database()[data_type.value]
         collection.delete_many(filter={'date': self.get_datetime_from_date(date)})
         documents = [
             {key: str(value) if isinstance(value, decimal.Decimal) else value for key, value in row.items()} |
@@ -226,30 +200,41 @@ class MongoDBStorage(base.BaseStorage):
         :param email: The user email.
         :return: The user information.
         """
-        return self._get_collection('users').find_one({'email': email})
+        return self.client.get_default_database()['users'].find_one({'email': email})
 
     def get_admin_user_emails(self) -> list[str]:
         """Get the emails of the admin users.
 
         :return: The emails of the admin users as a list of strings.
         """
-        return [row['email'] for row in self._get_collection('users').find({'admin': True}, {'email': 1})]
+        return [row['email'] for row in self.client.get_default_database()['users'].find({'admin': True}, {'email': 1})]
 
-    def get_collection_for_data_type(self, data_type: enums.DataType) -> pymongo.synchronous.collection.Collection:
+    def filter(
+        self, data_type: enums.DataType, start_date: datetime.date | None = None, end_date: datetime.date | None = None,
+        prefecture: enums.Prefecture | None = None
+    ) -> pymongo.synchronous.cursor.Cursor:
         """Return the collection for the data type.
 
         :param data_type: The data type.
+        :param start_date: The start date.
+        :param end_date: The end date.
+        :param prefecture: The prefecture.
         :return: The collection.
         """
-        return self.client.get_default_database()[data_type.value]
+        collection = self.client.get_default_database()[data_type.value]
 
-    def _get_collection(self, name: str) -> pymongo.synchronous.collection.Collection:
-        """Return the collection.
+        filters = {}
+        if start_date is not None or end_date is not None:
+            filters['date'] = {}
+            if start_date is not None:
+                filters['date']['$gte'] = datetime.datetime.combine(start_date, datetime.time.min)
+            if end_date is not None:
+                filters['date']['$lte'] = datetime.datetime.combine(end_date, datetime.time.max)
 
-        :param name: The collection name.
-        :return: The collection.
-        """
-        return self.client.get_default_database()[name]
+        if prefecture is not None:
+            filters['prefecture'] = prefecture.value
+
+        return collection.find(filters)
 
     @staticmethod
     def get_datetime_from_date(date: datetime.date) -> datetime.datetime:
