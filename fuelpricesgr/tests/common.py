@@ -30,31 +30,67 @@ def create_mock_storage(
         """Storage class for testing"""
 
         def status(self) -> enums.ApplicationStatus:
+            """Return the status of the application storage.
+
+            :return: The status of the application storage.
+            """
             return status
 
         def date_range(self, data_type: enums.DataType) -> models.DateRange:
+            """Return the date range for a data type.
+
+            :param data_type: The data type.
+            :return: The date range as a tuple. The first element is the minimum date and the second the maximum. Returns
+            None if there are no data.
+            """
             return date_range
 
         def weekly_country_data(
             self, start_date: datetime.date | None = None, end_date: datetime.date | None = None
         ) -> Iterable[models.WeeklyCountryData]:
+            """Return the weekly country data.
+
+            :param start_date: The start date.
+            :param end_date: The end date.
+            :return: The weekly country data.
+            """
             return weekly_country_data
 
         def weekly_prefecture_data(
             self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
             end_date: datetime.date | None = None
         ) -> Iterable[models.WeeklyPrefectureData]:
+            """Return the weekly prefecture data.
+
+            :param prefecture: The prefecture.
+            :param start_date: The start date.
+            :param end_date: The end date.
+            :return: The weekly prefecture data.
+            """
             return weekly_prefecture_data
 
         def daily_country_data(
             self, start_date: datetime.date | None = None, end_date: datetime.date | None = None
         ) -> Iterable[models.DailyCountryData]:
+            """Return the daily country data.
+
+            :param start_date: The start date.
+            :param end_date: The end date.
+            :return: The daily country data.
+            """
             return daily_country_data
 
         def daily_prefecture_data(
             self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
             end_date: datetime.date | None = None
         ) -> Iterable[models.DailyPrefectureData]:
+            """Return the daily prefecture data.
+
+            :param prefecture: The prefecture.
+            :param start_date: The start date.
+            :param end_date: The end date.
+            :return: The daily prefecture data.
+            """
             return daily_prefecture_data
 
         def data_exists(self, data_type: enums.DataType, date: datetime.date) -> bool:
@@ -95,6 +131,15 @@ class BaseAPITestCase(unittest.TestCase):
         daily_country_data: Iterable[models.DailyCountryData] = (),
         daily_prefecture_data: Iterable[models.DailyPrefectureData] = (),
     ):
+        """Mock the data storage for testing.
+
+        :param status: The application status to use.
+        :param date_range: The date range to use.
+        :param weekly_country_data: The weekly country data to use.
+        :param weekly_prefecture_data: The weekly prefecture data to use.
+        :param daily_country_data: The daily country data to use.
+        :param daily_prefecture_data: The daily prefecture data to use.
+        """
         main.app.dependency_overrides[views.api.get_storage] = lambda: create_mock_storage(
             status=status, date_range=date_range, weekly_country_data=weekly_country_data,
             weekly_prefecture_data=weekly_prefecture_data, daily_country_data=daily_country_data,
