@@ -83,6 +83,6 @@ class S3Fetcher(BaseFetcher):
         )
         response_body = json.loads(response['Payload'].read())
         if response_body.get('status') != 200:
-            raise FetcherException(f"Could not fetch data file: {response_body['message']}")
+            raise FetcherException(f"Could not fetch data file: {response_body}")
 
         return self.read()
