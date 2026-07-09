@@ -5,11 +5,14 @@ set -o errexit
 set -o errtrace
 set -o pipefail
 
+# Path to the project directory
+PROJECT_DIR=/home/app/apps/fuelpricesgr
+
 if [ "$#" -ne 2 ]; then
     echo "Usage: deploy.sh <key> <server>"
     exit
 fi
 
-ssh -i "$1" "$2" 'su - app -c "cd /home/app/apps/fuelpricesgr; git fetch origin master"'
-ssh -i "$1" "$2" 'su - app -c "cd /home/app/apps/fuelpricesgr; git merge"'
+ssh -i "$1" "$2" "su - app -c 'cd $PROJECT_DIR; git fetch origin master'"
+ssh -i "$1" "$2" "su - app -c 'cd $PROJECT_DIR; git merge'"
 ssh -i "$1" "$2" 'systemctl restart fuelpricesgr-api.service'
