@@ -96,7 +96,12 @@ class WeeklyPrefecture(Base):
         sqlalchemy.Enum(enums.Prefecture), nullable=False, comment='The prefecture for the data')
     fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False, comment='The fuel type for the data')
     price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False, comment='The price')
-
+    min_wholesale_price = sqlalchemy.Column(
+        sqlalchemy.Numeric(4, 3), nullable=True,comment='The minimum average wholesale price')
+    max_wholesale_price = sqlalchemy.Column(
+        sqlalchemy.Numeric(4, 3), nullable=True,comment='The maximum average wholesale price')
+    median_wholesale_price = sqlalchemy.Column(
+        sqlalchemy.Numeric(4, 3), nullable=True,comment='The median wholesale price')
 
 class User(Base):
     """The user database model
