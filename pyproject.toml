@@ -7,31 +7,32 @@ requires-python = ">=3.14"
 dependencies = [
     "apscheduler~=3.11.0",
     "argon2-cffi~=25.1.0",
-    "boto3~=1.43.0",
-    "cachelib~=0.14.0",
-    "environs~=15.0.0",
-    "fastapi~=0.136.0",
-    "gunicorn>=26.0.0",
+    "boto3~=1.43.123",
+    "cachelib~=0.17.0",
+    "environs~=15.2.0",
+    "fastapi~=0.162.0",
+    "greenlet~=3.5.0",
+    "gunicorn~=26.2.0",
     "itsdangerous~=2.2.0",
-    "matplotlib~=3.10.0",
-    "pydantic~=2.13.0",
-    "pypdf~=6.12.0",
-    "python-dateutil~=2.9.0",
+    "matplotlib~=3.11.0",
+    "pydantic~=2.14.0",
+    "pypdf~=6.21.0",
+    "python-dateutil<3.0.0", # restricted by boto3
     "requests~=2.34.0",
-    "sqladmin~=0.27.0",
-    "sqlalchemy~=2.0.0",
-    "starlette~=1.2.0",
-    "uvicorn~=0.48.0",
+    "sqladmin~=0.32.0",
+    "sqlalchemy~=2.1.0",
+    "starlette~=1.10.0",
+    "uvicorn~=0.54.0",
     "uvicorn-worker>=0.4.0",
 ]
 
 [dependency-groups]
 dev = [
-    "coverage~=7.14.0",
+    "coverage~=7.17.0",
     "factory-boy~=3.3.0",
-    "httpx2~=2.3.0",
-    "pylint~=4.0.0",
-    "pytest~=9.0.0",
+    "httpx2~=2.16.0",
+    "pylint~=4.1.0",
+    "pytest~=9.2.0",
     "safety~=3.8.0",
 ]
 
@@ -42,9 +43,9 @@ postgres = [
 ]
 
 mysql = [
-    "pymysql~=1.1.0"
+    "pymysql~=1.2.0"
 ]
 
 mongo = [
-    "pymongo~=4.17.0"
+    "pymongo~=4.19.0"
 ]
