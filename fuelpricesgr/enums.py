@@ -40,19 +40,20 @@ class FuelType(enum.Enum):
         :param date: The date.
         :return: True if the data exists.
         """
-        if self == FuelType.SUPER and date >= datetime.date(2022, 8, 5):
-            # Last date with SUPER data
-            return False
-        if self == FuelType.GAS and date <= datetime.date(2012, 6, 1):
-            # There are no data for GAS for these old dates
-            return False
-        if (
-          self == FuelType.DIESEL_HEATING and not ((date.month >= 10 and date.day >= 15) or (date.month <= 4))
-        ):
-            # No DIESEL_HEATING for this period
-            return False
-
-        return True
+        match self:
+            case FuelType.SUPER:
+                return date < datetime.date(2022, 8, 5)
+            case FuelType.GAS:
+                return date > datetime.date(2012, 6, 1)
+            case FuelType.DIESEL_HEATING:
+                if date.month == 10:
+                    return date.day >= 15
+                elif date.month <= 4 or date.month >= 10:
+                    return True
+                else:
+                    return False
+            case _:
+                return True
 
 
 class Prefecture(enum.Enum):
@@ -148,10 +149,10 @@ class DataFileType(enum.Enum):
     """
     WEEKLY = 'weekly', 'Weekly', 'deltia.view', (DataType.WEEKLY_COUNTRY, DataType.WEEKLY_PREFECTURE), 'EBDOM_DELTIO'
     DAILY_COUNTRY = (
-        'daily_country', 'Daily Country', 'deltia_d.view', (DataType.DAILY_COUNTRY, ), 'IMERISIO_DELTIO_PANELLINIO'
+        'daily_country', 'Daily Country', 'deltia_d.view', (DataType.DAILY_COUNTRY,), 'IMERISIO_DELTIO_PANELLINIO'
     )
     DAILY_PREFECTURE = (
-        'daily_prefecture', 'Daily Prefecture', 'deltia_dn.view', (DataType.DAILY_PREFECTURE, ),
+        'daily_prefecture', 'Daily Prefecture', 'deltia_dn.view', (DataType.DAILY_PREFECTURE,),
         'IMERISIO_DELTIO_ANA_NOMO'
     )
 
