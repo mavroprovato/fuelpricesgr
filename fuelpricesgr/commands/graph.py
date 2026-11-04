@@ -77,7 +77,7 @@ def parse_fuel_types(fuel_types: str) -> Iterable[enums.FuelType]:
     """Parse the fuel types argument.
 
     :param fuel_types: The fuel types argument.
-    :return: The parsed fuel data types or None if the argument is not provided.
+    :return: The parsed fuel types, or all fuel types if the argument is empty.
     """
     if fuel_types:
         try:
