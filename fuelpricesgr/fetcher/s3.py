@@ -1,4 +1,4 @@
-"""Module for fetching PDF data to an AWS S3 bucket6
+"""Module for fetching PDF data to an AWS S3 bucket.
 """
 import datetime
 import json
