@@ -6,7 +6,6 @@ import json
 import logging
 
 import boto3
-import botocore.exceptions
 
 from fuelpricesgr import enums, settings
 from .base import BaseFetcher, FetcherException
@@ -73,7 +72,7 @@ class S3Fetcher(BaseFetcher):
             self.s3_client().head_object(Bucket=settings.AWS_S3_BUCKET_NAME, Key=self.path())
 
             return True
-        except botocore.exceptions.ClientError as e:
+        except self.s3_client().exceptions.ClientError as e:
             if e.response['Error']['Code'] == '404':
                 return False
 
