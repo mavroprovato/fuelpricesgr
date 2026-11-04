@@ -256,9 +256,9 @@ class SqlAlchemyStorage(base.BaseStorage):
         model = self._get_model(data_type)
         self.db.query(model).filter(model.date == date).delete()
         for row in data:
-            data = model(**row)
-            data.date = date
-            self.db.add(data)
+            row_data = model(**row)
+            row_data.date = date
+            self.db.add(row_data)
 
         self.db.commit()
 
