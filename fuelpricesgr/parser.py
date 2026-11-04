@@ -293,7 +293,7 @@ class WeeklyParser(Parser, CountryParser, PrefectureParser):
         # Try to find "2. Απλή Αμόλυβδη Βενζίνη 95 οκτανίων"
         weekly_prefecture_end_data = re.search(
             r'2\. *Απλ[ήι] +Αμ ?όλ ?υβδ ?[ηθ] Β ?ε ?ν ?[ζη] ?ί ?ν ?[ηθ] +9 ?5 οκ ?τα ?ν ?ίω ?ν', text)
-        if weekly_prefecture_end_data:
+        if weekly_prefecture_end_data and weekly_country_end_data:
             prefecture_data = self.extract_prefecture_data(
                 text[weekly_country_end_data.end(0):weekly_prefecture_end_data.start(0)], date, True)
         else:
