@@ -39,7 +39,7 @@ def get_fetch_date_range(
 
 def import_file_type_data(
     s: storage.BaseStorage, data_file_types: list[enums.DataFileType], start_date: datetime.date | None = None,
-    end_date: datetime.date | None= None, update: bool = False, skip_cache: bool = False
+    end_date: datetime.date | None = None, update: bool = False, skip_cache: bool = False
 ):
     """Import date file types.
 
@@ -51,27 +51,44 @@ def import_file_type_data(
     :param skip_cache: Set to True to skip caching.
     """
     for data_file_type in data_file_types:
-        file_parser = parser.Parser.get(data_file_type=data_file_type)
-        for data_type in data_file_type.data_types:
-            start_date, end_date = get_fetch_date_range(
+        for data_type in data_file_type.data_types():
+            type_start_date, type_end_date = get_fetch_date_range(
                 s=s, data_type=data_type, start_date=start_date, end_date=end_date
             )
-            logger.info("Fetching %s data between %s and %s", data_file_type.description, start_date, end_date)
-            for date in data_file_type.dates(start_date=start_date, end_date=end_date):
-                if not data_file_type.file_exists(date=date):
-                    logger.warning("%s data for date %s do not exist", data_file_type.description, date)
-                    continue
+            logger.info(
+                "Fetching %s data between %s and %s", data_file_type.description, type_start_date, type_end_date
+            )
+            for date in data_file_type.dates(start_date=type_start_date, end_date=type_end_date):
+                import_date_data(s=s, data_type=data_type, date=date, skip_cache=skip_cache, update=update)
+
+
+def import_date_data(
+    s: storage.BaseStorage, data_type: enums.DataType, date: datetime.date, skip_cache: bool, update: bool
+):
+    """Import the data for a date
+
+    :param s: The storage.
+    :param data_type: The data type.
+    :param date: The date to import.
+    :param skip_cache: Set to True to skip caching.
+    :param update: Set to True to update existing data.
+    """
+    data_file_type = data_type.data_file_type
+    if data_file_type.file_exists(date=date):
+        if update or not s.data_exists(data_type=data_type, date=date):
+            try:
                 data_fetcher = fetcher.BaseFetcher.get_fetcher(data_file_type=data_file_type, date=date)
-                if update or not s.data_exists(data_type=data_type, date=date):
-                    try:
-                        file_data = data_fetcher.data(skip_cache=skip_cache)
-                        data = file_parser.parse(date=date, data=file_data)
-                        s.update_data(date=date, data_type=data_type, data=data.get(data_type, []))
-                    except (fetcher.FetcherException, parser.ParserException) as ex:
-                        logger.error(
-                            "Error while importing data for date %s and data type %s: %s", date, data_type.value,
-                            ex.message
-                        )
+                file_parser = parser.Parser.get(data_file_type=data_file_type)
+                file_data = data_fetcher.data(skip_cache=skip_cache)
+                data = file_parser.parse(date=date, data=file_data)
+                s.update_data(date=date, data_type=data_type, data=data.get(data_type, []))
+            except (fetcher.FetcherException, parser.ParserException) as ex:
+                logger.error(
+                    "Error while importing data for date %s and data type %s: %s", date, data_type.value,
+                    ex.message
+                )
+    else:
+        logger.warning("%s data for date %s do not exist", data_file_type.description, date)
 
 
 def import_data(

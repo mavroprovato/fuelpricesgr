@@ -124,55 +124,35 @@ class Prefecture(enum.Enum):
         return obj
 
 
-class DataType(enum.Enum):
-    """Enumeration for the different types of data contained in the data
-    """
-    WEEKLY_COUNTRY = 'weekly_country', datetime.date(2012, 4, 27)
-    WEEKLY_PREFECTURE = 'weekly_prefecture', datetime.date(2012, 4, 27)
-    DAILY_COUNTRY = 'daily_country', datetime.date(2017, 3, 14)
-    DAILY_PREFECTURE = 'daily_prefecture', datetime.date(2017, 3, 14)
-
-    def __new__(cls, value: str, min_date: datetime.date):
-        """Creates the enum.
-
-        :param min_date: The minimum date for which we have data.
-        """
-        obj = object.__new__(cls)
-        obj._value_ = value
-        obj.min_date = min_date
-
-        return obj
-
-
 class DataFileType(enum.Enum):
     """Enumeration for the different data file types.
     """
-    WEEKLY = 'weekly', 'Weekly', 'deltia.view', (DataType.WEEKLY_COUNTRY, DataType.WEEKLY_PREFECTURE), 'EBDOM_DELTIO'
-    DAILY_COUNTRY = (
-        'daily_country', 'Daily Country', 'deltia_d.view', (DataType.DAILY_COUNTRY,), 'IMERISIO_DELTIO_PANELLINIO'
-    )
-    DAILY_PREFECTURE = (
-        'daily_prefecture', 'Daily Prefecture', 'deltia_dn.view', (DataType.DAILY_PREFECTURE,),
-        'IMERISIO_DELTIO_ANA_NOMO'
-    )
+    WEEKLY = 'weekly', 'Weekly', 'deltia.view', 'EBDOM_DELTIO'
+    DAILY_COUNTRY = 'daily_country', 'Daily Country', 'deltia_d.view', 'IMERISIO_DELTIO_PANELLINIO'
+    DAILY_PREFECTURE = 'daily_prefecture', 'Daily Prefecture', 'deltia_dn.view', 'IMERISIO_DELTIO_ANA_NOMO'
 
-    def __new__(cls, value: str, description: str, page: str, data_types: Iterable[DataType], prefix: str):
+    def __new__(cls, value: str, description: str, page: str, prefix: str):
         """Creates the enum.
 
         :param value: The enum value.
         :param description: The enum description.
         :param page: The path, relative to the base URL, from which we will fetch the data.
-        :param data_types: The data types that this page contains.
         :param prefix: The prefix for the data link.
         """
         obj = object.__new__(cls)
         obj._value_ = value
         obj.description = description
         obj.page = page
-        obj.data_types = data_types
         obj.prefix = prefix
 
         return obj
+
+    def data_types(self) -> Iterable[DataType]:
+        """Returns the data types that this file type includes.
+
+        :return: The data types.
+        """
+        return [dt for dt in DataType if dt.data_file_type == self]
 
     def file_exists(self, date: datetime.date) -> bool:
         """Returns true if the file exists in the site for the specified date.
@@ -216,7 +196,7 @@ class DataFileType(enum.Enum):
         :return: The file name.
         """
         filename = f"{self.prefix}_{date:%d_%m_%Y}.pdf"
-        if self.value == 'weekly':
+        if self == self.WEEKLY:
             if date == datetime.date(2015, 3, 6):
                 filename = f"{self.prefix}_{datetime.date(2015, 3, 2):%d_%m_%Y}.pdf"
             elif date == datetime.date(2017, 7, 7):
@@ -227,3 +207,24 @@ class DataFileType(enum.Enum):
                 filename = f"{self.prefix}_{datetime.date(2024, 1, 25):%d_%m_%Y}.pdf"
 
         return filename
+
+
+class DataType(enum.Enum):
+    """Enumeration for the different types of data contained in the data
+    """
+    WEEKLY_COUNTRY = 'weekly_country', DataFileType.WEEKLY, datetime.date(2012, 4, 27)
+    WEEKLY_PREFECTURE = 'weekly_prefecture', DataFileType.WEEKLY, datetime.date(2012, 4, 27)
+    DAILY_COUNTRY = 'daily_country', DataFileType.DAILY_COUNTRY, datetime.date(2017, 3, 14)
+    DAILY_PREFECTURE = 'daily_prefecture', DataFileType.DAILY_PREFECTURE, datetime.date(2017, 3, 14)
+
+    def __new__(cls, value: str, data_file_type: DataFileType, min_date: datetime.date):
+        """Creates the enum.
+
+        :param min_date: The minimum date for which we have data.
+        """
+        obj = object.__new__(cls)
+        obj._value_ = value
+        obj.data_file_type = data_file_type
+        obj.min_date = min_date
+
+        return obj
