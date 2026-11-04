@@ -24,7 +24,7 @@ def get_plot_data(
     with storage.get_storage() as s:
         data = s.daily_country_data(start_date=start_date, end_date=end_date)
         for row in data:
-            plot_data[row['date']][row['fuel_type']] = row['price']
+            plot_data[row.date][row.fuel_type] = row.price
 
     return plot_data
 
@@ -48,7 +48,7 @@ def plot(data, start_date: datetime.date, end_date: datetime.date, fuel_types: I
         date += datetime.timedelta(days=1)
 
     _, ax = plt.subplots()
-    for fuel_type in enums.FuelType:
+    for fuel_type in fuel_types:
         ax.plot(dates, prices[fuel_type], label=fuel_type.description)
     ax.set_title(f"Fuel prices between {start_date} and {end_date}")
     ax.legend()
@@ -61,19 +61,19 @@ def parse_arguments() -> argparse.Namespace:
     :return: The parsed arguments.
     """
     arg_parser = argparse.ArgumentParser(description='Fetch the data from the site and insert them to the database')
-    arg_parser.add_argument('--types', type=parse_fuel_type,
+    arg_parser.add_argument('--types', type=parse_fuel_types, default=list(enums.FuelType),
                             help=f"Comma separated list of fuel types to plot. Available types are "
                             f"{','.join(ft.name for ft in enums.FuelType)}")
     arg_parser.add_argument('--start-date', type=datetime.date.fromisoformat,
                             help="The start date for the data to fetch. The date must be in ISO date format "
                                  "(YYYY-MM-DD)")
-    arg_parser.add_argument('--end-date', type=datetime.date.fromisoformat, default=datetime.date.today().isoformat(),
+    arg_parser.add_argument('--end-date', type=datetime.date.fromisoformat, default=datetime.date.today(),
                             help="The end date for the data to fetch. The date must be in ISO date format (YYYY-MM-DD)")
 
     return arg_parser.parse_args()
 
 
-def parse_fuel_type(fuel_types: str) -> Iterable[enums.FuelType] | None:
+def parse_fuel_types(fuel_types: str) -> Iterable[enums.FuelType]:
     """Parse the fuel types argument.
 
     :param fuel_types: The fuel types argument.
@@ -83,9 +83,9 @@ def parse_fuel_type(fuel_types: str) -> Iterable[enums.FuelType] | None:
         try:
             return [enums.FuelType[ft] for ft in fuel_types.upper().split(',')]
         except KeyError as exc:
-            raise argparse.ArgumentTypeError("Could not parse data file types") from exc
+            raise argparse.ArgumentTypeError("Could not parse fuel types") from exc
 
-    return None
+    return list(enums.FuelType)
 
 
 def main():
@@ -93,12 +93,8 @@ def main():
     """
     # Parse the command line arguments
     args = parse_arguments()
-    if args.end_date is None:
-        args.end_date = datetime.date.today()
     if args.start_date is None:
         args.start_date = args.end_date - datetime.timedelta(days=settings.MAX_DAYS)
-    if args.types is None:
-        args.types = list(enums.FuelType)
 
     # Plot the data
     plot_data = get_plot_data(start_date=args.start_date, end_date=args.end_date)
