@@ -4,7 +4,6 @@ import functools
 import hashlib
 import importlib
 import logging
-import pickle
 
 import cachelib
 
@@ -61,11 +60,11 @@ def cache(func):
         cache_key = f"{func.__module__}:{func.__name__}:{hashlib.md5(str(f'{args}:{kwargs}').encode()).hexdigest()}"
         cache_value = backend.get(cache_key)
 
-        if cache_value:
-            return pickle.loads(cache_value)
+        if cache_value is not None:
+            return cache_value
 
         result = func(*args, **kwargs)
-        backend.set(key=cache_key, value=pickle.dumps(result), timeout=settings.CACHE_TIMEOUT)
+        backend.set(key=cache_key, value=result, timeout=settings.CACHE_TIMEOUT)
 
         return result
 
