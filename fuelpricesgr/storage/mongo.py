@@ -178,14 +178,17 @@ class MongoDBStorage(base.BaseStorage):
         :param data: The file data.
         """
         collection = self.client.get_default_database()[data_type.value]
-        collection.delete_many(filter={'date': self.get_datetime_from_date(date)})
         documents = [
             {key: str(value) if isinstance(value, decimal.Decimal) else value for key, value in row.items()} |
             {'date': self.get_datetime_from_date(date)}
             for row in data
         ]
-        if data:
-            collection.insert_many(documents=documents)
+        try:
+            collection.delete_many(filter={'date': self.get_datetime_from_date(date)})
+            if documents:
+                collection.insert_many(documents=documents)
+        except pymongo.errors.PyMongoError as ex:
+            raise base.StorageException(f"Could not update {data_type.value} data for date {date}: {ex}") from ex
 
     def create_user(self, email: str, password: str, admin: bool = False):
         """Create a user.

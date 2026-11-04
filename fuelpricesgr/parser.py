@@ -67,7 +67,10 @@ class Parser(abc.ABC):
         if not text:
             raise ParserException("File does not contain any text")
 
-        return self.extract_data(text=text, date=date)
+        try:
+            return self.extract_data(text=text, date=date)
+        except (ValueError, ArithmeticError) as ex:
+            raise ParserException(f"Could not parse a value: {ex}") from ex
 
     @staticmethod
     def parse_number_of_stations(number_of_stations_text: str) -> int | None:

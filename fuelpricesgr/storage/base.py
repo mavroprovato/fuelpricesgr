@@ -10,6 +10,18 @@ import argon2
 from fuelpricesgr import enums, models, settings
 
 
+class StorageException(Exception):
+    """Exception raised when a storage operation fails.
+    """
+    def __init__(self, message: str) -> None:
+        """Initialize the StorageException.
+
+        :param message: The exception message.
+        """
+        super().__init__(message)
+        self.message = message
+
+
 def init_storage():
     """Initialize the storage.
     """
@@ -124,6 +136,7 @@ class BaseStorage(abc.ABC):
         :param date: The date.
         :param data_type: The data type to update.
         :param data: The file data.
+        :raises StorageException: If the data could not be updated.
         """
         raise NotImplementedError()
 

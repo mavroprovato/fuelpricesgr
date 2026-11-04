@@ -72,32 +72,38 @@ class S3Fetcher(BaseFetcher):
             self.s3_client().head_object(Bucket=settings.AWS_S3_BUCKET_NAME, Key=self.path())
 
             return True
-        except self.s3_client().exceptions.ClientError as e:
-            if e.response['Error']['Code'] == '404':
+        except self.s3_client().exceptions.ClientError as ex:
+            if ex.response['Error']['Code'] == '404':
                 return False
 
-            raise e
+            raise FetcherException(f"Could not check if file {self.path()} exists: {ex}") from ex
 
     def read(self) -> bytes:
         """Read the data file content.
 
         :return: The data file content.
         """
-        return self.s3_client().get_object(Bucket=settings.AWS_S3_BUCKET_NAME, Key=self.path())['Body'].read()
+        try:
+            return self.s3_client().get_object(Bucket=settings.AWS_S3_BUCKET_NAME, Key=self.path())['Body'].read()
+        except self.s3_client().exceptions.ClientError as ex:
+            raise FetcherException(f"Could not read file {self.path()}: {ex}") from ex
 
     def fetch(self) -> bytes:
         """Fetch the data file content.
 
         :return: The data file content.
         """
-        response = self.lambda_client().invoke(
-            FunctionName='fuelpricesgr-downloader',
-            Payload=json.dumps({
-                'bucket_name': settings.AWS_S3_BUCKET_NAME, 'url': self.data_file_type.link(date=self.date),
-                'key': self.path()
-            })
-        )
-        response_body = json.loads(response['Payload'].read())
+        try:
+            response = self.lambda_client().invoke(
+                FunctionName='fuelpricesgr-downloader',
+                Payload=json.dumps({
+                    'bucket_name': settings.AWS_S3_BUCKET_NAME, 'url': self.data_file_type.link(date=self.date),
+                    'key': self.path()
+                })
+            )
+            response_body = json.loads(response['Payload'].read())
+        except (self.lambda_client().exceptions.ClientError, ValueError) as ex:
+            raise FetcherException(f"Could not invoke the downloader for file {self.path()}: {ex}") from ex
         if response_body.get('status') != 200:
             raise FetcherException(f"Could not fetch data file: {response_body}")
 

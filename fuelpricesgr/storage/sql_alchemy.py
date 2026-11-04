@@ -254,13 +254,17 @@ class SqlAlchemyStorage(base.BaseStorage):
         """
         # Delete existing data
         model = self._get_model(data_type)
-        self.db.query(model).filter(model.date == date).delete()
-        for row in data:
-            row_data = model(**row)
-            row_data.date = date
-            self.db.add(row_data)
+        try:
+            self.db.query(model).filter(model.date == date).delete()
+            for row in data:
+                row_data = model(**row)
+                row_data.date = date
+                self.db.add(row_data)
 
-        self.db.commit()
+            self.db.commit()
+        except sqlalchemy.exc.SQLAlchemyError as ex:
+            self.db.rollback()
+            raise base.StorageException(f"Could not update {data_type.value} data for date {date}: {ex}") from ex
 
     def user_exists(self, email: str) -> bool:
         """Check if a user exists.
