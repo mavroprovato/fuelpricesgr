@@ -13,6 +13,7 @@ if [ "$#" -ne 2 ]; then
     exit
 fi
 
-ssh -i "$1" "$2" "su - app -c 'cd $PROJECT_DIR; git fetch origin master'"
-ssh -i "$1" "$2" "su - app -c 'cd $PROJECT_DIR; git merge'"
+ssh -i "$1" "$2" "su - app -c 'cd $PROJECT_DIR && git fetch origin master'"
+ssh -i "$1" "$2" "su - app -c 'cd $PROJECT_DIR && git merge'"
+ssh -i "$1" "$2" "su - app -c 'cd $PROJECT_DIR && uv sync --locked --no-dev'"
 ssh -i "$1" "$2" 'systemctl restart fuelpricesgr-api.service'
