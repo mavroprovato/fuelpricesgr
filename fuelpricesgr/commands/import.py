@@ -2,11 +2,10 @@
 """
 import argparse
 import datetime
-import io
 import logging
 import sys
 
-from fuelpricesgr import enums, importer, mail, storage
+from fuelpricesgr import enums, importer, storage
 
 
 def parse_data_file_type(data_file_types: str) -> list[enums.DataFileType] | None:
@@ -43,28 +42,8 @@ def parse_arguments() -> argparse.Namespace:
     arg_parser.add_argument('--update', default=False, action="store_true",
                             help="Update existing data. By default existing data are not updated")
     arg_parser.add_argument('--verbose', default=False, action="store_true", help="Verbose logging")
-    arg_parser.add_argument('--send-mail', default=True, action="store_true",
-                            help="Send mail after running the command")
 
     return arg_parser.parse_args()
-
-
-def send_mail(log_stream: io.StringIO, error: bool):
-    """Send an email with the command results.
-
-    :param log_stream: The log stream.
-    :param error: True if an error occurred.
-    """
-    content = f'''
-        <!DOCTYPE html>
-        <html>
-            <p>Fetching of data completed at {datetime.datetime.now().isoformat()} {"with" if error else "without"}
-            errors. The output of the command was:</p>
-            <p><pre>{log_stream.getvalue()}</pre></p>
-        </html>
-    '''
-    mail_sender = mail.get_mail_sender()
-    mail_sender.send(subject='[fuelpricesgr] Fetching data completed', html_content=content)
 
 
 def main():

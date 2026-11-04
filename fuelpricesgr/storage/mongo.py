@@ -209,13 +209,6 @@ class MongoDBStorage(base.BaseStorage):
         """
         return self.client.get_default_database()['users'].find_one({'email': email})
 
-    def get_admin_user_emails(self) -> list[str]:
-        """Get the emails of the admin users.
-
-        :return: The emails of the admin users as a list of strings.
-        """
-        return [row['email'] for row in self.client.get_default_database()['users'].find({'admin': True}, {'email': 1})]
-
     def filter(
         self, data_type: enums.DataType, start_date: datetime.date | None = None, end_date: datetime.date | None = None,
         prefecture: enums.Prefecture | None = None

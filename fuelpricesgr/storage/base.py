@@ -146,14 +146,6 @@ class BaseStorage(abc.ABC):
         """
         raise NotImplementedError()
 
-    @abc.abstractmethod
-    def get_admin_user_emails(self) -> list[str]:
-        """Get the emails of the admin users.
-
-        :return: The emails of the admin users as a list of strings.
-        """
-        raise NotImplementedError()
-
     @staticmethod
     def hash_password(password: str) -> str:
         """Generate a password hash.

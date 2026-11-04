@@ -116,9 +116,6 @@ def create_mock_storage(
         def get_user(self, email: str):
             raise NotImplementedError()
 
-        def get_admin_user_emails(self) -> list[str]:
-            raise NotImplementedError()
-
     return TestStorage()
 
 

@@ -37,10 +37,3 @@ AWS_S3_BUCKET_NAME = env('AWS_S3_BUCKET_NAME', None)
 CACHE_BACKEND = env('CACHE_BACKEND', 'cachelib.base.NullCache')
 CACHE_PARAMETERS = env.dict('CACHE_PARAMETERS', {})
 CACHE_TIMEOUT = env.int('CACHE_TIMEOUT', 3600)
-
-# Mail configuration
-MAIL = {
-    'BACKEND': env('MAIL_BACKEND', 'fuelpricesgr.mail.filebased.FileBasedMailSender'),
-    'SENDER': env('MAIL_SENDER', None),
-    'PARAMETERS': env.dict('MAIL_PARAMETERS', {}),
-}
