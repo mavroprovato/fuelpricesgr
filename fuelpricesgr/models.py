@@ -29,6 +29,15 @@ class Prefecture(pydantic.BaseModel):
     description: str = pydantic.Field(title="The prefecture description")
 
 
+class User(pydantic.BaseModel):
+    """The user model.
+    """
+    email: str = pydantic.Field(title="The user email")
+    password: str = pydantic.Field(title="The user password hash")
+    active: bool = pydantic.Field(default=True, title="True if the user is active")
+    admin: bool = pydantic.Field(default=False, title="True if the user is an admin")
+
+
 class DateRange(pydantic.BaseModel):
     """The date range model.
     """

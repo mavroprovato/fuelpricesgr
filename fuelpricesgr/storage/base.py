@@ -1,7 +1,7 @@
 """Base module for storage
 """
 import abc
-from collections.abc import Iterable
+import collections.abc
 import datetime
 import importlib
 
@@ -58,7 +58,7 @@ class BaseStorage(abc.ABC):
     @abc.abstractmethod
     def weekly_country_data(
         self, start_date: datetime.date | None = None, end_date: datetime.date | None = None
-    ) -> Iterable[models.WeeklyCountryData]:
+    ) -> collections.abc.Iterable[models.WeeklyCountryData]:
         """Return the weekly country data.
 
         :param start_date: The start date.
@@ -71,7 +71,7 @@ class BaseStorage(abc.ABC):
     def weekly_prefecture_data(
         self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
         end_date: datetime.date | None = None
-    ) -> Iterable[models.WeeklyPrefectureData]:
+    ) -> collections.abc.Iterable[models.WeeklyPrefectureData]:
         """Return the weekly prefecture data.
 
         :param prefecture: The prefecture.
@@ -84,7 +84,7 @@ class BaseStorage(abc.ABC):
     @abc.abstractmethod
     def daily_country_data(
         self, start_date: datetime.date | None = None, end_date: datetime.date | None = None
-    ) -> Iterable[models.DailyCountryData]:
+    ) -> collections.abc.Iterable[models.DailyCountryData]:
         """Return the daily country data.
 
         :param start_date: The start date.
@@ -97,7 +97,7 @@ class BaseStorage(abc.ABC):
     def daily_prefecture_data(
         self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
         end_date: datetime.date | None = None
-    ) -> Iterable[models.DailyPrefectureData]:
+    ) -> collections.abc.Iterable[models.DailyPrefectureData]:
         """Return the daily prefecture data.
 
         :param prefecture: The prefecture.
@@ -138,11 +138,11 @@ class BaseStorage(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def get_user(self, email: str):
+    def get_user(self, email: str) -> models.User | None:
         """Get the user information by email.
 
         :param email: The user email.
-        :return: The user information.
+        :return: The user information, or None if the user does not exist.
         """
         raise NotImplementedError()
 

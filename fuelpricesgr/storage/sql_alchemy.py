@@ -1,6 +1,6 @@
 """The SQL Alchemy storage
 """
-from collections.abc import Iterable
+import collections.abc
 import datetime
 import functools
 import logging
@@ -169,7 +169,7 @@ class SqlAlchemyStorage(base.BaseStorage):
 
     def weekly_country_data(
         self, start_date: datetime.date | None = None, end_date: datetime.date | None = None
-    ) -> Iterable[models.WeeklyCountryData]:
+    ) -> collections.abc.Iterable[models.WeeklyCountryData]:
         """Return the weekly country data.
 
         :param start_date: The start date.
@@ -186,7 +186,7 @@ class SqlAlchemyStorage(base.BaseStorage):
     def weekly_prefecture_data(
         self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
         end_date: datetime.date | None = None
-    ) -> Iterable[models.WeeklyPrefectureData]:
+    ) -> collections.abc.Iterable[models.WeeklyPrefectureData]:
         """Return the weekly prefecture data.
 
         :param prefecture: The prefecture.
@@ -204,7 +204,7 @@ class SqlAlchemyStorage(base.BaseStorage):
 
     def daily_country_data(
         self, start_date: datetime.date | None = None, end_date: datetime.date | None = None
-    ) -> Iterable[models.DailyCountryData]:
+    ) -> collections.abc.Iterable[models.DailyCountryData]:
         """Return the daily country data.
 
         :param start_date: The start date.
@@ -221,7 +221,7 @@ class SqlAlchemyStorage(base.BaseStorage):
     def daily_prefecture_data(
         self, prefecture: enums.Prefecture | None = None, start_date: datetime.date | None = None,
         end_date: datetime.date | None = None
-    ) -> Iterable[models.DailyPrefectureData]:
+    ) -> collections.abc.Iterable[models.DailyPrefectureData]:
         """Return the daily prefecture data.
 
         :param prefecture: The prefecture.
@@ -281,13 +281,15 @@ class SqlAlchemyStorage(base.BaseStorage):
         self.db.add(user)
         self.db.commit()
 
-    def get_user(self, email: str):
+    def get_user(self, email: str) -> models.User | None:
         """Get the user information by email.
 
         :param email: The user email.
-        :return: The user information.
+        :return: The user information, or None if the user does not exist.
         """
-        return self.db.scalar(sqlalchemy.select(User).where(User.email == email))
+        user = self.db.scalar(sqlalchemy.select(User).where(User.email == email))
+
+        return models.User(**user.__dict__) if user is not None else None
 
     @staticmethod
     def _filter_data(

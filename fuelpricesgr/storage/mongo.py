@@ -5,6 +5,7 @@ from collections.abc import Iterable
 import datetime
 import decimal
 import logging
+from typing import Any
 
 import pymongo
 import pymongo.errors
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 @functools.cache
-def get_client(storage_url: str = settings.STORAGE_URL) -> pymongo.MongoClient:
+def get_client(storage_url: str = settings.STORAGE_URL) -> pymongo.MongoClient[dict[str, Any]]:
     """Return the MongoDB client.
 
     :return: The MongoDB client.
@@ -198,16 +199,18 @@ class MongoDBStorage(base.BaseStorage):
             'email': email, 'password': self.hash_password(password), 'admin': admin, 'active': True
         })
 
-    def authenticate(self, email: str, password: str) -> bool:
-        raise NotImplementedError()
-
-    def get_user(self, email: str):
+    def get_user(self, email: str) -> models.User | None:
         """Get the user information by email.
 
         :param email: The user email.
-        :return: The user information.
+        :return: The user information, or None if the user does not exist.
         """
-        return self.client.get_default_database()['users'].find_one({'email': email})
+        user = self.client.get_default_database()['users'].find_one({'email': email})
+
+        if user is None:
+            return None
+
+        return models.User(**user)
 
     def filter(
         self, data_type: enums.DataType, start_date: datetime.date | None = None, end_date: datetime.date | None = None,
