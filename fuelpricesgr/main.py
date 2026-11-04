@@ -1,13 +1,9 @@
 """The FastAPI main module
 """
-import atexit
-
-import apscheduler.schedulers.background
-import apscheduler.triggers.cron
 import fastapi.middleware.cors
 import fastapi.staticfiles
 
-from fuelpricesgr import settings, storage, tasks, views
+from fuelpricesgr import settings, storage, views
 
 # Initialize the storage
 storage.init_storage()
@@ -54,15 +50,3 @@ if settings.STORAGE_BACKEND == 'fuelpricesgr.storage.sql_alchemy.SqlAlchemyStora
 
 # Try to serve everything else from the static files directory
 app.mount('/', fastapi.staticfiles.StaticFiles(directory='static'), name='static')
-
-# Set up the task scheduler
-scheduler = apscheduler.schedulers.background.BackgroundScheduler()
-scheduler.add_job(tasks.import_data, apscheduler.triggers.cron.CronTrigger(hour="*/8"))
-scheduler.start()
-
-
-@atexit.register
-def shutdown():
-    """Shutdown the scheduler on application exit.
-    """
-    scheduler.shutdown()
