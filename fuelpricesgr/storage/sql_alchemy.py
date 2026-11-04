@@ -21,20 +21,20 @@ Base = sqlalchemy.orm.declarative_base()
 
 
 @functools.cache
-def get_engine(storage_url: str = settings.STORAGE_URL) -> sqlalchemy.Engine:
+def get_engine() -> sqlalchemy.Engine:
     """Get the SQLAlchemy engine.
 
     :return: The SQLAlchemy engine
     """
     os.makedirs(settings.DATA_PATH, exist_ok=True)
 
-    return sqlalchemy.create_engine(storage_url, echo=settings.SHOW_SQL)
+    return sqlalchemy.create_engine(settings.STORAGE_URL, echo=settings.SHOW_SQL)
 
 
-def init_storage(storage_url: str = settings.STORAGE_URL):
+def init_storage():
     """Initialize the storage
     """
-    engine = get_engine(storage_url)
+    engine = get_engine()
     Base.metadata.create_all(engine)
 
 
