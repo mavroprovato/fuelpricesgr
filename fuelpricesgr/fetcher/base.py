@@ -19,6 +19,7 @@ class FetcherException(Exception):
 
         :param message: The exception message.
         """
+        super().__init__(message)
         self.message = message
 
 
