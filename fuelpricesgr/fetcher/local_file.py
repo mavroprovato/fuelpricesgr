@@ -71,7 +71,7 @@ class LocalFileFetcher(BaseFetcher):
         file_url = self.data_file_type.link(self.date)
         logger.info("Downloading file from %s", file_url)
         try:
-            response = requests.get(file_url, stream=True, timeout=self.REQUESTS_TIMEOUT)
+            response = requests.get(file_url, timeout=self.REQUESTS_TIMEOUT)
             response.raise_for_status()
         except requests.RequestException as ex:
             raise FetcherException(message=f"Could not download file from {file_url}") from ex
@@ -83,4 +83,4 @@ class LocalFileFetcher(BaseFetcher):
             raise FetcherException(message=f"File is not a PDF file at {file_url}")
 
         # Return the file contents
-        return response.raw.read()
+        return response.content
