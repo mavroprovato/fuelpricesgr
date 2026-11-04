@@ -2,6 +2,7 @@
 """
 from collections.abc import Iterable
 import datetime
+import functools
 import logging
 import os
 
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 Base = sqlalchemy.orm.declarative_base()
 
 
+@functools.cache
 def get_engine(storage_url: str = settings.STORAGE_URL) -> sqlalchemy.Engine:
     """Get the SQLAlchemy engine.
 

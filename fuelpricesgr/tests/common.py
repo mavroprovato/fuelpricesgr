@@ -3,10 +3,12 @@
 import datetime
 from typing import Iterable
 import unittest
+import unittest.mock
 
+import cachelib
 import fastapi.testclient
 
-from fuelpricesgr import enums, main, models, storage, views
+from fuelpricesgr import caching, enums, main, models, storage
 
 
 def create_mock_storage(
@@ -28,6 +30,15 @@ def create_mock_storage(
     """
     class TestStorage(storage.BaseStorage):
         """Storage class for testing"""
+
+        def __enter__(self):
+            """Enter the context manager.
+            """
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            """Exit the context manager. Nothing to clean up.
+            """
 
         def status(self) -> enums.ApplicationStatus:
             """Return the status of the application storage.
@@ -122,8 +133,8 @@ class BaseAPITestCase(unittest.TestCase):
 
         cls.client = fastapi.testclient.TestClient(main.app)
 
-    @staticmethod
     def mock_data_storage(
+        self,
         status: enums.ApplicationStatus = enums.ApplicationStatus.OK,
         date_range: models.DateRange = models.DateRange(start_date=None, end_date=None),
         weekly_country_data: Iterable[models.WeeklyCountryData] = (),
@@ -140,8 +151,17 @@ class BaseAPITestCase(unittest.TestCase):
         :param daily_country_data: The daily country data to use.
         :param daily_prefecture_data: The daily prefecture data to use.
         """
-        main.app.dependency_overrides[views.api.get_storage] = lambda: create_mock_storage(
+        mock_storage = create_mock_storage(
             status=status, date_range=date_range, weekly_country_data=weekly_country_data,
             weekly_prefecture_data=weekly_prefecture_data, daily_country_data=daily_country_data,
             daily_prefecture_data=daily_prefecture_data
         )
+        # The views open the storage themselves, so patch the storage factory
+        storage_patcher = unittest.mock.patch.object(storage, 'get_storage', lambda: mock_storage)
+        storage_patcher.start()
+        self.addCleanup(storage_patcher.stop)
+
+        # Disable caching, so that responses do not leak between tests
+        cache_patcher = unittest.mock.patch.object(caching, 'backend', cachelib.NullCache())
+        cache_patcher.start()
+        self.addCleanup(cache_patcher.stop)

@@ -1,5 +1,6 @@
 """The MongoDB storage
 """
+import functools
 from collections.abc import Iterable
 import datetime
 import decimal
@@ -15,6 +16,15 @@ from . import base
 
 # The logger
 logger = logging.getLogger(__name__)
+
+
+@functools.cache
+def get_client(storage_url: str = settings.STORAGE_URL) -> pymongo.MongoClient:
+    """Return the MongoDB client.
+
+    :return: The MongoDB client.
+    """
+    return pymongo.MongoClient(storage_url)
 
 
 def init_storage():
@@ -38,19 +48,16 @@ class MongoDBStorage(base.BaseStorage):
     def __init__(self):
         """Constructor for the class
         """
-        self.client = None
+        self.client = get_client()
 
     def __enter__(self):
         """Enter the context manager.
         """
-        self.client = pymongo.MongoClient(settings.STORAGE_URL)
-
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        """Closes the connection to the database.
+        """The client is shared per process; nothing to close.
         """
-        self.client.close()
 
     def status(self) -> enums.ApplicationStatus:
         """Return the status of the application storage.
