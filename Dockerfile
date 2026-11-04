@@ -24,11 +24,11 @@ WORKDIR /app
 # Copy the files required to install dependencies
 COPY pyproject.toml uv.lock /app/
 
-# Copy the Django project to the container
+# Copy the project to the container
 COPY . /app/
 
 # Install python dependencies
 RUN uv sync -q --locked
 
-# Run Django's development server
+# Run the server
 ENTRYPOINT ["/bin/bash", "/app/docker-entrypoint.sh"]
