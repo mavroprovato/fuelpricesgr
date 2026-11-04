@@ -63,7 +63,7 @@ class DailyCountry(Base):
     date = sqlalchemy.Column(sqlalchemy.Date, nullable=False, comment='The date for the data')
     fuel_type = sqlalchemy.Column(sqlalchemy.Enum(enums.FuelType), nullable=False, comment='The fuel type for the data')
     price = sqlalchemy.Column(sqlalchemy.Numeric(4, 3), nullable=False, comment='The price')
-    number_of_stations = sqlalchemy.Column(sqlalchemy.SmallInteger, nullable=False, comment='The number of stations')
+    number_of_stations = sqlalchemy.Column(sqlalchemy.SmallInteger, comment='The number of stations')
 
 
 class DailyPrefecture(Base):
