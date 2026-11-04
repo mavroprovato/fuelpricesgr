@@ -226,9 +226,12 @@ def get_date_range(
     """
     # Get default values for start and end date
     if end_date is None:
-        end_date = datetime.date.today()
+        if start_date is None:
+            end_date = datetime.date.today()
+        else:
+            end_date = min(datetime.date.today(), start_date + datetime.timedelta(days=settings.MAX_DAYS))
     if start_date is None:
-        start_date = datetime.date.today() - datetime.timedelta(days=settings.MAX_DAYS)
+        start_date = end_date - datetime.timedelta(days=settings.MAX_DAYS)
 
     # Validate start & end dates
     if start_date > end_date:
