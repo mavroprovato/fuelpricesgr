@@ -64,8 +64,8 @@ def download_file(bucket_name: str, url: str, key: str) -> bool:
                 s3_client.put_object(Bucket=bucket_name, Key=key, Body=data)
 
                 return False
-        except urllib.error.HTTPError as ex:
-            raise DownloaderException(message=f"Could not download file: {ex}") from ex
+        except urllib.error.HTTPError as http_ex:
+            raise DownloaderException(message=f"Could not download file: {http_ex}") from ex
 
 
 def get_parameters(event: Mapping) -> Parameters:
@@ -84,7 +84,7 @@ def get_parameters(event: Mapping) -> Parameters:
             missing_keys.append(key)
 
     if missing_keys:
-        raise ParameterException("Missing required parameters: {}".format(', '.join(missing_keys)))
+        raise ParameterException(f"Missing required parameters: {', '.join(missing_keys)}")
 
     return Parameters(**parameters)
 

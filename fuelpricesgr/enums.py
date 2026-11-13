@@ -48,10 +48,7 @@ class FuelType(enum.Enum):
             case FuelType.DIESEL_HEATING:
                 if date.month == 10:
                     return date.day >= 15
-                elif date.month <= 4 or date.month >= 10:
-                    return True
-                else:
-                    return False
+                return date.month <= 4 or date.month >= 10
             case _:
                 return True
 

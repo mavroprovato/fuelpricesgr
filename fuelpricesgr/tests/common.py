@@ -51,8 +51,8 @@ def create_mock_storage(
             """Return the date range for a data type.
 
             :param data_type: The data type.
-            :return: The date range as a tuple. The first element is the minimum date and the second the maximum. Returns
-            None if there are no data.
+            :return: The date range as a tuple. The first element is the minimum date and the second the maximum.
+            Returns None if there are no data.
             """
             return date_range
 
