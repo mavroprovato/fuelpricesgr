@@ -1,0 +1,9 @@
+[Unit]
+Description=Run the Fuelprices GR data import every 8 hours
+
+[Timer]
+OnCalendar=*-*-* 00/8:00:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target

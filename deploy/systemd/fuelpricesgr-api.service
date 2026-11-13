@@ -1,0 +1,17 @@
+[Unit]
+Description=Fuelprices GR API
+After=network.target
+
+[Service]
+Type=simple
+User=app
+Group=app
+WorkingDirectory=/home/app/apps/fuelpricesgr
+ExecStart=/home/app/apps/fuelpricesgr/.venv/bin/gunicorn fuelpricesgr.main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

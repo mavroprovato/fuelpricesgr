@@ -1,0 +1,12 @@
+[Unit]
+Description=Fuelprices GR data import
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=app
+Group=app
+WorkingDirectory=/home/app/apps/fuelpricesgr
+ExecStart=/home/app/apps/fuelpricesgr/.venv/bin/python -m fuelpricesgr.commands.import
+PrivateTmp=true

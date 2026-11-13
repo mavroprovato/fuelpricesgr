@@ -1,0 +1,11 @@
+[Unit]
+Description=Fuelpricesgr API socket
+
+[Socket]
+ListenStream=/run/fuelpricesgr-api.sock
+SocketUser=app
+SocketGroup=app
+SocketMode=0660
+
+[Install]
+WantedBy=sockets.target
