@@ -104,6 +104,8 @@ class S3Fetcher(BaseFetcher):
             response_body = json.loads(response['Payload'].read())
         except (self.lambda_client().exceptions.ClientError, ValueError) as ex:
             raise FetcherException(f"Could not invoke the downloader for file {self.path()}: {ex}") from ex
+        if response_body.get('status') == 404:
+            raise FetcherException(f"Could not find file {self.path()}", not_found=True)
         if response_body.get('status') != 200:
             raise FetcherException(f"Could not fetch data file: {response_body}")
 

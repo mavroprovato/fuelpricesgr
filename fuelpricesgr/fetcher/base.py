@@ -14,13 +14,14 @@ logger = logging.getLogger(__name__)
 class FetcherException(Exception):
     """Exception raised when fetching data fails.
     """
-    def __init__(self, message: str) -> None:
+    def __init__(self, message: str, not_found: bool = False) -> None:
         """Initialize the FetcherException.
 
         :param message: The exception message.
         """
         super().__init__(message)
         self.message = message
+        self.not_found = not_found
 
 
 class BaseFetcher(abc.ABC):

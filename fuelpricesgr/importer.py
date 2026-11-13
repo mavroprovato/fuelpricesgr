@@ -82,10 +82,22 @@ def import_date_data(
                 file_data = data_fetcher.data(skip_cache=skip_cache)
                 data = file_parser.parse(date=date, data=file_data)
                 s.update_data(date=date, data_type=data_type, data=data.get(data_type, []))
-            except (fetcher.FetcherException, parser.ParserException, storage.StorageException) as ex:
+            except fetcher.FetcherException as ex:
+                if ex.not_found:
+                    logger.warning(
+                        "Cannot find data for date %s and data type %s: %s", date, data_type.value, ex.message
+                    )
+                else:
+                    logger.error(
+                        "Error while fetching data for date %s and data type %s: %s", date, data_type.value, ex.message
+                    )
+            except parser.ParserException as ex:
                 logger.error(
-                    "Error while importing data for date %s and data type %s: %s", date, data_type.value,
-                    ex.message
+                    "Error while parsing data for date %s and data type %s: %s", date, data_type.value, ex.message
+                )
+            except storage.StorageException as ex:
+                logger.error(
+                    "Error while storing data for date %s and data type %s: %s", date, data_type.value, ex.message
                 )
     else:
         logger.warning("%s data for date %s do not exist", data_file_type.description, date)

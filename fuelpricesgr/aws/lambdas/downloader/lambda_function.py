@@ -18,18 +18,23 @@ class Parameters:
     key: str  # The S3 key where the file will be saved
 
 
+class ParameterException(Exception):
+    """Exception raised when the parameters are invalid.
+    """
+
+
 class DownloaderException(Exception):
     """Exception raised when the download fails.
     """
-    def __init__(self, message: str, client_error: bool = False, detail: dict = None):
+    def __init__(self, message: str, not_found: bool = False):
         """Create the exception.
 
         :param message: The exception message.
-        :param detail:
+        :param not_found: If the file was not found.
         """
+        super().__init__(message)
         self.message = message
-        self.client_error = client_error
-        self.detail = detail
+        self.not_found = not_found
 
 
 def download_file(bucket_name: str, url: str, key: str) -> bool:
@@ -51,7 +56,7 @@ def download_file(bucket_name: str, url: str, key: str) -> bool:
         try:
             with urllib.request.urlopen(url) as response:
                 if response.headers['content-type'].startswith('text/html'):
-                    raise DownloaderException(message="File not found") from ex
+                    raise DownloaderException(message="File not found", not_found=True) from ex
                 if response.headers['content-type'] != 'application/pdf':
                     raise DownloaderException(message="File is not a PDF") from ex
 
@@ -60,7 +65,7 @@ def download_file(bucket_name: str, url: str, key: str) -> bool:
 
                 return False
         except urllib.error.HTTPError as ex:
-            raise DownloaderException(message="Could not download file", detail={"detail": str(ex)}) from ex
+            raise DownloaderException(message=f"Could not download file: {ex}") from ex
 
 
 def get_parameters(event: Mapping) -> Parameters:
@@ -71,15 +76,15 @@ def get_parameters(event: Mapping) -> Parameters:
     """
     required_keys = ['bucket_name', 'url', 'key']
     parameters = {}
-    errors = {}
+    missing_keys = []
     for key in required_keys:
         if key in event:
             parameters[key] = event[key]
         else:
-            errors[key] = f"Missing required parameter: {key}"
+            missing_keys.append(key)
 
-    if errors:
-        raise DownloaderException(message='Parameters missing', client_error=True, detail=errors)
+    if missing_keys:
+        raise ParameterException("Missing required parameters: {}".format(', '.join(missing_keys)))
 
     return Parameters(**parameters)
 
@@ -96,5 +101,7 @@ def lambda_handler(event: Mapping, _) -> Mapping[str, Any]:
         exists = download_file(bucket_name=params.bucket_name, url=params.url, key=params.key)
 
         return {'status': 200, 'message': 'File exists' if exists else 'File downloaded', 'key': params.key}
+    except ParameterException as ex:
+        return {'status': 400, 'message': str(ex)}
     except DownloaderException as ex:
-        return {'status': 400 if ex.client_error else 500, 'message': ex.message, 'detail': ex.detail}
+        return {'status': 404 if ex.not_found else 500, 'message': ex.message}

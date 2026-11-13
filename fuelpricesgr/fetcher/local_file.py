@@ -78,7 +78,7 @@ class LocalFileFetcher(BaseFetcher):
 
         # Check if response is a PDF file
         if response.headers['content-type'].startswith('text/html'):
-            raise FetcherException(message=f"File not found at {file_url}")
+            raise FetcherException(message=f"File not found at {file_url}", not_found=True)
         if response.headers['content-type'] != 'application/pdf':
             raise FetcherException(message=f"File is not a PDF file at {file_url}")
 
