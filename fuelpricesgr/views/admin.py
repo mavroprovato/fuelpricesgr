@@ -102,11 +102,14 @@ class AuthenticationBackend(sqladmin.authentication.AuthenticationBackend):
         """
         # Get form data
         form = await request.form()
-        username, password = form['username'], form['password']
+        username, password = form.get('username'), form.get('password')
+        if not username or not password:
+            return False
 
         # Check user credentials
         with storage.get_storage() as s:
-            if not s.authenticate(email=username, password=password):
+            user = s.authenticate(email=username, password=password)
+            if not user or not user.active or not user.admin:
                 return False
 
         request.session.update({"username": username})

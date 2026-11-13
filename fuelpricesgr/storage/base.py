@@ -168,19 +168,19 @@ class BaseStorage(abc.ABC):
         """
         return argon2.PasswordHasher().hash(password)
 
-    def authenticate(self, email: str, password: str) -> bool:
+    def authenticate(self, email: str, password: str) -> models.User | None:
         """Authenticate the user.
 
         :param email: The user email.
         :param password: The user password.
-        :return: True if the user is authenticated, False otherwise.
+        :return: The user if the authentication is successful, None otherwise.
         """
         user = self.get_user(email=email)
         if user is None:
-            return False
+            return None
         try:
             argon2.PasswordHasher().verify(user.password, password)
 
-            return True
+            return user
         except argon2.exceptions.VerifyMismatchError:
-            return False
+            return None
