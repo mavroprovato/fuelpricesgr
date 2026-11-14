@@ -28,7 +28,7 @@ COPY pyproject.toml uv.lock /app/
 COPY . /app/
 
 # Install python dependencies
-RUN uv sync -q --locked
+RUN uv sync -q --locked --all-extras
 
 # Run the server
 ENTRYPOINT ["/bin/bash", "/app/docker-entrypoint.sh"]

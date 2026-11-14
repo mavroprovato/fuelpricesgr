@@ -8,7 +8,7 @@ services:
       - .env
     network_mode: host
     volumes:
-      - api_data:/app/fuelpricesgr/var
+      - api_data:/app/var
 
 volumes:
   api_data:

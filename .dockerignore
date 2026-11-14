@@ -14,7 +14,7 @@ wheels/
 .git/
 
 # Environment files
-#.env
+.env
 
 # Pycharm project files
 .idea/
