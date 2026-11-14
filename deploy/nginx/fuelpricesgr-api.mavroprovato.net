@@ -1,0 +1,24 @@
+# Virtual Host configuration for fuelpricesgr-api.mavroprovato.net
+#
+server {
+    server_name fuelpricesgr-api.mavroprovato.net;
+
+    listen 80;
+    listen [::]:80;
+
+    listen              443 ssl;
+    ssl_certificate     /etc/letsencrypt/live/fuelpricesgr-api.mavroprovato.net/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/fuelpricesgr-api.mavroprovato.net/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers         HIGH:!aNULL:!MD5;
+
+    location / {
+        proxy_pass http://unix:/run/fuelpricesgr-api.sock;
+
+	proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+	proxy_set_header X-Real-IP $remote_addr;
+    }
+}
