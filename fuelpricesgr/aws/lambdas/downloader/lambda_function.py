@@ -64,8 +64,8 @@ def download_file(bucket_name: str, url: str, key: str) -> bool:
                 s3_client.put_object(Bucket=bucket_name, Key=key, Body=data)
 
                 return False
-        except urllib.error.HTTPError as http_ex:
-            raise DownloaderException(message=f"Could not download file: {http_ex}") from ex
+        except urllib.error.URLError as url_ex:
+            raise DownloaderException(message=f"Could not download file: {url_ex}") from url_ex
 
 
 def get_parameters(event: Mapping) -> Parameters:
